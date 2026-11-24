@@ -31,7 +31,6 @@ create index answer_logs_device_answered_idx
   on public.answer_logs (device_id, answered_at desc);
 
 alter table public.quiz_cards enable row level security;
-alter table public.answer_logs enable row level security;
 
 revoke all on public.quiz_cards, public.answer_logs from anon, authenticated;
 grant select, insert on public.quiz_cards, public.answer_logs to service_role;
