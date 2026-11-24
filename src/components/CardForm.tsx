@@ -1,9 +1,7 @@
 import type { FormEvent } from "react";
-import type { QuizCard } from "@/domain/quiz";
 import type { QuizTerms } from "@/themes/types";
+import type { CardDraft } from "./CardEditor";
 import { ALERT, PANEL, PRIMARY_BUTTON, TEXT_INPUT } from "./form-styles";
-
-export type CardDraft = Omit<QuizCard, "id">;
 
 type Props = {
   terms: QuizTerms;

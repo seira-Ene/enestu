@@ -248,7 +248,7 @@ export function QuizScreen() {
         <AnswerHistory
           terms={theme.quiz.terms}
           logs={history.data}
-          cards={allCards}
+          cards={cards.data}
           error={history.error}
           onReload={() => void history.reload()}
         />

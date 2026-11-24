@@ -35,12 +35,31 @@ export function getList<T>(
   );
 }
 
-export async function postJson(
+export function postJson(
+  endpoint: string,
+  body: object,
+): Promise<ApiResult<null>> {
+  return send("POST", endpoint, body);
+}
+
+export function patchJson(
+  endpoint: string,
+  body: object,
+): Promise<ApiResult<null>> {
+  return send("PATCH", endpoint, body);
+}
+
+export function deleteResource(endpoint: string): Promise<ApiResult<null>> {
+  return send("DELETE", endpoint, {});
+}
+
+async function send(
+  method: "POST" | "PATCH" | "DELETE",
   endpoint: string,
   body: object,
 ): Promise<ApiResult<null>> {
   const result = await request(endpoint, {
-    method: "POST",
+    method,
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
@@ -50,7 +69,7 @@ export async function postJson(
 async function request(
   endpoint: string,
   init: {
-    method: "GET" | "POST";
+    method: "GET" | "POST" | "PATCH" | "DELETE";
     headers?: Record<string, string>;
     body?: string;
   },

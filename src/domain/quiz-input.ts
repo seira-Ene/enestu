@@ -53,6 +53,33 @@ export function parseQuizCardInput(body: unknown): ParseResult<QuizCard> {
   return { ok: true, value: { id: id.value, ...draft.value } };
 }
 
+/** 1回にまとめて登録できる枚数。 */
+export const MAX_BULK_CARDS = 50;
+
+/** まとめて登録するカード。1枚でも正しくなければ、全体を拒否する。 */
+export function parseBulkCards(body: unknown): ParseResult<QuizCard[]> {
+  if (typeof body !== "object" || body === null) {
+    return fail("送信内容の形式が正しくありません。");
+  }
+  const { cards }: Partial<Record<"cards", unknown>> = body;
+  if (!Array.isArray(cards) || cards.length === 0) {
+    return fail("登録するカードがありません。");
+  }
+  if (cards.length > MAX_BULK_CARDS) {
+    return fail(`1回に登録できるのは${MAX_BULK_CARDS}枚までです。`);
+  }
+  const parsedCards: QuizCard[] = [];
+  for (const card of cards) {
+    const parsed = parseQuizCardInput(card);
+    if (!parsed.ok) return parsed;
+    parsedCards.push(parsed.value);
+  }
+  if (new Set(parsedCards.map((card) => card.id)).size < parsedCards.length) {
+    return fail("同じIDのカードが含まれています。");
+  }
+  return { ok: true, value: parsedCards };
+}
+
 /** 解答の入力欄の内容を検証する。「わからない」は空文字で表す。 */
 export function parseUserAnswer(value: unknown): ParseResult<string> {
   return parseText(value, {

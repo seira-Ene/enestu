@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  MAX_BULK_CARDS,
   parseAnswerLogInput,
+  parseBulkCards,
   parseCardDraft,
   parseQuizCardInput,
 } from "./quiz-input";
@@ -49,6 +51,38 @@ describe("parseQuizCardInput", () => {
     for (const key of ["subject", "question", "answer"]) {
       expect(parseQuizCardInput({ ...card, [key]: " 　" }).ok).toBe(false);
     }
+  });
+});
+
+describe("parseBulkCards", () => {
+  const many = (count: number) =>
+    Array.from({ length: count }, (_, i) => ({
+      ...card,
+      id: `3f2504e0-4f89-41d3-9a0c-${String(i).padStart(12, "0")}`,
+    }));
+
+  it("1枚から上限までを受け取る", () => {
+    expect(parseBulkCards({ cards: many(1) }).ok).toBe(true);
+    expect(parseBulkCards({ cards: many(MAX_BULK_CARDS) }).ok).toBe(true);
+    expect(parseBulkCards({ cards: many(MAX_BULK_CARDS + 1) }).ok).toBe(false);
+  });
+
+  it.each([null, [], {}, { cards: [] }, { cards: "x" }, { cards: [null] }])(
+    "%j を拒否する",
+    (body) => {
+      expect(parseBulkCards(body).ok).toBe(false);
+    },
+  );
+
+  it("1枚でも正しくなければ、全体を拒否する", () => {
+    const [first, second] = many(2);
+    expect(
+      parseBulkCards({ cards: [first, { ...second, answer: " " }] }).ok,
+    ).toBe(false);
+  });
+
+  it("同じIDが含まれていれば拒否する", () => {
+    expect(parseBulkCards({ cards: [card, card] }).ok).toBe(false);
   });
 });
 

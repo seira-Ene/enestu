@@ -8,13 +8,14 @@ type Props = {
   terms: QuizTerms;
   /** まだ取得できていなければ null。 */
   logs: readonly AnswerLog[] | null;
-  cards: readonly QuizCard[];
+  /** まだ取得できていなければ null。 */
+  cards: readonly QuizCard[] | null;
   error: string | null;
   onReload: () => void;
 };
 
 export function AnswerHistory({ terms, logs, cards, error, onReload }: Props) {
-  const cardById = new Map(cards.map((card) => [card.id, card]));
+  const cardById = new Map((cards ?? []).map((card) => [card.id, card]));
 
   return (
     <section className={PANEL}>
@@ -49,7 +50,8 @@ export function AnswerHistory({ terms, logs, cards, error, onReload }: Props) {
                 </span>
                 <div className="min-w-0">
                   <p className="break-words font-bold">
-                    {card?.question ?? "（問題を読み込めませんでした）"}
+                    {card?.question ??
+                      (cards === null ? "…" : "（削除したカード）")}
                   </p>
                   <p className="break-words text-sm opacity-80">
                     {formatJstDateTime(log.answeredAt)}

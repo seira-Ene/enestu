@@ -39,7 +39,7 @@ export async function POST(request: Request): Promise<Response> {
   }
 }
 
-/** この端末のカードを新しい順に返す。 */
+/** この端末のカードを新しい順に返す。隠したカードは含まない。 */
 export async function GET(request: Request): Promise<Response> {
   const deviceId = readDeviceId(request);
   if (!deviceId.ok) return badRequest(deviceId.error);
@@ -50,6 +50,7 @@ export async function GET(request: Request): Promise<Response> {
       .from("quiz_cards")
       .select("id, subject, question, answer")
       .eq("device_id", deviceId.value)
+      .is("archived_at", null)
       .order("created_at", { ascending: false });
     if (error) return serverError(action, error);
 

@@ -1,5 +1,11 @@
 import { isMistakeReason, type AnswerLog, type QuizCard } from "@/domain/quiz";
-import { getList, postJson, type ApiResult } from "./api-client";
+import {
+  deleteResource,
+  getList,
+  patchJson,
+  postJson,
+  type ApiResult,
+} from "./api-client";
 
 const CARDS_ENDPOINT = "/api/cards";
 const ANSWER_LOGS_ENDPOINT = "/api/answer-logs";
@@ -10,6 +16,23 @@ export function fetchCards(): Promise<ApiResult<QuizCard[]>> {
 
 export function saveCard(card: QuizCard): Promise<ApiResult<null>> {
   return postJson(CARDS_ENDPOINT, card);
+}
+
+export function saveCards(
+  cards: readonly QuizCard[],
+): Promise<ApiResult<null>> {
+  return postJson(`${CARDS_ENDPOINT}/bulk`, { cards });
+}
+
+export function updateCard(
+  id: string,
+  draft: Omit<QuizCard, "id">,
+): Promise<ApiResult<null>> {
+  return patchJson(`${CARDS_ENDPOINT}/${encodeURIComponent(id)}`, draft);
+}
+
+export function deleteCard(id: string): Promise<ApiResult<null>> {
+  return deleteResource(`${CARDS_ENDPOINT}/${encodeURIComponent(id)}`);
 }
 
 export function fetchAnswerLogs(): Promise<ApiResult<AnswerLog[]>> {
