@@ -54,11 +54,18 @@ export function StudyTimer({
         />
       </label>
 
-      <p
-        role="timer"
-        className="text-center font-mono text-5xl font-bold tabular-nums"
-      >
-        {formatClock(seconds)}
+      <p role="timer" className="font-display text-center text-[clamp(2rem,13vw,3rem)] whitespace-nowrap">
+        <span className="sr-only">{formatClock(seconds)}</span>
+        {[...formatClock(seconds)].map((char, index) => (
+          // 書体によらず、数字が変わっても位置がずれないようにする。
+          <span
+            key={index}
+            aria-hidden="true"
+            className={`inline-block text-center ${char === ":" ? "w-[0.5em]" : "w-[0.72em]"}`}
+          >
+            {char}
+          </span>
+        ))}
       </p>
 
       {message !== null && (

@@ -1,22 +1,50 @@
+import { cafe } from "./cafe";
+import { detective } from "./detective";
 import { dungeon } from "./dungeon";
-import type { ThemeCssVars, WorldId, WorldTheme } from "./types";
+import { live } from "./live";
+import { otome } from "./otome";
+import { WORLD_IDS, type WorldId, type WorldTheme } from "./types";
 
-/** 実装済みの世界線。第4週に5つすべてを登録し、Partial を外す。 */
-export const themes = {
+export const themes: Readonly<Record<WorldId, WorldTheme>> = {
   dungeon,
-} as const satisfies Partial<Record<WorldId, WorldTheme>>;
+  otome,
+  detective,
+  live,
+  cafe,
+};
 
-export type AvailableWorldId = keyof typeof themes;
+export const DEFAULT_WORLD_ID: WorldId = "dungeon";
 
-export const DEFAULT_WORLD_ID: AvailableWorldId = "dungeon";
-
-/** 世界線の配色を、globals.css が参照するCSS変数へ変換する。 */
-export function themeToCssVars(theme: WorldTheme): ThemeCssVars {
+/** 世界線の見た目を、globals.css が参照するCSSの宣言にする。 */
+export function themeToCssVars({
+  colors,
+  decor,
+}: WorldTheme): Readonly<Record<string, string>> {
   return {
-    "--theme-primary": theme.colors.primary,
-    "--theme-background": theme.colors.background,
-    "--theme-surface": theme.colors.surface,
-    "--theme-text": theme.colors.text,
-    "--theme-accent": theme.colors.accent,
+    "--theme-primary": colors.primary,
+    "--theme-background": colors.background,
+    "--theme-surface": colors.surface,
+    "--theme-text": colors.text,
+    "--theme-accent": colors.accent,
+    "--decor-radius": decor.radius,
+    "--decor-button-radius": decor.buttonRadius,
+    "--decor-panel-border": decor.panelBorder,
+    "--decor-panel-shadow": decor.panelShadow,
+    "--decor-button-shadow": decor.buttonShadow,
+    "--decor-ornament": `"${decor.ornament}"`,
+    "color-scheme": decor.colorScheme,
   };
+}
+
+/**
+ * 全世界線の見た目を、data-world 属性で切り替わるCSSにする。
+ * 属性を変えるだけで切り替わるため、描画前に選択を反映できる。
+ */
+export function worldsToCss(): string {
+  return WORLD_IDS.map((id) => {
+    const declarations = Object.entries(themeToCssVars(themes[id]))
+      .map(([name, value]) => `${name}:${value}`)
+      .join(";");
+    return `[data-world="${id}"]{${declarations}}`;
+  }).join("\n");
 }

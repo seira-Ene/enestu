@@ -5,6 +5,12 @@
 export type Database = {
   public: {
     Tables: {
+      user_settings: {
+        Row: { device_id: string; world_id: string; updated_at: string };
+        Insert: { device_id: string; world_id: string; updated_at?: string };
+        Update: { device_id?: string; world_id?: string; updated_at?: string };
+        Relationships: [];
+      };
       study_logs: {
         Row: {
           id: string;
@@ -44,6 +50,7 @@ export type Database = {
           question: string;
           answer: string;
           created_at: string;
+          archived_at: string | null;
         };
         Insert: {
           id: string;
@@ -52,6 +59,7 @@ export type Database = {
           question: string;
           answer: string;
           created_at?: string;
+          archived_at?: string | null;
         };
         Update: {
           id?: string;
@@ -60,6 +68,7 @@ export type Database = {
           question?: string;
           answer?: string;
           created_at?: string;
+          archived_at?: string | null;
         };
         Relationships: [];
       };
@@ -107,6 +116,10 @@ export type Database = {
     };
     Views: { [_ in never]: never };
     Functions: {
+      progress_totals: {
+        Args: { p_device_id: string };
+        Returns: { study_seconds: number; correct_count: number }[];
+      };
       subject_stats: {
         Args: { p_device_id: string; p_since: string };
         Returns: {

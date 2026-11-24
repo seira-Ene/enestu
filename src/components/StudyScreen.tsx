@@ -2,7 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { selectCheers, type StudyStatus } from "@/domain/cheer";
+import { selectCheers, studyMood, type StudyStatus } from "@/domain/cheer";
 import { parseSubject } from "@/domain/validation";
 import {
   elapsedSeconds,
@@ -20,13 +20,15 @@ import {
 import { fetchStats } from "@/lib/stats-api";
 import { fetchTodayLogs, saveStudyLog } from "@/lib/study-log-api";
 import { useRemote } from "@/lib/use-remote";
-import type { WorldTheme } from "@/themes/types";
 import { CharacterPanel } from "./CharacterPanel";
 import { DailyQuest } from "./DailyQuest";
+import { ScreenHeader } from "./ScreenHeader";
 import { StudyHistory } from "./StudyHistory";
 import { StudyTimer, type TimerPhase } from "./StudyTimer";
+import { useWorld } from "./WorldProvider";
 
-export function StudyScreen({ theme }: { theme: WorldTheme }) {
+export function StudyScreen() {
+  const { theme } = useWorld();
   const session = useActiveSession();
   const now = useNow();
   const stats = useRemote(fetchStats);
@@ -146,11 +148,8 @@ export function StudyScreen({ theme }: { theme: WorldTheme }) {
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-5 px-4 py-6">
-      <header className="flex items-baseline justify-between">
-        <h1 className="text-2xl font-bold text-primary">エネスタ</h1>
-        <p className="text-sm text-accent">{theme.displayName}</p>
-      </header>
-      <CharacterPanel character={theme.character} lines={lines} />
+      <ScreenHeader title="エネスタ" subtitle={theme.tagline} />
+      <CharacterPanel theme={theme} mood={studyMood(status)} lines={lines} />
       <DailyQuest theme={theme.quest} remote={stats} />
       <StudyTimer
         terms={theme.terms}

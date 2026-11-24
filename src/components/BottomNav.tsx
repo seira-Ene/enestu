@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ThemeTerms } from "@/themes/types";
+import { useWorld } from "./WorldProvider";
 
-export function BottomNav({ terms }: { terms: ThemeTerms }) {
+export function BottomNav() {
+  const { terms } = useWorld().theme;
   const pathname = usePathname();
   const items = [
     { href: "/", label: terms.navTimer, plain: "タイマー" },
@@ -16,7 +17,7 @@ export function BottomNav({ terms }: { terms: ThemeTerms }) {
   return (
     <nav
       aria-label="画面の切り替え"
-      className="sticky bottom-0 border-t border-accent bg-surface pb-[env(safe-area-inset-bottom)]"
+      className="sticky bottom-0 z-10 border-t-2 border-primary bg-surface pb-[env(safe-area-inset-bottom)]"
     >
       <ul className="mx-auto flex max-w-md">
         {items.map(({ href, label, plain }) => {
@@ -27,10 +28,10 @@ export function BottomNav({ terms }: { terms: ThemeTerms }) {
                 href={href}
                 aria-current={isCurrent ? "page" : undefined}
                 className={`flex flex-col items-center py-2 ${
-                  isCurrent ? "font-bold text-primary" : "opacity-80"
+                  isCurrent ? "bg-primary font-bold text-background" : ""
                 }`}
               >
-                <span>{label}</span>
+                <span className="font-display">{label}</span>
                 <span className="text-xs">{plain}</span>
               </Link>
             </li>

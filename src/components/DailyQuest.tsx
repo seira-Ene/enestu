@@ -15,7 +15,7 @@ import {
 import type { StatsWithQuest } from "@/lib/stats-api";
 import type { Remote } from "@/lib/use-remote";
 import type { ThemeQuest } from "@/themes/types";
-import { PANEL, PRIMARY_BUTTON } from "./form-styles";
+import { HEADING, PANEL, PRIMARY_BUTTON } from "./form-styles";
 import { MISTAKE_LABELS } from "./MistakeReasonPicker";
 
 type Props = {
@@ -27,7 +27,7 @@ export function DailyQuest({ theme, remote }: Props) {
   const { data, error, reload } = remote;
   return (
     <section aria-label={theme.title} className={PANEL}>
-      <h2 className="text-sm text-accent">{theme.title}</h2>
+      <h2 className={HEADING}>{theme.title}</h2>
       {error !== null && (
         <div role="alert" className="flex flex-col items-start gap-2">
           <p>{error}</p>
@@ -55,7 +55,7 @@ function QuestBody({ theme, data }: { theme: ThemeQuest; data: StatsWithQuest })
 
   return (
     <>
-      <p className="break-words font-bold">
+      <p className="font-display break-words text-lg">
         {isAchieved && <span aria-hidden="true">✓ </span>}
         {selectQuestLine(theme.lines, quest, isAchieved)}
       </p>
@@ -66,7 +66,7 @@ function QuestBody({ theme, data }: { theme: ThemeQuest; data: StatsWithQuest })
         <QuestMeter quest={quest} progress={progress} title={theme.title} />
       )}
       {link !== null && (
-        <Link href={link.href} className={`${PRIMARY_BUTTON} text-center`}>
+        <Link href={link.href} className={PRIMARY_BUTTON}>
           {theme.start}（{link.label}）
         </Link>
       )}

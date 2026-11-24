@@ -3,6 +3,7 @@ import type { WorldTheme } from "./types";
 export const dungeon = {
   id: "dungeon",
   displayName: "ダンジョンRPG",
+  tagline: "知識の迷宮を、灯りを頼りに攻略する。",
   colors: {
     primary: "#f2b84b",
     background: "#14121f",
@@ -10,10 +11,19 @@ export const dungeon = {
     text: "#f3eefc",
     accent: "#6fd3c7",
   },
+  decor: {
+    colorScheme: "dark",
+    radius: "0px",
+    buttonRadius: "0px",
+    panelBorder: "4px double var(--theme-primary)",
+    panelShadow: "0 0 0 4px var(--theme-background)",
+    buttonShadow: "inset -4px -4px 0 rgb(0 0 0 / 0.3)",
+    ornament: "◆",
+  },
   character: {
     name: "リュカ",
-    emoji: "🏮",
     introduction: "知識の迷宮を案内する、見習いの灯守り。",
+    images: null,
   },
   cheers: {
     welcome: [
@@ -82,8 +92,6 @@ export const dungeon = {
     },
     stage: {
       name: "迷宮の番人",
-      emoji: "🐉",
-      clearedEmoji: "🏆",
       clearedMessage: "番人を撃破！",
       gaugeLabel: "番人の体力",
       gaugeDirection: "drain",

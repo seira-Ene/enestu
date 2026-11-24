@@ -6,13 +6,15 @@ import { parseCardDraft } from "@/domain/quiz-input";
 import { fetchCards, saveCard } from "@/lib/quiz-api";
 import { fetchTodayLogs } from "@/lib/study-log-api";
 import { useRemote } from "@/lib/use-remote";
-import type { WorldTheme } from "@/themes/types";
 import { CardForm, type CardDraft } from "./CardForm";
 import { CardList } from "./CardList";
+import { ScreenHeader } from "./ScreenHeader";
+import { useWorld } from "./WorldProvider";
 
 const EMPTY_DRAFT: CardDraft = { subject: "", question: "", answer: "" };
 
-export function CardsScreen({ theme }: { theme: WorldTheme }) {
+export function CardsScreen() {
+  const { theme } = useWorld();
   const cards = useRemote(fetchCards);
   const todayLogs = useRemote(fetchTodayLogs);
   const [draft, setDraft] = useState(EMPTY_DRAFT);
@@ -62,12 +64,7 @@ export function CardsScreen({ theme }: { theme: WorldTheme }) {
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-5 px-4 py-6">
-      <header className="flex items-baseline justify-between">
-        <h1 className="text-2xl font-bold text-primary">
-          {theme.quiz.terms.card}
-        </h1>
-        <p className="text-sm text-accent">カードの登録</p>
-      </header>
+      <ScreenHeader title={theme.terms.navCards} subtitle="カードの登録" />
       <CardForm
         terms={theme.quiz.terms}
         draft={draft}

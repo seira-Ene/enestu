@@ -102,7 +102,7 @@ export function QuizQuestion({
         <div className="flex flex-col gap-3">
           <p
             role="status"
-            className={`text-2xl font-bold ${judged.isCorrect ? "text-accent" : "text-primary"}`}
+            className={`font-display text-2xl motion-safe:animate-appear ${judged.isCorrect ? "text-accent" : "text-primary"}`}
           >
             {judged.isCorrect ? "○ 正解" : "× 不正解"}
           </p>

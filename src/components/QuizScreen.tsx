@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useLayoutEffect, useState } from "react";
 import { judgeAnswer } from "@/domain/answer-judge";
-import { selectQuizCheer, type QuizMoment } from "@/domain/cheer";
+import { quizMood, selectQuizCheer, type QuizMoment } from "@/domain/cheer";
 import {
   listSubjects,
   MAX_QUIZ_QUESTIONS,
@@ -17,13 +17,14 @@ import {
 import { parseUserAnswer } from "@/domain/quiz-input";
 import { fetchAnswerLogs, fetchCards, saveAnswerLog } from "@/lib/quiz-api";
 import { useRemote } from "@/lib/use-remote";
-import type { WorldTheme } from "@/themes/types";
 import { AnswerHistory } from "./AnswerHistory";
 import { CharacterPanel } from "./CharacterPanel";
 import { PANEL, PRIMARY_BUTTON, TEXT_INPUT } from "./form-styles";
 import { QuizQuestion, type Judged } from "./QuizQuestion";
 import { QuizResult } from "./QuizResult";
 import { QuizStage } from "./QuizStage";
+import { ScreenHeader } from "./ScreenHeader";
+import { useWorld } from "./WorldProvider";
 
 /** 1回のテスト。results が queue と同じ長さになったら終了。 */
 type QuizRun = {
@@ -33,7 +34,8 @@ type QuizRun = {
   readonly judged: (Judged & { id: string; answeredAt: string }) | null;
 };
 
-export function QuizScreen({ theme }: { theme: WorldTheme }) {
+export function QuizScreen() {
+  const { theme } = useWorld();
   const cards = useRemote(fetchCards);
   const history = useRemote(fetchAnswerLogs);
   /** URLの ?subject= で指定された科目。 */
@@ -140,18 +142,13 @@ export function QuizScreen({ theme }: { theme: WorldTheme }) {
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-5 px-4 py-6">
-      <header className="flex items-baseline justify-between">
-        <h1 className="text-2xl font-bold text-primary">
-          {theme.terms.navQuiz}
-        </h1>
-        <p className="text-sm text-accent">確認テスト</p>
-      </header>
-      <CharacterPanel character={theme.character} lines={[cheer]} />
+      <ScreenHeader title={theme.terms.navQuiz} subtitle="確認テスト" />
+      <CharacterPanel theme={theme} mood={quizMood(moment)} lines={[cheer]} />
 
       {run !== null && (
         <QuizStage
           key={run.queue[0]?.id}
-          stage={theme.quiz.stage}
+          theme={theme}
           score={{ correct: countCorrect(run), total: run.queue.length }}
           isHit={run.judged?.isCorrect === true}
         />

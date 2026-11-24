@@ -1,17 +1,139 @@
 @import "tailwindcss";
 
-/* 値は src/themes の定義から layout.tsx が --theme-* として注入する */
+/* 値は src/themes の定義から worldsToCss() が --theme-* / --decor-* として出力する */
 @theme inline {
   --color-primary: var(--theme-primary);
   --color-background: var(--theme-background);
   --color-surface: var(--theme-surface);
   --color-text: var(--theme-text);
   --color-accent: var(--theme-accent);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans:
+    var(--font-geist-sans), "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI",
+    sans-serif;
+  --font-display:
+    var(--font-world, var(--font-geist-sans)), "Hiragino Sans", "Noto Sans JP",
+    sans-serif;
+  --animate-hop: hop 0.6s ease-out;
+  --animate-hit: hit 0.5s ease-out;
+  --animate-appear: appear 0.4s ease-out;
+
+  @keyframes hop {
+    30% {
+      transform: translateY(-14px) rotate(-3deg);
+    }
+    60% {
+      transform: translateY(0) rotate(2deg);
+    }
+  }
+  @keyframes hit {
+    20% {
+      transform: scale(1.18) rotate(-5deg);
+    }
+    50% {
+      transform: scale(0.94) rotate(4deg);
+    }
+  }
+  @keyframes appear {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
 }
 
 body {
-  background: var(--theme-background);
   color: var(--theme-text);
+}
+
+/* 選んだ世界線の文言に切り替わるまで隠す。万一切り替わらなくても3秒で表示する */
+[data-world-pending] body {
+  animation: reveal 0s 3s both;
+}
+@keyframes reveal {
+  from {
+    visibility: hidden;
+  }
+}
+
+/* 世界線の書体は1種類の太さだけ読み込むため、擬似的な太字にしない */
+.font-display {
+  font-synthesis-weight: none;
+}
+
+@utility panel {
+  background: var(--theme-surface);
+  border: var(--decor-panel-border);
+  border-radius: var(--decor-radius);
+  box-shadow: var(--decor-panel-shadow);
+}
+
+@utility button-primary {
+  background: var(--theme-primary);
+  color: var(--theme-background);
+  border-radius: var(--decor-button-radius);
+  box-shadow: var(--decor-button-shadow);
+  transition: transform 0.1s;
+  &:active {
+    transform: translateY(2px);
+  }
+}
+
+@utility button-secondary {
+  color: var(--theme-text);
+  border: 2px solid var(--theme-accent);
+  border-radius: var(--decor-button-radius);
+}
+
+@utility heading {
+  &::before {
+    content: var(--decor-ornament) " ";
+  }
+}
+
+/* 背景の動き。動きを減らす設定では止める */
+@media (prefers-reduced-motion: no-preference) {
+  .scene-torch {
+    animation: torch 3.1s ease-in-out infinite;
+  }
+  .scene-petal {
+    animation: petal 13s linear infinite;
+  }
+  .scene-beam {
+    animation: beam 7s ease-in-out infinite alternate;
+  }
+  .scene-steam {
+    animation: steam 8s ease-in-out infinite;
+  }
+}
+@keyframes torch {
+  50% {
+    opacity: 0.65;
+    scale: 1.08;
+  }
+}
+@keyframes petal {
+  to {
+    transform: translate(40px, 110vh) rotate(420deg);
+  }
+}
+@keyframes beam {
+  from {
+    rotate: -10deg;
+  }
+  to {
+    rotate: 12deg;
+  }
+}
+@keyframes steam {
+  from {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  40% {
+    opacity: 0.8;
+  }
+  to {
+    transform: translateY(-60vh);
+    opacity: 0;
+  }
 }

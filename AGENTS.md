@@ -55,6 +55,7 @@ clone直後はNext.jsの型が未生成のため、`npx tsc --noEmit` の代わ�
 | `src/components/` | 世界線に依存しない共通UI |
 | `src/domain/` | 計算ロジックの純粋関数 |
 | `src/themes/` | 世界線のテーマ定義 |
+| `src/lib/fonts/` | 世界線ごとのフォント |
 | `src/lib/supabase/` | Supabase接続とDBの型 |
 | `supabase/migrations/` | DBスキーマの変更履歴（SQL） |
 | `docs/agents/` | 作業手順ごとの規範 |
@@ -70,7 +71,8 @@ clone直後はNext.jsの型が未生成のため、`npx tsc --noEmit` の代わ�
 
 ### 世界線
 - `src/themes/` のテーマ定義オブジェクト（配色・キャラ・応援セリフ・UI用語）として定義し、`WorldTheme` 型を満たす。
-- 配色はCSS変数（`--theme-*`）で切り替える。画面では `bg-primary` などのクラスを使い、色を直接書かない。
+- 配色と枠はCSS変数（`--theme-*`、`--decor-*`）で切り替える。画面では `bg-primary` や `panel` などのクラスを使い、色を直接書かない。
+- キャラクター・背景・演出の絵（`characters/`、`Backdrop`、`StageArt`）だけは、絵として色を直接持ってよい。
 - 世界線で呼び方が変わる用語とセリフは、テーマ定義から取得する。
 - 追加手順は [docs/agents/add-world.md](docs/agents/add-world.md) に従う。
 

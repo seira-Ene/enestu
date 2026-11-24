@@ -1,6 +1,6 @@
 import type { QuizCard } from "@/domain/quiz";
 import type { QuizTerms } from "@/themes/types";
-import { PANEL } from "./form-styles";
+import { HEADING, ITEM, PANEL } from "./form-styles";
 
 type Props = {
   terms: QuizTerms;
@@ -13,7 +13,7 @@ type Props = {
 export function CardList({ terms, cards, error, onReload }: Props) {
   return (
     <section className={PANEL}>
-      <h2 className="text-sm text-accent">
+      <h2 className={HEADING}>
         {terms.card}
         {cards !== null && `（${cards.length}枚）`}
       </h2>
@@ -32,7 +32,7 @@ export function CardList({ terms, cards, error, onReload }: Props) {
       {cards !== null && cards.length > 0 && (
         <ul className="flex flex-col gap-2">
           {cards.map((card) => (
-            <li key={card.id} className="rounded-xl bg-background px-4 py-3">
+            <li key={card.id} className={ITEM}>
               <p className="break-words text-sm text-accent">{card.subject}</p>
               <p className="break-words whitespace-pre-wrap font-bold">
                 {card.question}

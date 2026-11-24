@@ -8,19 +8,31 @@ export type ApiResult<T> =
   | { readonly ok: true; readonly value: T }
   | { readonly ok: false; readonly error: string };
 
+/** 応答の1項目を取得し、形を確かめてから返す。 */
+export async function getField<T>(
+  endpoint: string,
+  key: string,
+  isValid: (value: unknown) => value is T,
+): Promise<ApiResult<T>> {
+  const result = await request(endpoint, { method: "GET" });
+  if (!result.ok) return result;
+  const value = readField(result.value, key);
+  return isValid(value)
+    ? { ok: true, value }
+    : { ok: false, error: "データを読み取れませんでした。" };
+}
+
 /** 一覧を取得し、すべての要素の形を確かめてから返す。 */
-export async function getList<T>(
+export function getList<T>(
   endpoint: string,
   key: string,
   isItem: (value: unknown) => value is T,
 ): Promise<ApiResult<T[]>> {
-  const result = await request(endpoint, { method: "GET" });
-  if (!result.ok) return result;
-  const items = readField(result.value, key);
-  if (!Array.isArray(items) || !items.every(isItem)) {
-    return { ok: false, error: "データを読み取れませんでした。" };
-  }
-  return { ok: true, value: items };
+  return getField(
+    endpoint,
+    key,
+    (value): value is T[] => Array.isArray(value) && value.every(isItem),
+  );
 }
 
 export async function postJson(

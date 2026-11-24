@@ -1,7 +1,7 @@
 import type { AnswerLog, QuizCard } from "@/domain/quiz";
 import { formatJstDateTime } from "@/domain/study-time";
 import type { QuizTerms } from "@/themes/types";
-import { PANEL } from "./form-styles";
+import { HEADING, ITEM, PANEL } from "./form-styles";
 import { MISTAKE_LABELS } from "./MistakeReasonPicker";
 
 type Props = {
@@ -18,7 +18,7 @@ export function AnswerHistory({ terms, logs, cards, error, onReload }: Props) {
 
   return (
     <section className={PANEL}>
-      <h2 className="text-sm text-accent">{terms.answerHistory}（直近20件）</h2>
+      <h2 className={HEADING}>{terms.answerHistory}（直近20件）</h2>
       {error !== null && (
         <div role="alert" className="flex flex-col items-start gap-2">
           <p>{error}</p>
@@ -38,7 +38,7 @@ export function AnswerHistory({ terms, logs, cards, error, onReload }: Props) {
             return (
               <li
                 key={log.id}
-                className="flex items-start gap-3 rounded-xl bg-background px-4 py-3"
+                className={`${ITEM} flex items-start gap-3`}
               >
                 <span
                   role="img"

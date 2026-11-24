@@ -1,32 +1,41 @@
-import type { ThemeCharacter } from "@/themes/types";
+import type { CharacterMood, WorldTheme } from "@/themes/types";
+import { CharacterPortrait } from "./characters";
 
 type Props = {
-  character: ThemeCharacter;
+  theme: WorldTheme;
+  mood: CharacterMood;
   lines: readonly string[];
 };
 
-export function CharacterPanel({ character, lines }: Props) {
+export function CharacterPanel({ theme, mood, lines }: Props) {
+  const { name } = theme.character;
   return (
     <section
-      aria-label={`${character.name}の応援`}
-      className="flex items-start gap-3"
+      aria-label={`${name}の応援`}
+      className="flex items-center gap-4"
     >
-      <div className="flex w-16 shrink-0 flex-col items-center gap-1">
-        <span
-          aria-hidden="true"
-          className="flex size-16 items-center justify-center rounded-full border-2 border-primary bg-surface text-3xl"
-        >
-          {character.emoji}
-        </span>
-        <span className="text-xs text-accent">{character.name}</span>
-      </div>
       <div
-        aria-live="polite"
-        className="min-h-16 flex-1 rounded-2xl rounded-tl-none bg-surface px-4 py-3 leading-relaxed"
+        // 表情が変わったら、動きをやり直す。
+        key={mood}
+        className={`flex w-28 shrink-0 flex-col items-center gap-1 ${
+          mood === "happy" ? "motion-safe:animate-hop" : ""
+        }`}
       >
-        {lines.map((line) => (
-          <p key={line}>{line}</p>
-        ))}
+        <span className="size-28 rounded-full border-4 border-primary bg-surface">
+          <CharacterPortrait theme={theme} mood={mood} />
+        </span>
+      </div>
+      <div className="panel relative min-h-24 flex-1 px-4 pt-5 pb-3">
+        <span className="absolute -top-3 left-3 rounded-full bg-primary px-3 py-0.5 text-xs font-bold text-background">
+          {name}
+        </span>
+        <div aria-live="polite" className="font-display leading-relaxed">
+          {lines.map((line) => (
+            <p key={line} className="motion-safe:animate-appear">
+              {line}
+            </p>
+          ))}
+        </div>
       </div>
     </section>
   );

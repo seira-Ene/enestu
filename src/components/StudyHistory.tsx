@@ -4,6 +4,7 @@ import {
   type StudyLog,
 } from "@/domain/study-time";
 import type { ThemeTerms } from "@/themes/types";
+import { HEADING, ITEM, PANEL } from "./form-styles";
 
 type Props = {
   terms: ThemeTerms;
@@ -22,15 +23,15 @@ export function StudyHistory({
   onReload,
 }: Props) {
   return (
-    <section className="flex flex-col gap-4 rounded-2xl bg-surface p-4">
+    <section className={PANEL}>
       <div className="flex items-baseline justify-between gap-2">
-        <h2 className="text-sm text-accent">{terms.todayTotal}</h2>
-        <p className="text-2xl font-bold tabular-nums">
+        <h2 className={HEADING}>{terms.todayTotal}</h2>
+        <p className="font-display shrink-0 text-2xl tabular-nums">
           {totalSeconds === null ? "—" : formatDuration(totalSeconds)}
         </p>
       </div>
 
-      <h2 className="text-sm text-accent">{terms.history}（今日）</h2>
+      <h2 className={HEADING}>{terms.history}（今日）</h2>
       {error !== null && (
         <div role="alert" className="flex flex-col items-start gap-2">
           <p>{error}</p>
@@ -50,7 +51,7 @@ export function StudyHistory({
           {logs.map((log) => (
             <li
               key={log.id}
-              className="flex items-center justify-between gap-3 rounded-xl bg-background px-4 py-3"
+              className={`${ITEM} flex items-center justify-between gap-3`}
             >
               <div className="min-w-0">
                 <p className="break-words font-bold">{log.subject}</p>

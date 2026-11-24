@@ -1,5 +1,3 @@
-import type { CSSProperties } from "react";
-
 /** エネスタが提供する5つの世界線。 */
 export const WORLD_IDS = [
   "dungeon",
@@ -10,6 +8,10 @@ export const WORLD_IDS = [
 ] as const;
 
 export type WorldId = (typeof WORLD_IDS)[number];
+
+export function isWorldId(value: unknown): value is WorldId {
+  return WORLD_IDS.some((id) => id === value);
+}
 
 export type HexColor = `#${string}`;
 
@@ -24,11 +26,29 @@ export type ThemeColors = {
   readonly accent: HexColor;
 };
 
+/** 枠・影など、配色以外の見た目。値はCSSとしてそのまま使う。 */
+export type ThemeDecor = {
+  readonly colorScheme: "dark" | "light";
+  readonly radius: string;
+  readonly buttonRadius: string;
+  readonly panelBorder: string;
+  readonly panelShadow: string;
+  readonly buttonShadow: string;
+  /** 見出しの前に付ける飾り。 */
+  readonly ornament: string;
+};
+
+/** キャラクターの表情：ふだん／うれしい／心配。 */
+export type CharacterMood = "normal" | "happy" | "worried";
+
 export type ThemeCharacter = {
   readonly name: string;
-  /** キャラクターの見た目（イラストを用意するまでの仮）。 */
-  readonly emoji: string;
   readonly introduction: string;
+  /**
+   * 自前の画像に差し替える場合の、表情ごとのパス（例："/characters/otome.png"）。
+   * null なら src/components/characters のSVGを使う。
+   */
+  readonly images: Readonly<Record<CharacterMood, string>> | null;
 };
 
 /** 1つ以上のセリフ。空配列は型エラーになる。 */
@@ -81,8 +101,6 @@ export type QuizCheers = {
 /** テストの演出。正解するほどゲージが動き、全問正解で達成になる。 */
 export type QuizStageTheme = {
   readonly name: string;
-  readonly emoji: string;
-  readonly clearedEmoji: string;
   readonly clearedMessage: string;
   readonly gaugeLabel: string;
   /** drain は減っていく（体力など）、fill は増えていく（好感度など）。 */
@@ -116,14 +134,13 @@ export type ThemeQuest = {
 export type WorldTheme = {
   readonly id: WorldId;
   readonly displayName: string;
+  /** 世界線を選ぶ画面に出す、ひとことの紹介。 */
+  readonly tagline: string;
   readonly colors: ThemeColors;
+  readonly decor: ThemeDecor;
   readonly character: ThemeCharacter;
   readonly cheers: ThemeCheers;
   readonly terms: ThemeTerms;
   readonly quiz: ThemeQuiz;
   readonly quest: ThemeQuest;
 };
-
-export type ThemeCssVarName = `--theme-${keyof ThemeColors}`;
-
-export type ThemeCssVars = CSSProperties & Record<ThemeCssVarName, HexColor>;

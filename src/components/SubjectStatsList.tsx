@@ -9,7 +9,7 @@ import {
   type SubjectStats,
 } from "@/domain/subject-stats";
 import { isNeglected, isWeak, sortByWeakness } from "@/domain/weakness";
-import { PANEL } from "./form-styles";
+import { HEADING, ITEM, PANEL } from "./form-styles";
 import { MISTAKE_LABELS } from "./MistakeReasonPicker";
 
 export function SubjectStatsList({
@@ -19,7 +19,7 @@ export function SubjectStatsList({
 }) {
   return (
     <section className={PANEL}>
-      <h2 className="text-sm text-accent">科目別の集計（直近{STATS_DAYS}日）</h2>
+      <h2 className={HEADING}>科目別の集計（直近{STATS_DAYS}日）</h2>
       {stats.length === 0 ? (
         <p className="opacity-80">
           まだ記録がありません。学習かテストをすると、ここに集計が出ます。
@@ -48,7 +48,7 @@ function SubjectRow({
   const mistakes = item.answerCount - item.correctCount;
 
   return (
-    <li className="flex flex-col gap-3 rounded-xl bg-background px-4 py-3">
+    <li className={`${ITEM} flex flex-col gap-3`}>
       <div className="flex flex-wrap items-center gap-2">
         <h3 className="min-w-0 break-words font-bold">{item.subject}</h3>
         {isWeak(item) && <Badge mark="▼" label="苦手" />}

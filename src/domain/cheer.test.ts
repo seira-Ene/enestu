@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import type { QuestLines, QuizCheers, ThemeCheers } from "@/themes/types";
-import { selectCheers, selectQuestLine, selectQuizCheer } from "./cheer";
+import {
+  quizMood,
+  selectCheers,
+  selectQuestLine,
+  selectQuizCheer,
+  studyMood,
+} from "./cheer";
 import type { Quest } from "./weakness";
 
 const cheers: ThemeCheers = {
@@ -97,5 +103,27 @@ describe("selectQuestLine", () => {
     expect(
       selectQuestLine(lines, { kind: "weak", subject: "数学" }, true),
     ).toBe("達成");
+  });
+});
+
+describe("表情", () => {
+  it.each([
+    ["idle", "normal"],
+    ["running", "normal"],
+    ["saved", "happy"],
+  ] as const)("学習が %s なら %s", (status, expected) => {
+    expect(studyMood(status)).toBe(expected);
+  });
+
+  it.each([
+    ["setup", "normal"],
+    ["start", "normal"],
+    ["correct", "happy"],
+    ["incorrect", "worried"],
+    ["perfect", "happy"],
+    ["good", "happy"],
+    ["retry", "worried"],
+  ] as const)("テストが %s なら %s", (moment, expected) => {
+    expect(quizMood(moment)).toBe(expected);
   });
 });

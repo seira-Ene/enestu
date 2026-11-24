@@ -1,6 +1,6 @@
 import type { QuizScore } from "@/domain/quiz";
 import type { QuizTerms } from "@/themes/types";
-import { PANEL, PRIMARY_BUTTON, SECONDARY_BUTTON } from "./form-styles";
+import { HEADING, PANEL, PRIMARY_BUTTON, SECONDARY_BUTTON } from "./form-styles";
 
 type Props = {
   terms: QuizTerms;
@@ -12,8 +12,8 @@ type Props = {
 export function QuizResult({ terms, score, onRetry, onFinish }: Props) {
   return (
     <section className={PANEL}>
-      <h2 className="text-sm text-accent">結果</h2>
-      <p className="text-center text-4xl font-bold tabular-nums">
+      <h2 className={HEADING}>結果</h2>
+      <p className="font-display text-center text-4xl tabular-nums">
         {score.correct} / {score.total}問正解
       </p>
       <button type="button" onClick={onRetry} className={PRIMARY_BUTTON}>

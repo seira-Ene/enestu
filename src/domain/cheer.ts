@@ -1,4 +1,9 @@
-import type { QuestLines, QuizCheers, ThemeCheers } from "@/themes/types";
+import type {
+  CharacterMood,
+  QuestLines,
+  QuizCheers,
+  ThemeCheers,
+} from "@/themes/types";
 import type { Quest } from "./weakness";
 
 /** 待機中／計測中／記録完了。 */
@@ -49,6 +54,27 @@ export function selectQuizCheer(
   seed: number,
 ): string {
   return pickLine(cheers[moment], seed);
+}
+
+/** 学習の状態に応じた、キャラクターの表情。 */
+export function studyMood(status: StudyStatus): CharacterMood {
+  return status === "saved" ? "happy" : "normal";
+}
+
+/** テストの場面に応じた、キャラクターの表情。 */
+export function quizMood(moment: QuizMoment): CharacterMood {
+  switch (moment) {
+    case "correct":
+    case "perfect":
+    case "good":
+      return "happy";
+    case "incorrect":
+    case "retry":
+      return "worried";
+    case "setup":
+    case "start":
+      return "normal";
+  }
 }
 
 /** 今日のクエストの案内文を返す。達成していれば、種類によらず達成の文。 */

@@ -1,11 +1,24 @@
 # 世界線の追加手順
 
-1. `src/themes/types.ts` の `WORLD_IDS` に対象のidがあることを確認する。
-2. `src/themes/<id>.ts` を作り、`as const satisfies WorldTheme` でテーマを定義する。
-   - 配色は6桁・小文字の16進カラーにする。
+1. `src/themes/types.ts` の `WORLD_IDS` にidを足す。
+2. DBの `user_settings.world_id` の制約に、同じidを足すマイグレーションを作る。
+3. `src/themes/<id>.ts` を作り、`as const satisfies WorldTheme` でテーマを定義する。
+   - 配色は6桁・小文字の16進カラーにし、文字と背景の明暗差を4.5:1以上にする。
    - キャラクターとセリフはオリジナルにする。実在の作品や人物を使わない。
-   - `dailyTotal` のセリフには `{minutes}` を含める。
-3. `src/themes/index.ts` の `themes` に登録する。
-4. `src/themes/<id>.test.ts` を `dungeon.test.ts` と同じ観点で作る。
-5. 画面コンポーネントは変更・複製しない。変更が必要なら、`WorldTheme` 型の見直しを計画として提案する。
-6. `AGENTS.md` の完了条件をすべて満たす。
+   - `dailyTotal` のセリフには `{minutes}`、クエストの `weak` と `neglected` には `{subject}` を含める。
+4. 次の登録表に足す（足りなければ型エラーになる）。
+   - `src/themes/index.ts` の `themes`
+   - `src/lib/world-fonts.ts` の `LOADERS`（フォントは `src/lib/fonts/<id>.ts`）
+   - `src/components/characters/index.tsx` の `PORTRAITS`
+   - `src/components/Backdrop.tsx` の `SCENES`
+   - `src/components/StageArt.tsx` の `ARTS`
+5. テストの追加は不要。`src/themes/themes.test.ts` が全世界線を検査する。新しい決まりを作ったら、ここに検査を足す。
+6. 画面コンポーネントは変更・複製しない。変更が必要なら、`WorldTheme` 型の見直しを計画として提案する。
+7. `AGENTS.md` の完了条件をすべて満たし、320pxと375pxの画面を目で確認する。
+
+## キャラクターを自前の画像に替える
+
+1. 3つの表情（ふだん・うれしい・心配）の正方形の画像を `public/characters/` に置く。
+2. テーマ定義の `character.images` を、`null` から3つのパスに変える。
+
+権利を持つ画像だけを使う。
