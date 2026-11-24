@@ -3,7 +3,7 @@ import type { WorldTheme } from "./types";
 export const otome = {
   id: "otome",
   displayName: "乙女ゲーム",
-  tagline: "放課後の図書室で、先輩と学ぶ時間。",
+  tagline: "白い城で、王子と過ごす学びの時間。",
   colors: {
     primary: "#9b2247",
     background: "#fce8ee",
@@ -23,21 +23,25 @@ export const otome = {
   },
   character: {
     name: "透真",
-    introduction: "図書室で静かに待っていてくれる、穏やかな先輩。",
-    images: null,
+    introduction: "城でいつも待っていてくれる、穏やかな王子。",
+    images: {
+      face: "/characters/otome-face.webp",
+      scene: "/characters/otome-scene.webp",
+      banner: "/characters/otome-banner.webp",
+    },
   },
   cheers: {
     welcome: [
-      "来てくれたんだ。隣の席、空けておいたよ。",
+      "来てくれたんだね。隣の席、空けておいたよ。",
       "おかえり。今日は何を一緒に学ぼうか。",
     ],
     timerStart: [
-      "じゃあ始めようか。僕もここで本を読んでいるよ。",
+      "では始めようか。僕も隣で公務を片づけるよ。",
       "ゆっくりで大丈夫。きみのペースでいこう。",
     ],
     timerStop: [
       "おつかれさま。がんばる横顔、ちゃんと見ていたよ。",
-      "今日もここまで来られたね。少し休もうか。",
+      "今日もここまで来られたね。庭園で少し休もうか。",
     ],
     dailyTotal: [
       "今日は{minutes}分も一緒にいられたね。うれしいな。",
@@ -46,23 +50,23 @@ export const otome = {
   },
   terms: {
     subject: "今日の教科",
-    studySession: "図書室の時間",
+    studySession: "書斎の時間",
     startTimer: "一緒に勉強する",
     stopTimer: "今日はここまで",
     todayTotal: "二人で学んだ時間",
-    history: "図書室の記録",
-    navTimer: "図書室",
+    history: "書斎の記録",
+    navTimer: "書斎",
     navCards: "しおり",
-    navQuiz: "小テスト",
+    navQuiz: "舞踏会",
     navStats: "手帳",
   },
   quiz: {
     terms: {
       card: "思い出のしおり",
       addCard: "しおりに書く",
-      start: "小テストを受ける",
-      retry: "もう一度受ける",
-      answerHistory: "小テストの記録",
+      start: "舞踏会に出る",
+      retry: "もう一曲踊る",
+      answerHistory: "舞踏会の記録",
     },
     cheers: {
       setup: [
@@ -92,7 +96,7 @@ export const otome = {
       ],
     },
     stage: {
-      name: "放課後の図書室",
+      name: "月夜の舞踏会",
       clearedMessage: "ふたりの距離が縮まった！",
       gaugeLabel: "好感度",
       gaugeDirection: "fill",
@@ -114,18 +118,18 @@ export const otome = {
     levelUp: "親密度アップ！",
     combo: "{count}問つづけて正解",
     ranks: [
-      "図書室の常連",
-      "気になる後輩",
-      "放課後の相棒",
+      "城の客人",
+      "気になるひと",
+      "秘密の話し相手",
       "特別なひと",
       "かけがえのないひと",
     ],
     stories: [
       "その席、いつも空けておくことにしたんだ。……理由？ 内緒だよ。",
-      "きみがいない日は、ページがなかなか進まなくてね。",
-      "この栞、きみに似合うと思って選んだんだ。受け取ってくれる？",
+      "きみがいない日は、城がやけに広く感じてね。",
+      "この青い宝石、きみに似合うと思って選んだんだ。受け取ってくれる？",
       "難しい顔をしているきみも好きだけど、解けたときの笑顔がいちばんだな。",
-      "卒業しても、こうして隣で本を読んでいたい。……きみは、どう思う？",
+      "王子としてではなく、ただの僕として、きみの隣にいたい。……きみは、どう思う？",
     ],
   },
 } as const satisfies WorldTheme;

@@ -23,8 +23,12 @@ export const live = {
   },
   character: {
     name: "ハルカ",
-    introduction: "どんな日も音を止めない、頼れるバンド仲間。",
-    images: null,
+    introduction: "どんな日も音を止めない、頼れるステージの仲間。",
+    images: {
+      face: "/characters/live-face.webp",
+      scene: "/characters/live-scene.webp",
+      banner: "/characters/live-banner.webp",
+    },
   },
   cheers: {
     welcome: [

@@ -24,7 +24,11 @@ export const detective = {
   character: {
     name: "ミチル",
     introduction: "証拠を見逃さない、几帳面な探偵助手。",
-    images: null,
+    images: {
+      face: "/characters/detective-face.webp",
+      scene: "/characters/detective-scene.webp",
+      banner: "/characters/detective-banner.webp",
+    },
   },
   cheers: {
     welcome: [

@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { RANK_LEVELS } from "@/domain/progress";
 import { DEFAULT_WORLD_ID, themes, themeToCssVars, worldsToCss } from "@/themes";
@@ -62,6 +63,17 @@ describe.each(WORLD_IDS)("世界線 %s", (id) => {
     }
   });
 
+  it("キャラクターの絵が public/ にあり、重すぎない", () => {
+    const { images } = theme.character;
+    if (images === null) return;
+    for (const path of Object.values(images)) {
+      expect(path).toMatch(/^\/characters\/[a-z-]+\.webp$/);
+      const file = readFileSync(new URL(`../../public${path}`, import.meta.url));
+      expect(file.toString("latin1", 8, 12)).toBe("WEBP");
+      expect(file.length).toBeLessThan(120 * 1024);
+    }
+  });
+
   it("CSSを壊す文字を含まない", () => {
     for (const value of Object.values(themeToCssVars(theme))) {
       expect(value).not.toMatch(/[;{}<\\]/);
@@ -78,6 +90,7 @@ describe("世界線どうしの違い", () => {
       all.map((t) => t.colors.primary),
       all.map((t) => t.colors.background),
       all.map((t) => t.decor.ornament),
+      all.map((t) => t.character.images?.scene ?? t.id),
       all.map((t) => t.quiz.stage.gaugeLabel),
     ]) {
       expect(new Set(pick).size).toBe(WORLD_IDS.length);

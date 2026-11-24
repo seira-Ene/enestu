@@ -1,5 +1,6 @@
 import type { CharacterMood, WorldTheme } from "@/themes/types";
 import { CharacterPortrait } from "./characters";
+import { SpeechBubble } from "./SpeechBubble";
 
 type Props = {
   theme: WorldTheme;
@@ -25,18 +26,7 @@ export function CharacterPanel({ theme, mood, lines }: Props) {
           <CharacterPortrait theme={theme} mood={mood} />
         </span>
       </div>
-      <div className="panel relative min-h-24 flex-1 px-4 pt-5 pb-3">
-        <span className="absolute -top-3 left-3 rounded-full bg-primary px-3 py-0.5 text-xs font-bold text-background">
-          {name}
-        </span>
-        <div aria-live="polite" className="font-display leading-relaxed">
-          {lines.map((line) => (
-            <p key={line} className="motion-safe:animate-appear">
-              {line}
-            </p>
-          ))}
-        </div>
-      </div>
+      <SpeechBubble name={name} lines={lines} className="min-h-24 flex-1" />
     </section>
   );
 }
