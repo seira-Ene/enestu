@@ -1,6 +1,7 @@
 import type { FormEvent } from "react";
 import { formatClock } from "@/domain/study-time";
 import type { ThemeTerms } from "@/themes/types";
+import { ALERT, PANEL, PRIMARY_BUTTON, TEXT_INPUT } from "./form-styles";
 
 /** 待機中／計測中／保存中／保存失敗。 */
 export type TimerPhase = "ready" | "running" | "saving" | "unsaved";
@@ -17,9 +18,6 @@ type Props = {
   onRetry: () => void;
   onDiscard: () => void;
 };
-
-const PRIMARY_BUTTON =
-  "w-full rounded-xl bg-primary px-4 py-4 text-lg font-bold text-background transition-opacity hover:opacity-90 disabled:opacity-50";
 
 export function StudyTimer({
   terms,
@@ -41,7 +39,7 @@ export function StudyTimer({
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col gap-4 rounded-2xl bg-surface p-4"
+      className={PANEL}
     >
       <label className="flex flex-col gap-1">
         <span className="text-sm text-accent">{terms.subject}（科目名）</span>
@@ -52,7 +50,7 @@ export function StudyTimer({
           readOnly={phase !== "ready"}
           placeholder="例：線形代数"
           autoComplete="off"
-          className="rounded-xl border border-accent bg-background px-4 py-3 text-base text-text placeholder:opacity-60 read-only:opacity-70"
+          className={TEXT_INPUT}
         />
       </label>
 
@@ -64,7 +62,7 @@ export function StudyTimer({
       </p>
 
       {message !== null && (
-        <p role="alert" className="rounded-xl border border-primary px-4 py-3">
+        <p role="alert" className={ALERT}>
           {message}
         </p>
       )}

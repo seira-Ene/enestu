@@ -1,4 +1,4 @@
-import type { ThemeCheers } from "@/themes/types";
+import type { QuizCheers, ThemeCheers } from "@/themes/types";
 
 /** 待機中／計測中／記録完了。 */
 export type StudyStatus = "idle" | "running" | "saved";
@@ -36,6 +36,18 @@ export function selectCheers(
       return lines;
     }
   }
+}
+
+/** 出題前／出題中／正解／不正解、または結果の3段階。 */
+export type QuizMoment = keyof QuizCheers;
+
+/** テストの場面に応じて、キャラクターが話すセリフを返す。 */
+export function selectQuizCheer(
+  cheers: QuizCheers,
+  moment: QuizMoment,
+  seed: number,
+): string {
+  return pickLine(cheers[moment], seed);
 }
 
 function pickLine(

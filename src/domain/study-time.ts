@@ -61,6 +61,12 @@ export function formatJstTime(iso: string): string {
   return new Date(Date.parse(iso) + JST_OFFSET_MS).toISOString().slice(11, 16);
 }
 
+/** 日本時間の「11/24 14:05」。 */
+export function formatJstDateTime(iso: string): string {
+  const jst = new Date(Date.parse(iso) + JST_OFFSET_MS);
+  return `${jst.getUTCMonth() + 1}/${jst.getUTCDate()} ${formatJstTime(iso)}`;
+}
+
 function toWholeSeconds(seconds: number): number {
   return Number.isFinite(seconds) ? Math.max(0, Math.floor(seconds)) : 0;
 }

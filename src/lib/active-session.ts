@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from "react";
-import { parseSubject, parseUuid } from "@/domain/study-log-input";
+import { parseSubject, parseUuid } from "@/domain/validation";
 
 /**
  * 計測中、または保存待ちの学習。再読み込みしても失われないよう

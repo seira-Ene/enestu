@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseStudyLogInput, parseSubject, parseUuid } from "./study-log-input";
+import { parseStudyLogInput } from "./study-log-input";
 
 const now = new Date("2026-11-24T03:00:00.000Z");
 const valid = {
@@ -12,41 +12,6 @@ const valid = {
 function isOk(overrides: Record<string, unknown>): boolean {
   return parseStudyLogInput({ ...valid, ...overrides }, now).ok;
 }
-
-describe("parseUuid", () => {
-  it("UUIDを小文字にそろえて受け取る", () => {
-    expect(parseUuid(valid.id.toUpperCase())).toEqual({
-      ok: true,
-      value: valid.id,
-    });
-  });
-
-  it.each([null, undefined, 1, "", "abc", `${valid.id}x`, `${valid.id}\n`])(
-    "%j を拒否する",
-    (value) => {
-      expect(parseUuid(value).ok).toBe(false);
-    },
-  );
-});
-
-describe("parseSubject", () => {
-  it("前後の空白（全角を含む）を除く", () => {
-    expect(parseSubject(" 　英語 ")).toEqual({ ok: true, value: "英語" });
-  });
-
-  it.each(["", "  　", null, 1, "a\u0000b", "a\nb", "\ud800"])(
-    "%j を拒否する",
-    (value) => {
-      expect(parseSubject(value).ok).toBe(false);
-    },
-  );
-
-  it("50文字まで受け付け、絵文字は1文字と数える", () => {
-    expect(parseSubject("あ".repeat(50)).ok).toBe(true);
-    expect(parseSubject("📘".repeat(50)).ok).toBe(true);
-    expect(parseSubject("あ".repeat(51)).ok).toBe(false);
-  });
-});
 
 describe("parseStudyLogInput", () => {
   it("正しい入力を受け取り、余分な項目は捨てる", () => {

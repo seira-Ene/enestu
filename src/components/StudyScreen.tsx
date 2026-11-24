@@ -2,24 +2,21 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { selectCheers, type StudyStatus } from "@/domain/cheer";
-import { parseSubject } from "@/domain/study-log-input";
+import { parseSubject } from "@/domain/validation";
 import {
   elapsedSeconds,
   filterTodayLogs,
   sumTodaySeconds,
   type StudyLog,
 } from "@/domain/study-time";
+import type { ApiResult } from "@/lib/api-client";
 import {
   getActiveSession,
   setActiveSession,
   useActiveSession,
   type ActiveSession,
 } from "@/lib/active-session";
-import {
-  fetchTodayLogs,
-  saveStudyLog,
-  type ApiResult,
-} from "@/lib/study-log-api";
+import { fetchTodayLogs, saveStudyLog } from "@/lib/study-log-api";
 import type { WorldTheme } from "@/themes/types";
 import { CharacterPanel } from "./CharacterPanel";
 import { StudyHistory } from "./StudyHistory";

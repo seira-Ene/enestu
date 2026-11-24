@@ -36,6 +36,71 @@ export type Database = {
         };
         Relationships: [];
       };
+      quiz_cards: {
+        Row: {
+          id: string;
+          device_id: string;
+          subject: string;
+          question: string;
+          answer: string;
+          created_at: string;
+        };
+        Insert: {
+          id: string;
+          device_id: string;
+          subject: string;
+          question: string;
+          answer: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          device_id?: string;
+          subject?: string;
+          question?: string;
+          answer?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      answer_logs: {
+        Row: {
+          id: string;
+          device_id: string;
+          card_id: string;
+          user_answer: string;
+          is_correct: boolean;
+          answered_at: string;
+          created_at: string;
+        };
+        Insert: {
+          id: string;
+          device_id: string;
+          card_id: string;
+          user_answer: string;
+          is_correct: boolean;
+          answered_at: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          device_id?: string;
+          card_id?: string;
+          user_answer?: string;
+          is_correct?: boolean;
+          answered_at?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "answer_logs_card_id_device_id_fkey";
+            columns: ["card_id", "device_id"];
+            isOneToOne: false;
+            referencedRelation: "quiz_cards";
+            referencedColumns: ["id", "device_id"];
+          },
+        ];
+      };
     };
     Views: { [_ in never]: never };
     Functions: { [_ in never]: never };

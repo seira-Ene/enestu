@@ -1,4 +1,4 @@
-import { parseUuid } from "@/domain/study-log-input";
+import { parseUuid } from "@/domain/validation";
 
 const STORAGE_KEY = "enestu_device_id";
 

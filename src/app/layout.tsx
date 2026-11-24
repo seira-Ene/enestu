@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { BottomNav } from "@/components/BottomNav";
 import { DEFAULT_WORLD_ID, themes, themeToCssVars } from "@/themes";
 import "./globals.css";
 
@@ -25,7 +26,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       style={themeToCssVars(themes[DEFAULT_WORLD_ID])}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        {children}
+        <BottomNav terms={themes[DEFAULT_WORLD_ID].terms} />
+      </body>
     </html>
   );
 }

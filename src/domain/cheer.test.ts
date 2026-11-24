@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { ThemeCheers } from "@/themes/types";
-import { selectCheers } from "./cheer";
+import type { QuizCheers, ThemeCheers } from "@/themes/types";
+import { selectCheers, selectQuizCheer } from "./cheer";
 
 const cheers: ThemeCheers = {
   welcome: ["ようこそA", "ようこそB"],
@@ -42,5 +42,33 @@ describe("selectCheers", () => {
     expect(
       selectCheers(cheers, "saved", { seed: 0, totalSeconds: 119 })[1],
     ).toBe("1分。1分！");
+  });
+});
+
+describe("selectQuizCheer", () => {
+  const quizCheers: QuizCheers = {
+    setup: ["準備A", "準備B"],
+    start: ["開始"],
+    correct: ["正解"],
+    incorrect: ["不正解"],
+    perfect: ["全問正解"],
+    good: ["あと少し"],
+    retry: ["もう一度"],
+  };
+
+  it.each([
+    ["start", "開始"],
+    ["correct", "正解"],
+    ["incorrect", "不正解"],
+    ["perfect", "全問正解"],
+    ["good", "あと少し"],
+    ["retry", "もう一度"],
+  ] as const)("%s のセリフは %s", (moment, expected) => {
+    expect(selectQuizCheer(quizCheers, moment, 3)).toBe(expected);
+  });
+
+  it("seedでセリフが変わる", () => {
+    expect(selectQuizCheer(quizCheers, "setup", 0)).toBe("準備A");
+    expect(selectQuizCheer(quizCheers, "setup", 1)).toBe("準備B");
   });
 });

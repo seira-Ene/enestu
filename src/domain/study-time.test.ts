@@ -4,6 +4,7 @@ import {
   filterTodayLogs,
   formatClock,
   formatDuration,
+  formatJstDateTime,
   formatJstTime,
   jstDayRange,
   sumTodaySeconds,
@@ -117,6 +118,13 @@ describe("formatClock", () => {
     [360000, "100:00:00"],
   ])("%s秒 → %s", (seconds, expected) => {
     expect(formatClock(seconds)).toBe(expected);
+  });
+});
+
+describe("formatJstDateTime", () => {
+  it("日本時間の月日と時分にする", () => {
+    expect(formatJstDateTime("2026-11-24T05:05:59Z")).toBe("11/24 14:05");
+    expect(formatJstDateTime("2026-12-31T15:00:00+00:00")).toBe("1/1 00:00");
   });
 });
 

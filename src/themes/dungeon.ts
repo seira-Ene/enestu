@@ -40,5 +40,52 @@ export const dungeon = {
     stopTimer: "帰還する",
     todayTotal: "今日の探索時間",
     history: "冒険の記録",
+    navTimer: "冒険",
+    navCards: "巻物",
+    navQuiz: "番人戦",
+  },
+  quiz: {
+    terms: {
+      card: "知識の巻物",
+      addCard: "巻物に記す",
+      start: "番人に挑む",
+      retry: "もう一度挑む",
+      answerHistory: "戦いの記録",
+    },
+    cheers: {
+      setup: [
+        "巻物の知識で、迷宮の番人に挑もう。",
+        "準備はいい？ ぼくがそばで照らしているよ。",
+      ],
+      start: [
+        "番人が現れた！ 落ち着いて答えていこう。",
+        "さあ、思い出してみて。きみなら届くよ。",
+      ],
+      correct: ["命中！ その調子だよ。", "やった、番人がひるんだよ！"],
+      incorrect: [
+        "惜しい！ ここは覚えて、次で取り返そう。",
+        "だいじょうぶ。まちがえた所ほど強くなれるよ。",
+      ],
+      perfect: [
+        "全問正解！ 番人を倒したよ！",
+        "かんぺき！ 今日のきみは伝説の冒険者だ。",
+      ],
+      good: [
+        "いい戦いだった！ あと少しで倒せるよ。",
+        "番人はもうふらふらだ。もう一息！",
+      ],
+      retry: [
+        "今日はここまで戦えたね。もう一度挑めば、きっと届くよ。",
+        "戦いの記録は残ったよ。巻物を読み直して、また行こう。",
+      ],
+    },
+    stage: {
+      name: "迷宮の番人",
+      emoji: "🐉",
+      clearedEmoji: "🏆",
+      clearedMessage: "番人を撃破！",
+      gaugeLabel: "番人の体力",
+      gaugeDirection: "drain",
+    },
   },
 } as const satisfies WorldTheme;
