@@ -1,23 +1,15 @@
 import type { ProgressTotals } from "@/domain/progress";
-import {
-  badRequest,
-  readDeviceId,
-  serverError,
-  success,
-} from "@/lib/api-response";
-import { createSupabaseAdminClient } from "@/lib/supabase/server";
+import { serverError, success } from "@/lib/api-response";
+import { resolveOwner, type Owner } from "@/lib/owner";
 
-/** この端末の、これまでの合計（学習時間と正解数）を返す。 */
+/** 自分の、これまでの合計（学習時間と正解数）を返す。 */
 export async function GET(request: Request): Promise<Response> {
-  const deviceId = readDeviceId(request);
-  if (!deviceId.ok) return badRequest(deviceId.error);
+  const owner = await resolveOwner(request);
+  if (!owner.ok) return owner.response;
 
   const action = "レベルの取得";
   try {
-    const { data, error } = await createSupabaseAdminClient().rpc(
-      "progress_totals",
-      { p_device_id: deviceId.value },
-    );
+    const { data, error } = await countTotals(owner.value);
     if (error) return serverError(action, error);
 
     const row = data[0];
@@ -29,4 +21,10 @@ export async function GET(request: Request): Promise<Response> {
   } catch (error) {
     return serverError(action, error);
   }
+}
+
+function countTotals(owner: Owner) {
+  return owner.kind === "user"
+    ? owner.db.rpc("my_progress_totals")
+    : owner.db.rpc("progress_totals", { p_device_id: owner.id });
 }

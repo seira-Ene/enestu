@@ -29,6 +29,41 @@ export function badRequest(message: string): Response {
   return Response.json({ error: message }, { status: 400, headers: NO_STORE });
 }
 
+/** ログインが切れている。未ログインの記録として保存させない。 */
+export function signedOut(): Response {
+  return problem(
+    401,
+    "signed_out",
+    "ログインが切れました。もう一度ログインしてください。",
+  );
+}
+
+/** 画面を開いた後に、ログインの状態が変わっている。 */
+export function accountChanged(): Response {
+  return problem(
+    409,
+    "account_changed",
+    "ログインの状態が変わりました。画面を読み込み直してください。",
+  );
+}
+
+/** 他のサイトから送られたフォーム。 */
+export function forbidden(): Response {
+  return problem(403, "forbidden", "この操作は受け付けられません。");
+}
+
+/** 次に開く画面へ移る。POSTの後でも、GETで開く。 */
+export function seeOther(location: string): Response {
+  return new Response(null, {
+    status: 303,
+    headers: { ...NO_STORE, Location: location },
+  });
+}
+
+function problem(status: number, code: string, error: string): Response {
+  return Response.json({ error, code }, { status, headers: NO_STORE });
+}
+
 /** 原因はサーバーのログにだけ残し、利用者には詳細を見せない。 */
 export function serverError(action: string, cause: unknown): Response {
   console.error(`${action}に失敗`, cause);

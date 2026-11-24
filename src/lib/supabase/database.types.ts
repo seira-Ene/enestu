@@ -6,15 +6,34 @@ export type Database = {
   public: {
     Tables: {
       user_settings: {
-        Row: { device_id: string; world_id: string; updated_at: string };
-        Insert: { device_id: string; world_id: string; updated_at?: string };
-        Update: { device_id?: string; world_id?: string; updated_at?: string };
+        Row: {
+          id: string;
+          device_id: string | null;
+          user_id: string | null;
+          world_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          device_id?: string | null;
+          user_id?: string | null;
+          world_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          device_id?: string | null;
+          user_id?: string | null;
+          world_id?: string;
+          updated_at?: string;
+        };
         Relationships: [];
       };
       study_logs: {
         Row: {
           id: string;
-          device_id: string;
+          device_id: string | null;
+          user_id: string | null;
           subject: string;
           started_at: string;
           ended_at: string;
@@ -23,7 +42,8 @@ export type Database = {
         };
         Insert: {
           id: string;
-          device_id: string;
+          device_id?: string | null;
+          user_id?: string | null;
           subject: string;
           started_at: string;
           ended_at: string;
@@ -33,7 +53,8 @@ export type Database = {
         };
         Update: {
           id?: string;
-          device_id?: string;
+          device_id?: string | null;
+          user_id?: string | null;
           subject?: string;
           started_at?: string;
           ended_at?: string;
@@ -45,7 +66,8 @@ export type Database = {
       quiz_cards: {
         Row: {
           id: string;
-          device_id: string;
+          device_id: string | null;
+          user_id: string | null;
           subject: string;
           question: string;
           answer: string;
@@ -54,7 +76,8 @@ export type Database = {
         };
         Insert: {
           id: string;
-          device_id: string;
+          device_id?: string | null;
+          user_id?: string | null;
           subject: string;
           question: string;
           answer: string;
@@ -63,7 +86,8 @@ export type Database = {
         };
         Update: {
           id?: string;
-          device_id?: string;
+          device_id?: string | null;
+          user_id?: string | null;
           subject?: string;
           question?: string;
           answer?: string;
@@ -75,7 +99,8 @@ export type Database = {
       answer_logs: {
         Row: {
           id: string;
-          device_id: string;
+          device_id: string | null;
+          user_id: string | null;
           card_id: string;
           user_answer: string;
           is_correct: boolean;
@@ -85,7 +110,8 @@ export type Database = {
         };
         Insert: {
           id: string;
-          device_id: string;
+          device_id?: string | null;
+          user_id?: string | null;
           card_id: string;
           user_answer: string;
           is_correct: boolean;
@@ -95,7 +121,8 @@ export type Database = {
         };
         Update: {
           id?: string;
-          device_id?: string;
+          device_id?: string | null;
+          user_id?: string | null;
           card_id?: string;
           user_answer?: string;
           is_correct?: boolean;
@@ -111,11 +138,38 @@ export type Database = {
             referencedRelation: "quiz_cards";
             referencedColumns: ["id", "device_id"];
           },
+          {
+            foreignKeyName: "answer_logs_card_id_user_id_fkey";
+            columns: ["card_id", "user_id"];
+            isOneToOne: false;
+            referencedRelation: "quiz_cards";
+            referencedColumns: ["id", "user_id"];
+          },
         ];
       };
     };
     Views: { [_ in never]: never };
     Functions: {
+      claim_device_records: {
+        Args: { p_device_id: string; p_user_id: string };
+        Returns: { study_logs: number; cards: number; answers: number }[];
+      };
+      my_progress_totals: {
+        Args: Record<PropertyKey, never>;
+        Returns: { study_seconds: number; correct_count: number }[];
+      };
+      my_subject_stats: {
+        Args: { p_since: string };
+        Returns: {
+          subject: string;
+          study_seconds: number;
+          answer_count: number;
+          correct_count: number;
+          knowledge_count: number;
+          understanding_count: number;
+          careless_count: number;
+        }[];
+      };
       progress_totals: {
         Args: { p_device_id: string };
         Returns: { study_seconds: number; correct_count: number }[];

@@ -2,13 +2,12 @@ import { parseCardDraft } from "@/domain/quiz-input";
 import { parseUuid } from "@/domain/validation";
 import {
   badRequest,
-  readDeviceId,
   readJson,
   serverError,
   success,
 } from "@/lib/api-response";
+import { resolveOwner } from "@/lib/owner";
 import type { Database } from "@/lib/supabase/database.types";
-import { createSupabaseAdminClient } from "@/lib/supabase/server";
 
 type Context = RouteContext<"/api/cards/[id]">;
 type CardUpdate = Database["public"]["Tables"]["quiz_cards"]["Update"];
@@ -39,18 +38,18 @@ async function updateCard(
   action: string,
   values: CardUpdate,
 ): Promise<Response> {
-  const deviceId = readDeviceId(request);
-  if (!deviceId.ok) return badRequest(deviceId.error);
+  const owner = await resolveOwner(request);
+  if (!owner.ok) return owner.response;
   const { id } = await context.params;
   const cardId = parseUuid(id);
   if (!cardId.ok) return badRequest(cardId.error);
 
   try {
-    const { data, error } = await createSupabaseAdminClient()
+    const { data, error } = await owner.value.db
       .from("quiz_cards")
       .update(values)
       .eq("id", cardId.value)
-      .eq("device_id", deviceId.value)
+      .eq(owner.value.column, owner.value.id)
       .is("archived_at", null)
       .select("id");
     if (error) return serverError(action, error);

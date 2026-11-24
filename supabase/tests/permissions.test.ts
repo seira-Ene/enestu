@@ -17,10 +17,22 @@ const ACTIONS = ["SELECT", "INSERT", "UPDATE", "DELETE", "TRUNCATE"] as const;
 const TABLE_PRIVILEGES: Readonly<
   Record<string, Partial<Record<Role, readonly string[]>>>
 > = {
-  study_logs: { service_role: ["SELECT", "INSERT"] },
-  quiz_cards: { service_role: ["SELECT", "INSERT"] },
-  answer_logs: { service_role: ["SELECT", "INSERT"] },
-  user_settings: { service_role: ["SELECT", "INSERT", "UPDATE"] },
+  study_logs: {
+    authenticated: ["SELECT", "INSERT"],
+    service_role: ["SELECT", "INSERT"],
+  },
+  quiz_cards: {
+    authenticated: ["SELECT", "INSERT"],
+    service_role: ["SELECT", "INSERT"],
+  },
+  answer_logs: {
+    authenticated: ["SELECT", "INSERT"],
+    service_role: ["SELECT", "INSERT"],
+  },
+  user_settings: {
+    authenticated: ["SELECT", "INSERT"],
+    service_role: ["SELECT", "INSERT", "UPDATE"],
+  },
 };
 
 /** 列だけに許す更新。 */
@@ -28,15 +40,26 @@ const COLUMN_UPDATES: Readonly<
   Record<string, Partial<Record<Role, readonly string[]>>>
 > = {
   quiz_cards: {
+    authenticated: ["answer", "archived_at", "question", "subject"],
     service_role: ["answer", "archived_at", "question", "subject"],
   },
+  user_settings: { authenticated: ["updated_at", "user_id", "world_id"] },
 };
+
+/** RLSのポリシーは、どのテーブルも「ログインした本人の行だけ」の1つ。 */
+const OWN_ROWS = "(user_id = ( SELECT auth.uid() AS uid))";
 
 /** 関数を実行できるロール。 */
 const FUNCTION_ROLES: Readonly<Record<string, readonly Role[]>> = {
   subject_stats: ["service_role"],
   progress_totals: ["service_role"],
+  my_subject_stats: ["authenticated"],
+  my_progress_totals: ["authenticated"],
+  claim_device_records: ["service_role"],
 };
+
+/** 所有者の権限で動く関数。RLSを迂回するため、増やすときは理由を確かめる。 */
+const SECURITY_DEFINER: readonly string[] = ["claim_device_records"];
 
 const ROLES: readonly Role[] = ["anon", "authenticated", "service_role"];
 
@@ -58,6 +81,25 @@ describe("テーブル", () => {
          and not c.relrowsecurity`,
     );
     expect(rows).toEqual([]);
+  });
+
+  it("どのテーブルも、ポリシーはログインした本人の行だけを許す1つ", async () => {
+    const rows = await db.asOwner(
+      `select tablename, permissive, roles::text as roles, cmd, qual, with_check
+       from pg_policies where schemaname = 'public' order by tablename`,
+    );
+    expect(rows).toEqual(
+      Object.keys(TABLE_PRIVILEGES)
+        .sort()
+        .map((tablename) => ({
+          tablename,
+          permissive: "PERMISSIVE",
+          roles: "{authenticated}",
+          cmd: "ALL",
+          qual: OWN_ROWS,
+          with_check: OWN_ROWS,
+        })),
+    );
   });
 
   it.each(
@@ -124,6 +166,15 @@ describe("関数", () => {
     },
   );
 
+  it("所有者の権限で動く関数が、決めたものだけ", async () => {
+    const rows = await db.asOwner(
+      `select p.proname from pg_proc p
+       join pg_namespace n on n.oid = p.pronamespace
+       where n.nspname = 'public' and p.prosecdef order by 1`,
+    );
+    expect(rows.map((row) => row.proname)).toEqual(SECURITY_DEFINER);
+  });
+
   it("参照先を乗っ取られないよう、search_path を固定している", async () => {
     const rows = await db.asOwner(
       `select p.proname from pg_proc p
@@ -136,18 +187,26 @@ describe("関数", () => {
 });
 
 describe("実際の操作", () => {
-  it.each(["anon", "authenticated"] as const)(
-    "%s は、どのテーブルも読み書きできない",
-    async (role) => {
-      for (const table of Object.keys(TABLE_PRIVILEGES)) {
-        for (const sql of [
-          `select * from public.${table}`,
-          `delete from public.${table}`,
-          `insert into public.${table} default values`,
-        ]) {
-          expect(await db.errorCode(role, sql)).toBe(SQLSTATE.permissionDenied);
-        }
+  it.each(Object.keys(TABLE_PRIVILEGES))(
+    "未ログインでは、%s を読み書きできない",
+    async (table) => {
+      for (const sql of [
+        `select * from public.${table}`,
+        `delete from public.${table}`,
+        `insert into public.${table} default values`,
+      ]) {
+        expect(await db.errorCode("anon", sql)).toBe(SQLSTATE.permissionDenied);
       }
+    },
+  );
+
+  it.each(Object.keys(TABLE_PRIVILEGES))(
+    "ログインしていても、%s の行は消せない",
+    async (table) => {
+      const user = await db.createUser();
+      expect(
+        await db.errorCode({ user }, `delete from public.${table}`),
+      ).toBe(SQLSTATE.permissionDenied);
     },
   );
 });
