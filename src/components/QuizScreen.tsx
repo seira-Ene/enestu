@@ -160,9 +160,11 @@ export function QuizScreen() {
       <CharacterPanel theme={theme} mood={quizMood(moment)} lines={[cheer]} />
       {run !== null && current === undefined && (
         <LevelUpBanner
-          theme={theme.progress}
+          theme={theme}
           totals={progress.data}
           previousLevel={run.startLevel}
+          // 全問正解なら、結果の欄に絵が出る。
+          hasArt={moment !== "perfect"}
         />
       )}
 
@@ -197,7 +199,7 @@ export function QuizScreen() {
 
       {run !== null && current === undefined && (
         <QuizResult
-          terms={theme.quiz.terms}
+          theme={theme}
           score={scoreQuiz(run.results)}
           onRetry={startQuiz}
           onFinish={() => setRun(null)}

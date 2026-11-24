@@ -41,14 +41,21 @@ export type ThemeDecor = {
 /** キャラクターの表情：ふだん／うれしい／心配。 */
 export type CharacterMood = "normal" | "happy" | "worried";
 
+/** public/ に置いた絵のパス。 */
+export type CharacterImages = {
+  /** 正方形の顔。丸く切り抜いて使う。 */
+  readonly face: string;
+  /** 16:10 の一枚絵。 */
+  readonly scene: string;
+  /** 8:3 の横長の絵。 */
+  readonly banner: string;
+};
+
 export type ThemeCharacter = {
   readonly name: string;
   readonly introduction: string;
-  /**
-   * 自前の画像に差し替える場合の、表情ごとのパス（例："/characters/otome.png"）。
-   * null なら src/components/characters のSVGを使う。
-   */
-  readonly images: Readonly<Record<CharacterMood, string>> | null;
+  /** null なら src/components/characters のSVGを使う。 */
+  readonly images: CharacterImages | null;
 };
 
 /** 1つ以上のセリフ。空配列は型エラーになる。 */

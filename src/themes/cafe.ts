@@ -21,9 +21,13 @@ export const cafe = {
     ornament: "☕︎",
   },
   character: {
-    name: "モカ",
+    name: "ひより",
     introduction: "のんびり屋だけど、味には妥協しない店員。",
-    images: null,
+    images: {
+      face: "/characters/cafe-face.webp",
+      scene: "/characters/cafe-scene.webp",
+      banner: "/characters/cafe-banner.webp",
+    },
   },
   cheers: {
     welcome: [

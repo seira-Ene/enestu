@@ -23,7 +23,7 @@ import { fetchProgress } from "@/lib/progress-api";
 import { fetchStats } from "@/lib/stats-api";
 import { fetchTodayLogs, saveStudyLog } from "@/lib/study-log-api";
 import { useRemote } from "@/lib/use-remote";
-import { CharacterPanel } from "./CharacterPanel";
+import { CharacterHero } from "./CharacterHero";
 import { DailyQuest } from "./DailyQuest";
 import { LevelPanel } from "./LevelPanel";
 import { LevelUpBanner } from "./LevelUpBanner";
@@ -166,11 +166,13 @@ export function StudyScreen() {
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-5 px-4 py-6">
       <ScreenHeader title="エネスタ" subtitle={theme.tagline} />
-      <CharacterPanel theme={theme} mood={studyMood(status)} lines={lines} />
+      <CharacterHero theme={theme} mood={studyMood(status)} lines={lines} />
       <LevelUpBanner
-        theme={theme.progress}
+        theme={theme}
         totals={progress.data}
         previousLevel={previousLevel}
+        // すぐ上に同じ絵がある。
+        hasArt={false}
       />
       <DailyQuest theme={theme.quest} remote={stats} />
       <StudyTimer

@@ -23,7 +23,11 @@ export const dungeon = {
   character: {
     name: "リュカ",
     introduction: "知識の迷宮を案内する、見習いの灯守り。",
-    images: null,
+    images: {
+      face: "/characters/dungeon-face.webp",
+      scene: "/characters/dungeon-scene.webp",
+      banner: "/characters/dungeon-banner.webp",
+    },
   },
   cheers: {
     welcome: [
