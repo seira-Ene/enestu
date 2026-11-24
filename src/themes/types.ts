@@ -26,6 +26,8 @@ export type ThemeColors = {
 
 export type ThemeCharacter = {
   readonly name: string;
+  /** キャラクターの見た目（イラストを用意するまでの仮）。 */
+  readonly emoji: string;
   readonly introduction: string;
 };
 

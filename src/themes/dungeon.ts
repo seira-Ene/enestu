@@ -12,6 +12,7 @@ export const dungeon = {
   },
   character: {
     name: "リュカ",
+    emoji: "🏮",
     introduction: "知識の迷宮を案内する、見習いの灯守り。",
   },
   cheers: {
