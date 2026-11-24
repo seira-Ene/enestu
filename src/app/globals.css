@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+/* 値は src/themes の定義から layout.tsx が --theme-* として注入する */
+@theme inline {
+  --color-primary: var(--theme-primary);
+  --color-background: var(--theme-background);
+  --color-surface: var(--theme-surface);
+  --color-text: var(--theme-text);
+  --color-accent: var(--theme-accent);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--theme-background);
+  color: var(--theme-text);
+}
