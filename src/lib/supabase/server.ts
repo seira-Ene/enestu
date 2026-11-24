@@ -5,7 +5,7 @@ import { requireEnv } from "./env";
 
 /**
  * Route Handler 専用。secret key はRLSを迂回するため、
- * 呼び出し側で入力検証と端末IDによる絞り込みを必ず行う。
+ * 呼び出し側で入力検証と持ち主による絞り込みを必ず行う。
  */
 export function createSupabaseAdminClient() {
   return createClient<Database>(

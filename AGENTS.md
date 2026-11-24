@@ -53,12 +53,12 @@ clone直後はNext.jsの型が未生成のため、`npx tsc --noEmit` の代わ�
 
 | 場所 | 役割 |
 |---|---|
-| `src/app/` | 画面とRoute Handler |
+| `src/app/` | 画面とRoute Handler（ログインは `auth/`、APIは `api/`） |
 | `src/components/` | 世界線に依存しない共通UI |
 | `src/domain/` | 計算ロジックの純粋関数 |
 | `src/themes/` | 世界線のテーマ定義 |
 | `src/lib/fonts/` | 世界線ごとのフォント |
-| `src/lib/supabase/` | Supabase接続とDBの型 |
+| `src/lib/supabase/` | Supabase接続、ログインの検証、DBの型 |
 | `supabase/migrations/` | DBスキーマの変更履歴（SQL） |
 | `supabase/tests/` | DBの権限・制約・集計のテスト（PGlite） |
 | `docs/agents/` | 作業手順ごとの規範 |
@@ -80,8 +80,11 @@ clone直後はNext.jsの型が未生成のため、`npx tsc --noEmit` の代わ�
 - 追加手順は [docs/agents/add-world.md](docs/agents/add-world.md) に従う。
 
 ### データアクセス
-- 認証を導入する第5週までは、RLSを有効にして許可ポリシーを置かず、Route Handler経由でだけ読み書きする。
-- Route Handlerでは入力を検証し、必ず端末IDで絞り込む。
+- 画面からDBへ直接つながず、Route Handler経由でだけ読み書きする。
+- 記録の持ち主は「端末」（未ログイン）か「利用者」（ログイン中）のどちらか1つ。`src/lib/owner.ts` の `resolveOwner` で決め、入力を検証し、必ず持ち主で絞り込む。
+- 利用者の記録は本人のトークンで接続し、RLSで本人の行だけに制限する。secret key を使うのは、端末の記録と引き継ぎだけ。
+- 画面の認識と実際のログインが食い違ったら、保存せずに止める。
+- 持ち主を移すのは `claim_device_records` だけ。所有者の権限で動く関数（security definer）を増やすときは、計画に理由を書く。
 - スキーマを変えたら `database.types.ts` を生成し直す。
 - テーブル・関数・権限を変えたら、`supabase/tests/` の一覧と検査も更新する。
 

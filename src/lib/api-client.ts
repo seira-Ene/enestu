@@ -1,3 +1,4 @@
+import { getPageAccountId } from "./account-marker";
 import { getDeviceId } from "./device-id";
 
 /** 画面から自前のAPIを呼ぶための共通処理。 */
@@ -77,7 +78,7 @@ async function request(
   try {
     const response = await fetch(endpoint, {
       ...init,
-      headers: { ...init.headers, "x-device-id": getDeviceId() },
+      headers: { ...init.headers, ...ownerHeaders() },
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
     const body: unknown = await response.json();
@@ -94,6 +95,15 @@ async function request(
       error: "通信できませんでした。接続を確認してください。",
     };
   }
+}
+
+/** 誰の記録として扱ってほしいか。実際のログインと違えば、サーバーが止める。 */
+function ownerHeaders(): Record<string, string> {
+  const accountId = getPageAccountId();
+  return {
+    "x-device-id": getDeviceId(),
+    ...(accountId !== null && { "x-account-id": accountId }),
+  };
 }
 
 function readField(value: unknown, key: string): unknown {

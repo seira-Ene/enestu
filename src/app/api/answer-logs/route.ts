@@ -3,21 +3,20 @@ import { parseAnswerLogInput } from "@/domain/quiz-input";
 import {
   badRequest,
   created,
-  readDeviceId,
   readJson,
   serverError,
   success,
 } from "@/lib/api-response";
-import { createSupabaseAdminClient } from "@/lib/supabase/server";
+import { resolveOwner } from "@/lib/owner";
 
 const HISTORY_LIMIT = 20;
-/** PostgreSQLの外部キー違反。カードがないか、他の端末のカード。 */
+/** PostgreSQLの外部キー違反。カードがないか、他の人のカード。 */
 const FOREIGN_KEY_VIOLATION = "23503";
 
 /** 解答を1件記録する。 */
 export async function POST(request: Request): Promise<Response> {
-  const deviceId = readDeviceId(request);
-  if (!deviceId.ok) return badRequest(deviceId.error);
+  const owner = await resolveOwner(request);
+  if (!owner.ok) return owner.response;
 
   const body = await readJson(request);
   const input = parseAnswerLogInput(body, new Date());
@@ -26,12 +25,12 @@ export async function POST(request: Request): Promise<Response> {
   const action = "解答の保存";
   try {
     // 同じidの再送は無視し、二重登録を防ぐ。
-    const { error } = await createSupabaseAdminClient()
+    const { error } = await owner.value.db
       .from("answer_logs")
       .upsert(
         {
           id: input.value.id,
-          device_id: deviceId.value,
+          ...owner.value.columns,
           card_id: input.value.cardId,
           user_answer: input.value.userAnswer,
           is_correct: input.value.isCorrect,
@@ -49,17 +48,17 @@ export async function POST(request: Request): Promise<Response> {
   }
 }
 
-/** この端末の直近の解答を新しい順に返す。 */
+/** 自分の直近の解答を新しい順に返す。 */
 export async function GET(request: Request): Promise<Response> {
-  const deviceId = readDeviceId(request);
-  if (!deviceId.ok) return badRequest(deviceId.error);
+  const owner = await resolveOwner(request);
+  if (!owner.ok) return owner.response;
 
   const action = "解答履歴の取得";
   try {
-    const { data, error } = await createSupabaseAdminClient()
+    const { data, error } = await owner.value.db
       .from("answer_logs")
       .select("id, card_id, user_answer, is_correct, mistake_reason, answered_at")
-      .eq("device_id", deviceId.value)
+      .eq(owner.value.column, owner.value.id)
       .order("answered_at", { ascending: false })
       .limit(HISTORY_LIMIT);
     if (error) return serverError(action, error);
