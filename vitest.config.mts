@@ -7,6 +7,9 @@ export default defineConfig({
   },
   test: {
     environment: "node",
-    include: ["src/**/*.test.{ts,tsx}"],
+    include: ["src/**/*.test.{ts,tsx}", "supabase/tests/**/*.test.ts"],
+    // DBのテストは、最初にDBを作るため時間がかかる。
+    testTimeout: 30_000,
+    hookTimeout: 30_000,
   },
 });
