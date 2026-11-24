@@ -24,7 +24,7 @@ export function CharacterHero({ theme, mood, lines }: Props) {
           mood === "happy" ? "motion-safe:animate-hop" : ""
         }`}
       >
-        <CharacterArt theme={theme} kind="scene" />
+        <CharacterArt theme={theme} kind="hero" />
       </div>
       <SpeechBubble name={name} lines={lines} className="mx-3 -mt-5" />
     </section>

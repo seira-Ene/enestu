@@ -174,7 +174,6 @@ export function StudyScreen() {
         // すぐ上に同じ絵がある。
         hasArt={false}
       />
-      <DailyQuest theme={theme.quest} remote={stats} />
       <StudyTimer
         terms={theme.terms}
         phase={toPhase(session, isSaving)}
@@ -187,6 +186,7 @@ export function StudyScreen() {
         onRetry={() => void save()}
         onDiscard={handleDiscard}
       />
+      <DailyQuest theme={theme.quest} remote={stats} />
       <StudyHistory
         terms={theme.terms}
         logs={todayLogs}
