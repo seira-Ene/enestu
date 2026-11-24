@@ -10,6 +10,7 @@ export function BottomNav({ terms }: { terms: ThemeTerms }) {
     { href: "/", label: terms.navTimer, plain: "タイマー" },
     { href: "/cards", label: terms.navCards, plain: "カード" },
     { href: "/quiz", label: terms.navQuiz, plain: "テスト" },
+    { href: "/stats", label: terms.navStats, plain: "集計" },
   ];
 
   return (

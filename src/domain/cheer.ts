@@ -1,4 +1,5 @@
-import type { QuizCheers, ThemeCheers } from "@/themes/types";
+import type { QuestLines, QuizCheers, ThemeCheers } from "@/themes/types";
+import type { Quest } from "./weakness";
 
 /** 待機中／計測中／記録完了。 */
 export type StudyStatus = "idle" | "running" | "saved";
@@ -48,6 +49,24 @@ export function selectQuizCheer(
   seed: number,
 ): string {
   return pickLine(cheers[moment], seed);
+}
+
+/** 今日のクエストの案内文を返す。達成していれば、種類によらず達成の文。 */
+export function selectQuestLine(
+  lines: QuestLines,
+  quest: Quest,
+  isAchieved: boolean,
+): string {
+  if (isAchieved) return lines.achieved;
+  switch (quest.kind) {
+    case "weak":
+    case "neglected":
+      // 関数で置き換え、科目名の「$」などを特別扱いさせない。
+      return lines[quest.kind].replaceAll("{subject}", () => quest.subject);
+    case "starter":
+    case "clear":
+      return lines[quest.kind];
+  }
 }
 
 function pickLine(

@@ -1,5 +1,6 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { selectCheers, type StudyStatus } from "@/domain/cheer";
 import { parseSubject } from "@/domain/validation";
@@ -16,16 +17,30 @@ import {
   useActiveSession,
   type ActiveSession,
 } from "@/lib/active-session";
+import { fetchStats } from "@/lib/stats-api";
 import { fetchTodayLogs, saveStudyLog } from "@/lib/study-log-api";
+import { useRemote } from "@/lib/use-remote";
 import type { WorldTheme } from "@/themes/types";
 import { CharacterPanel } from "./CharacterPanel";
+import { DailyQuest } from "./DailyQuest";
 import { StudyHistory } from "./StudyHistory";
 import { StudyTimer, type TimerPhase } from "./StudyTimer";
 
 export function StudyScreen({ theme }: { theme: WorldTheme }) {
   const session = useActiveSession();
   const now = useNow();
-  const [subjectInput, setSubjectInput] = useState("");
+  const stats = useRemote(fetchStats);
+  /** URLの ?subject= で指定された科目。 */
+  const requested = useSearchParams().get("subject");
+  /** 入力した科目名。URLの指定が変わったら無効になる。 */
+  const [typed, setTyped] = useState<{
+    requested: string | null;
+    subject: string;
+  } | null>(null);
+  const subjectInput =
+    typed !== null && typed.requested === requested
+      ? typed.subject
+      : (requested ?? "");
   const [logs, setLogs] = useState<StudyLog[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -105,9 +120,9 @@ export function StudyScreen({ theme }: { theme: WorldTheme }) {
       setIsSaving(false);
       return;
     }
-    await loadLogs();
+    await Promise.all([loadLogs(), stats.reload()]);
     if (getActiveSession()?.id === current.id) setActiveSession(null);
-    setSubjectInput(current.subject);
+    setTyped({ requested, subject: current.subject });
     setLastSaved(current);
     setIsSaving(false);
   }
@@ -136,13 +151,14 @@ export function StudyScreen({ theme }: { theme: WorldTheme }) {
         <p className="text-sm text-accent">{theme.displayName}</p>
       </header>
       <CharacterPanel character={theme.character} lines={lines} />
+      <DailyQuest theme={theme.quest} remote={stats} />
       <StudyTimer
         terms={theme.terms}
         phase={toPhase(session, isSaving)}
         subject={session?.subject ?? subjectInput}
         seconds={toSeconds(session, now)}
         message={message}
-        onSubjectChange={setSubjectInput}
+        onSubjectChange={(subject) => setTyped({ requested, subject })}
         onStart={handleStart}
         onStop={handleStop}
         onRetry={() => void save()}

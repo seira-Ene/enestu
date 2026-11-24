@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
-import type { QuizCheers, ThemeCheers } from "@/themes/types";
-import { selectCheers, selectQuizCheer } from "./cheer";
+import type { QuestLines, QuizCheers, ThemeCheers } from "@/themes/types";
+import { selectCheers, selectQuestLine, selectQuizCheer } from "./cheer";
+import type { Quest } from "./weakness";
 
 const cheers: ThemeCheers = {
   welcome: ["ようこそA", "ようこそB"],
@@ -70,5 +71,31 @@ describe("selectQuizCheer", () => {
   it("seedでセリフが変わる", () => {
     expect(selectQuizCheer(quizCheers, "setup", 0)).toBe("準備A");
     expect(selectQuizCheer(quizCheers, "setup", 1)).toBe("準備B");
+  });
+});
+
+describe("selectQuestLine", () => {
+  const lines: QuestLines = {
+    weak: "{subject}が苦手。{subject}を解こう",
+    neglected: "{subject}が不足",
+    starter: "まず解こう",
+    clear: "苦手なし",
+    achieved: "達成",
+  };
+
+  it("種類に応じた文に、科目名を埋め込む", () => {
+    const line = (quest: Quest) => selectQuestLine(lines, quest, false);
+    expect(line({ kind: "weak", subject: "数学" })).toBe(
+      "数学が苦手。数学を解こう",
+    );
+    expect(line({ kind: "neglected", subject: "$&" })).toBe("$&が不足");
+    expect(line({ kind: "starter" })).toBe("まず解こう");
+    expect(line({ kind: "clear" })).toBe("苦手なし");
+  });
+
+  it("達成したら達成の文にする", () => {
+    expect(
+      selectQuestLine(lines, { kind: "weak", subject: "数学" }, true),
+    ).toBe("達成");
   });
 });

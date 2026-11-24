@@ -61,6 +61,11 @@ export function formatJstTime(iso: string): string {
   return new Date(Date.parse(iso) + JST_OFFSET_MS).toISOString().slice(11, 16);
 }
 
+/** 日本時間の日付「2026-11-24」。 */
+export function jstDateKey(now: Date): string {
+  return new Date(now.getTime() + JST_OFFSET_MS).toISOString().slice(0, 10);
+}
+
 /** 日本時間の「11/24 14:05」。 */
 export function formatJstDateTime(iso: string): string {
   const jst = new Date(Date.parse(iso) + JST_OFFSET_MS);

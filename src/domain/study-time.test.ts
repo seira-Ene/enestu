@@ -6,6 +6,7 @@ import {
   formatDuration,
   formatJstDateTime,
   formatJstTime,
+  jstDateKey,
   jstDayRange,
   sumTodaySeconds,
   type StudyLog,
@@ -118,6 +119,13 @@ describe("formatClock", () => {
     [360000, "100:00:00"],
   ])("%s秒 → %s", (seconds, expected) => {
     expect(formatClock(seconds)).toBe(expected);
+  });
+});
+
+describe("jstDateKey", () => {
+  it("日本時間の0時で日付が変わる", () => {
+    expect(jstDateKey(new Date("2026-11-24T14:59:59.999Z"))).toBe("2026-11-24");
+    expect(jstDateKey(new Date("2026-11-24T15:00:00Z"))).toBe("2026-11-25");
   });
 });
 

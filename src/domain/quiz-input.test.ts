@@ -59,6 +59,7 @@ describe("parseAnswerLogInput", () => {
     cardId: card.id,
     userAnswer: "固有値",
     isCorrect: true,
+    mistakeReason: null,
     answeredAt: "2026-11-24T03:00:00.000Z",
   };
   const isOk = (overrides: object) =>
@@ -90,6 +91,25 @@ describe("parseAnswerLogInput", () => {
     expect(isOk({ userAnswer: "", isCorrect: false })).toBe(true);
     expect(isOk({ userAnswer: "", isCorrect: true })).toBe(false);
     expect(isOk({ userAnswer: null, isCorrect: false })).toBe(false);
+  });
+
+  it("誤答原因は、不正解のときだけ3種類を受け付ける", () => {
+    for (const mistakeReason of ["knowledge", "understanding", "careless"]) {
+      expect(isOk({ isCorrect: false, mistakeReason })).toBe(true);
+      expect(isOk({ isCorrect: true, mistakeReason })).toBe(false);
+    }
+    for (const mistakeReason of ["other", "", 1, true, {}]) {
+      expect(isOk({ isCorrect: false, mistakeReason })).toBe(false);
+    }
+  });
+
+  it("誤答原因の省略は、未分類（null）にする", () => {
+    const body: Record<string, unknown> = { ...valid, isCorrect: false };
+    delete body.mistakeReason;
+    expect(parseAnswerLogInput(body, now)).toEqual({
+      ok: true,
+      value: { ...valid, isCorrect: false, mistakeReason: null },
+    });
   });
 
   it("解答は100文字まで", () => {

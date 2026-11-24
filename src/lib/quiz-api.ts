@@ -1,4 +1,4 @@
-import type { AnswerLog, QuizCard } from "@/domain/quiz";
+import { isMistakeReason, type AnswerLog, type QuizCard } from "@/domain/quiz";
 import { getList, postJson, type ApiResult } from "./api-client";
 
 const CARDS_ENDPOINT = "/api/cards";
@@ -39,6 +39,7 @@ function isAnswerLog(value: unknown): value is AnswerLog {
     typeof fields.cardId === "string" &&
     typeof fields.userAnswer === "string" &&
     typeof fields.isCorrect === "boolean" &&
+    (fields.mistakeReason === null || isMistakeReason(fields.mistakeReason)) &&
     typeof fields.answeredAt === "string"
   );
 }

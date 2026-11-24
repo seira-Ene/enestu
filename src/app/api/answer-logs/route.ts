@@ -1,4 +1,4 @@
-import type { AnswerLog } from "@/domain/quiz";
+import { isMistakeReason, type AnswerLog } from "@/domain/quiz";
 import { parseAnswerLogInput } from "@/domain/quiz-input";
 import {
   badRequest,
@@ -35,6 +35,7 @@ export async function POST(request: Request): Promise<Response> {
           card_id: input.value.cardId,
           user_answer: input.value.userAnswer,
           is_correct: input.value.isCorrect,
+          mistake_reason: input.value.mistakeReason,
           answered_at: input.value.answeredAt,
         },
         { onConflict: "id", ignoreDuplicates: true },
@@ -57,7 +58,7 @@ export async function GET(request: Request): Promise<Response> {
   try {
     const { data, error } = await createSupabaseAdminClient()
       .from("answer_logs")
-      .select("id, card_id, user_answer, is_correct, answered_at")
+      .select("id, card_id, user_answer, is_correct, mistake_reason, answered_at")
       .eq("device_id", deviceId.value)
       .order("answered_at", { ascending: false })
       .limit(HISTORY_LIMIT);
@@ -68,6 +69,9 @@ export async function GET(request: Request): Promise<Response> {
       cardId: row.card_id,
       userAnswer: row.user_answer,
       isCorrect: row.is_correct,
+      mistakeReason: isMistakeReason(row.mistake_reason)
+        ? row.mistake_reason
+        : null,
       answeredAt: row.answered_at,
     }));
     return success({ logs });

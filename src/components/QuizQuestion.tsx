@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import type { QuizCard } from "@/domain/quiz";
+import type { MistakeReason, QuizCard } from "@/domain/quiz";
 import {
   ALERT,
   PANEL,
@@ -7,12 +7,15 @@ import {
   SECONDARY_BUTTON,
   TEXT_INPUT,
 } from "./form-styles";
+import { MistakeReasonPicker } from "./MistakeReasonPicker";
 
 /** 答え合わせの結果。判定は記録する前なら直せる。 */
 export type Judged = {
   readonly userAnswer: string;
   readonly isAutoCorrect: boolean;
   readonly isCorrect: boolean;
+  /** 正解のときは使わない。 */
+  readonly mistakeReason: MistakeReason | null;
 };
 
 type Props = {
@@ -25,6 +28,7 @@ type Props = {
   error: string | null;
   onAnswer: (answer: string) => void;
   onToggleCorrect: () => void;
+  onReasonChange: (reason: MistakeReason | null) => void;
   onNext: () => void;
 };
 
@@ -37,9 +41,13 @@ export function QuizQuestion({
   error,
   onAnswer,
   onToggleCorrect,
+  onReasonChange,
   onNext,
 }: Props) {
   const [answer, setAnswer] = useState("");
+  // 一度送った後は変えられない。サーバーに届いていた場合に、
+  // 画面と記録が食い違うため。
+  const isLocked = isSaving || error !== null;
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -114,13 +122,18 @@ export function QuizQuestion({
             <button
               type="button"
               onClick={onToggleCorrect}
-              // 一度送った後は変えられない。サーバーに届いていた場合に、
-              // 画面と記録の正誤が食い違うため。
-              disabled={isSaving || error !== null}
+              disabled={isLocked}
               className={SECONDARY_BUTTON}
             >
               {judged.isCorrect ? "不正解に戻す" : "正解にする"}
             </button>
+          )}
+          {!judged.isCorrect && (
+            <MistakeReasonPicker
+              value={judged.mistakeReason}
+              disabled={isLocked}
+              onChange={onReasonChange}
+            />
           )}
           {error !== null && (
             <p role="alert" className={ALERT}>

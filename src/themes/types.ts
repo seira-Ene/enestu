@@ -52,10 +52,11 @@ export type ThemeTerms = {
   readonly stopTimer: string;
   readonly todayTotal: string;
   readonly history: string;
-  /** 画面下のナビに出す、3画面の呼び方。 */
+  /** 画面下のナビに出す、各画面の呼び方。 */
   readonly navTimer: string;
   readonly navCards: string;
   readonly navQuiz: string;
+  readonly navStats: string;
 };
 
 export type QuizTerms = {
@@ -94,6 +95,24 @@ export type ThemeQuiz = {
   readonly stage: QuizStageTheme;
 };
 
+/** 科目名を埋め込む {subject} を必ず含む。 */
+export type SubjectLine = `${string}{subject}${string}`;
+
+/** 今日のクエストの案内文。 */
+export type QuestLines = {
+  readonly weak: SubjectLine;
+  readonly neglected: SubjectLine;
+  readonly starter: string;
+  readonly clear: string;
+  readonly achieved: string;
+};
+
+export type ThemeQuest = {
+  readonly title: string;
+  readonly start: string;
+  readonly lines: QuestLines;
+};
+
 export type WorldTheme = {
   readonly id: WorldId;
   readonly displayName: string;
@@ -102,6 +121,7 @@ export type WorldTheme = {
   readonly cheers: ThemeCheers;
   readonly terms: ThemeTerms;
   readonly quiz: ThemeQuiz;
+  readonly quest: ThemeQuest;
 };
 
 export type ThemeCssVarName = `--theme-${keyof ThemeColors}`;

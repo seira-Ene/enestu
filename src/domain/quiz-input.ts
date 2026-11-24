@@ -1,4 +1,4 @@
-import type { AnswerLog, QuizCard } from "./quiz";
+import { isMistakeReason, type AnswerLog, type QuizCard } from "./quiz";
 import {
   fail,
   isTooFarInFuture,
@@ -84,6 +84,14 @@ export function parseAnswerLogInput(
   if (isCorrect && userAnswer.value === "") {
     return fail("解答が空の問題は、正解にできません。");
   }
+  // 省略は未分類として扱う。
+  const mistakeReason = fields.mistakeReason ?? null;
+  if (mistakeReason !== null && !isMistakeReason(mistakeReason)) {
+    return fail("誤答原因の形式が正しくありません。");
+  }
+  if (isCorrect && mistakeReason !== null) {
+    return fail("正解の問題に、誤答原因は付けられません。");
+  }
   const answered = parseIsoUtc(fields.answeredAt);
   if (!answered.ok) return answered;
   if (isTooFarInFuture(answered.value, now)) {
@@ -97,6 +105,7 @@ export function parseAnswerLogInput(
       cardId: cardId.value,
       userAnswer: userAnswer.value,
       isCorrect,
+      mistakeReason,
       answeredAt: new Date(answered.value).toISOString(),
     },
   };

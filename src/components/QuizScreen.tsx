@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useLayoutEffect, useState } from "react";
 import { judgeAnswer } from "@/domain/answer-judge";
 import { selectQuizCheer, type QuizMoment } from "@/domain/cheer";
 import {
@@ -10,6 +11,7 @@ import {
   rankQuiz,
   scoreQuiz,
   selectQuizCards,
+  type MistakeReason,
   type QuizCard,
 } from "@/domain/quiz";
 import { parseUserAnswer } from "@/domain/quiz-input";
@@ -34,17 +36,39 @@ type QuizRun = {
 export function QuizScreen({ theme }: { theme: WorldTheme }) {
   const cards = useRemote(fetchCards);
   const history = useRemote(fetchAnswerLogs);
-  /** null なら全科目。 */
-  const [subject, setSubject] = useState<string | null>(null);
+  /** URLの ?subject= で指定された科目。 */
+  const requested = useSearchParams().get("subject");
+  /** 画面で選び直した科目。URLの指定が変わったら無効になる。 */
+  const [choice, setChoice] = useState<{
+    requested: string | null;
+    subject: string | null;
+  } | null>(null);
   const [run, setRun] = useState<QuizRun | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // 別の画面へ移ったら、終わったテストの結果は片付ける。
+  useLayoutEffect(() => {
+    return () => setRun((current) => (isFinished(current) ? null : current));
+  }, []);
+
   const allCards = cards.data ?? [];
+  const subjects = listSubjects(allCards);
+  /** null なら全科目。 */
+  const subject =
+    choice !== null && choice.requested === requested
+      ? choice.subject
+      : requested;
+  const isSubjectMissing =
+    cards.data !== null && subject !== null && !subjects.includes(subject);
   const current = run === null ? undefined : run.queue[run.results.length];
 
   function startQuiz() {
-    const queue = selectQuizCards(allCards, subject, Math.random);
+    const queue = selectQuizCards(
+      allCards,
+      isSubjectMissing ? null : subject,
+      Math.random,
+    );
     if (queue.length === 0) return;
     setError(null);
     setRun({ queue, results: [], judged: null });
@@ -66,6 +90,8 @@ export function QuizScreen({ theme }: { theme: WorldTheme }) {
         userAnswer: answer.value,
         isAutoCorrect: isCorrect,
         isCorrect,
+        // 「わからない」は知識不足を初期選択にする。
+        mistakeReason: answer.value === "" ? "knowledge" : null,
         answeredAt: new Date().toISOString(),
       },
     });
@@ -77,9 +103,14 @@ export function QuizScreen({ theme }: { theme: WorldTheme }) {
     setRun({ ...run, judged: { ...judged, isCorrect: !judged.isCorrect } });
   }
 
+  function handleReasonChange(mistakeReason: MistakeReason | null) {
+    if (run === null || run.judged === null) return;
+    setRun({ ...run, judged: { ...run.judged, mistakeReason } });
+  }
+
   async function handleNext() {
     if (run === null || run.judged === null || current === undefined) return;
-    const { id, userAnswer, isCorrect, answeredAt } = run.judged;
+    const { id, userAnswer, isCorrect, mistakeReason, answeredAt } = run.judged;
     setIsSaving(true);
     setError(null);
     const result = await saveAnswerLog({
@@ -87,6 +118,7 @@ export function QuizScreen({ theme }: { theme: WorldTheme }) {
       cardId: current.id,
       userAnswer,
       isCorrect,
+      mistakeReason: isCorrect ? null : mistakeReason,
       answeredAt,
     });
     setIsSaving(false);
@@ -136,6 +168,7 @@ export function QuizScreen({ theme }: { theme: WorldTheme }) {
           error={error}
           onAnswer={handleAnswer}
           onToggleCorrect={handleToggleCorrect}
+          onReasonChange={handleReasonChange}
           onNext={() => void handleNext()}
         />
       )}
@@ -176,19 +209,26 @@ export function QuizScreen({ theme }: { theme: WorldTheme }) {
           )}
           {allCards.length > 0 && (
             <>
+              {isSubjectMissing && (
+                <p role="status" className="break-words">
+                  「{subject}」のカードはまだありません。すべての科目から出題します。
+                </p>
+              )}
               <label className="flex flex-col gap-1">
                 <span className="text-sm text-accent">出題する科目</span>
                 <select
-                  value={subject ?? ""}
+                  value={isSubjectMissing ? "" : (subject ?? "")}
                   onChange={(event) =>
-                    setSubject(
-                      event.target.value === "" ? null : event.target.value,
-                    )
+                    setChoice({
+                      requested,
+                      subject:
+                        event.target.value === "" ? null : event.target.value,
+                    })
                   }
                   className={TEXT_INPUT}
                 >
                   <option value="">すべて</option>
-                  {listSubjects(allCards).map((name) => (
+                  {subjects.map((name) => (
                     <option key={name} value={name}>
                       {name}
                     </option>
@@ -220,6 +260,10 @@ export function QuizScreen({ theme }: { theme: WorldTheme }) {
   );
 }
 
+function isFinished(run: QuizRun | null): boolean {
+  return run !== null && run.results.length === run.queue.length;
+}
+
 function countCorrect(run: QuizRun): number {
   const { correct } = scoreQuiz(run.results);
   return run.judged?.isCorrect ? correct + 1 : correct;
@@ -227,7 +271,7 @@ function countCorrect(run: QuizRun): number {
 
 function toMoment(run: QuizRun | null): QuizMoment {
   if (run === null) return "setup";
-  if (run.results.length === run.queue.length) {
+  if (isFinished(run)) {
     return rankQuiz(scoreQuiz(run.results));
   }
   if (run.judged === null) return "start";

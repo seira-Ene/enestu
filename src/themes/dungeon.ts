@@ -43,6 +43,7 @@ export const dungeon = {
     navTimer: "冒険",
     navCards: "巻物",
     navQuiz: "番人戦",
+    navStats: "地図",
   },
   quiz: {
     terms: {
@@ -86,6 +87,17 @@ export const dungeon = {
       clearedMessage: "番人を撃破！",
       gaugeLabel: "番人の体力",
       gaugeDirection: "drain",
+    },
+  },
+  quest: {
+    title: "今日のクエスト",
+    start: "クエストに挑む",
+    lines: {
+      weak: "「{subject}」の階層に手ごわい番人がいるよ。今日はここを攻略しよう。",
+      neglected: "「{subject}」の階層に、しばらく灯りが届いていないよ。少しだけ探索しよう。",
+      starter: "まずは巻物を3問解いてみよう。きみの得意と苦手が見えてくるよ。",
+      clear: "手ごわい階層は見当たらないよ。今日は好きな場所を探索しよう。",
+      achieved: "クエスト達成！ 今日のきみの灯りは、ひときわ明るいね。",
     },
   },
 } as const satisfies WorldTheme;

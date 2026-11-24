@@ -70,6 +70,7 @@ export type Database = {
           card_id: string;
           user_answer: string;
           is_correct: boolean;
+          mistake_reason: string | null;
           answered_at: string;
           created_at: string;
         };
@@ -79,6 +80,7 @@ export type Database = {
           card_id: string;
           user_answer: string;
           is_correct: boolean;
+          mistake_reason?: string | null;
           answered_at: string;
           created_at?: string;
         };
@@ -88,6 +90,7 @@ export type Database = {
           card_id?: string;
           user_answer?: string;
           is_correct?: boolean;
+          mistake_reason?: string | null;
           answered_at?: string;
           created_at?: string;
         };
@@ -103,7 +106,20 @@ export type Database = {
       };
     };
     Views: { [_ in never]: never };
-    Functions: { [_ in never]: never };
+    Functions: {
+      subject_stats: {
+        Args: { p_device_id: string; p_since: string };
+        Returns: {
+          subject: string;
+          study_seconds: number;
+          answer_count: number;
+          correct_count: number;
+          knowledge_count: number;
+          understanding_count: number;
+          careless_count: number;
+        }[];
+      };
+    };
     Enums: { [_ in never]: never };
     CompositeTypes: { [_ in never]: never };
   };

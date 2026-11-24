@@ -2,6 +2,7 @@ import type { AnswerLog, QuizCard } from "@/domain/quiz";
 import { formatJstDateTime } from "@/domain/study-time";
 import type { QuizTerms } from "@/themes/types";
 import { PANEL } from "./form-styles";
+import { MISTAKE_LABELS } from "./MistakeReasonPicker";
 
 type Props = {
   terms: QuizTerms;
@@ -53,6 +54,8 @@ export function AnswerHistory({ terms, logs, cards, error, onReload }: Props) {
                   <p className="break-words text-sm opacity-80">
                     {formatJstDateTime(log.answeredAt)}
                     {card !== undefined && `・${card.subject}`}
+                    {log.mistakeReason !== null &&
+                      `・${MISTAKE_LABELS[log.mistakeReason]}`}
                   </p>
                 </div>
               </li>

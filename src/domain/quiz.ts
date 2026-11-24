@@ -5,11 +5,26 @@ export type QuizCard = {
   readonly answer: string;
 };
 
+/** 誤答原因：知識不足／理解不足／ケアレス。 */
+export const MISTAKE_REASONS = [
+  "knowledge",
+  "understanding",
+  "careless",
+] as const;
+
+export type MistakeReason = (typeof MISTAKE_REASONS)[number];
+
+export function isMistakeReason(value: unknown): value is MistakeReason {
+  return MISTAKE_REASONS.some((reason) => reason === value);
+}
+
 export type AnswerLog = {
   readonly id: string;
   readonly cardId: string;
   readonly userAnswer: string;
   readonly isCorrect: boolean;
+  /** 正解、または原因を選ばなかった（未分類）なら null。 */
+  readonly mistakeReason: MistakeReason | null;
   readonly answeredAt: string;
 };
 
