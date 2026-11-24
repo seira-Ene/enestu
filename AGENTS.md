@@ -14,6 +14,8 @@
 
 `git push`、本番DBへのマイグレーション適用、データの削除は、その都度承認を得る。
 
+`main` へ直接pushしない。ブランチからPull Requestを作り、CIの合格後に開発者がマージする（マージすると本番に公開される）。
+
 ## 2. 完了条件
 
 次のすべてがエラーゼロになるまで、修正を繰り返す。
@@ -45,7 +47,7 @@ clone直後はNext.jsの型が未生成のため、`npx tsc --noEmit` の代わ�
 | 画面 | Next.js（App Router）、TypeScript、Tailwind CSS（モバイルファースト・PWA） |
 | バックエンド・DB | Supabase（PostgreSQL / Auth / Storage / Realtime） |
 | 公開 | Vercel |
-| テスト・CI | Vitest、Playwright、GitHub Actions（後の2つは導入予定） |
+| テスト・CI | Vitest、PGlite（DBのテスト）、GitHub Actions、Playwright（導入予定） |
 
 ## 5. ディレクトリの役割
 
@@ -58,6 +60,7 @@ clone直後はNext.jsの型が未生成のため、`npx tsc --noEmit` の代わ�
 | `src/lib/fonts/` | 世界線ごとのフォント |
 | `src/lib/supabase/` | Supabase接続とDBの型 |
 | `supabase/migrations/` | DBスキーマの変更履歴（SQL） |
+| `supabase/tests/` | DBの権限・制約・集計のテスト（PGlite） |
 | `docs/agents/` | 作業手順ごとの規範 |
 
 ## 6. 設計規則
@@ -80,6 +83,7 @@ clone直後はNext.jsの型が未生成のため、`npx tsc --noEmit` の代わ�
 - 認証を導入する第5週までは、RLSを有効にして許可ポリシーを置かず、Route Handler経由でだけ読み書きする。
 - Route Handlerでは入力を検証し、必ず端末IDで絞り込む。
 - スキーマを変えたら `database.types.ts` を生成し直す。
+- テーブル・関数・権限を変えたら、`supabase/tests/` の一覧と検査も更新する。
 
 ## 7. 命名規約
 
