@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { RANK_LEVELS } from "@/domain/progress";
 import { DEFAULT_WORLD_ID, themes, themeToCssVars, worldsToCss } from "@/themes";
 import { isWorldId, WORLD_IDS, type HexColor } from "@/themes/types";
 
@@ -50,6 +51,14 @@ describe.each(WORLD_IDS)("世界線 %s", (id) => {
     for (const ink of [text, primary, accent]) {
       expect(contrast(ink, background)).toBeGreaterThanOrEqual(4.5);
       expect(contrast(ink, surface)).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it("称号とセリフが、解放されるレベルの数だけあり、重ならない", () => {
+    const { ranks, stories } = theme.progress;
+    for (const lines of [ranks, stories]) {
+      expect(lines).toHaveLength(RANK_LEVELS.length);
+      expect(new Set(lines).size).toBe(lines.length);
     }
   });
 

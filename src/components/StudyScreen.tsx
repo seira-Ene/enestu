@@ -3,6 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { selectCheers, studyMood, type StudyStatus } from "@/domain/cheer";
+import { levelState } from "@/domain/progress";
 import { parseSubject } from "@/domain/validation";
 import {
   elapsedSeconds,
@@ -17,11 +18,14 @@ import {
   useActiveSession,
   type ActiveSession,
 } from "@/lib/active-session";
+import { fetchProgress } from "@/lib/progress-api";
 import { fetchStats } from "@/lib/stats-api";
 import { fetchTodayLogs, saveStudyLog } from "@/lib/study-log-api";
 import { useRemote } from "@/lib/use-remote";
 import { CharacterPanel } from "./CharacterPanel";
 import { DailyQuest } from "./DailyQuest";
+import { LevelPanel } from "./LevelPanel";
+import { LevelUpBanner } from "./LevelUpBanner";
 import { ScreenHeader } from "./ScreenHeader";
 import { StudyHistory } from "./StudyHistory";
 import { StudyTimer, type TimerPhase } from "./StudyTimer";
@@ -32,6 +36,9 @@ export function StudyScreen() {
   const session = useActiveSession();
   const now = useNow();
   const stats = useRemote(fetchStats);
+  const progress = useRemote(fetchProgress);
+  /** 直前の記録を保存する前のレベル。 */
+  const [previousLevel, setPreviousLevel] = useState<number | null>(null);
   /** URLの ?subject= で指定された科目。 */
   const requested = useSearchParams().get("subject");
   /** 入力した科目名。URLの指定が変わったら無効になる。 */
@@ -85,6 +92,7 @@ export function StudyScreen() {
     if (getActiveSession() !== null) return;
     setMessage(null);
     setLastSaved(null);
+    setPreviousLevel(null);
     setActiveSession({
       id: crypto.randomUUID(),
       subject: subject.value,
@@ -122,7 +130,8 @@ export function StudyScreen() {
       setIsSaving(false);
       return;
     }
-    await Promise.all([loadLogs(), stats.reload()]);
+    setPreviousLevel(progress.data && levelState(progress.data).level);
+    await Promise.all([loadLogs(), stats.reload(), progress.reload()]);
     if (getActiveSession()?.id === current.id) setActiveSession(null);
     setTyped({ requested, subject: current.subject });
     setLastSaved(current);
@@ -150,6 +159,11 @@ export function StudyScreen() {
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-5 px-4 py-6">
       <ScreenHeader title="エネスタ" subtitle={theme.tagline} />
       <CharacterPanel theme={theme} mood={studyMood(status)} lines={lines} />
+      <LevelUpBanner
+        theme={theme.progress}
+        totals={progress.data}
+        previousLevel={previousLevel}
+      />
       <DailyQuest theme={theme.quest} remote={stats} />
       <StudyTimer
         terms={theme.terms}
@@ -170,6 +184,7 @@ export function StudyScreen() {
         error={loadError}
         onReload={() => void loadLogs()}
       />
+      <LevelPanel theme={theme} remote={progress} />
     </main>
   );
 }

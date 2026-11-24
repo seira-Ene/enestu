@@ -15,11 +15,15 @@ import {
   type QuizCard,
 } from "@/domain/quiz";
 import { parseUserAnswer } from "@/domain/quiz-input";
+import { comboCount, levelState } from "@/domain/progress";
+import { fetchProgress } from "@/lib/progress-api";
 import { fetchAnswerLogs, fetchCards, saveAnswerLog } from "@/lib/quiz-api";
 import { useRemote } from "@/lib/use-remote";
 import { AnswerHistory } from "./AnswerHistory";
 import { CharacterPanel } from "./CharacterPanel";
 import { PANEL, PRIMARY_BUTTON, TEXT_INPUT } from "./form-styles";
+import { LevelPanel } from "./LevelPanel";
+import { LevelUpBanner } from "./LevelUpBanner";
 import { QuizQuestion, type Judged } from "./QuizQuestion";
 import { QuizResult } from "./QuizResult";
 import { QuizStage } from "./QuizStage";
@@ -32,12 +36,15 @@ type QuizRun = {
   readonly results: readonly boolean[];
   /** 今の問題の答え合わせ。id と時刻は再送しても変えない。 */
   readonly judged: (Judged & { id: string; answeredAt: string }) | null;
+  /** 始める前のレベル。分からなければ null。 */
+  readonly startLevel: number | null;
 };
 
 export function QuizScreen() {
   const { theme } = useWorld();
   const cards = useRemote(fetchCards);
   const history = useRemote(fetchAnswerLogs);
+  const progress = useRemote(fetchProgress);
   /** URLの ?subject= で指定された科目。 */
   const requested = useSearchParams().get("subject");
   /** 画面で選び直した科目。URLの指定が変わったら無効になる。 */
@@ -73,7 +80,12 @@ export function QuizScreen() {
     );
     if (queue.length === 0) return;
     setError(null);
-    setRun({ queue, results: [], judged: null });
+    setRun({
+      queue,
+      results: [],
+      judged: null,
+      startLevel: progress.data && levelState(progress.data).level,
+    });
   }
 
   function handleAnswer(input: string) {
@@ -130,7 +142,9 @@ export function QuizScreen() {
     }
     const results = [...run.results, isCorrect];
     setRun({ ...run, results, judged: null });
-    if (results.length === run.queue.length) await history.reload();
+    if (results.length === run.queue.length) {
+      await Promise.all([history.reload(), progress.reload()]);
+    }
   }
 
   const moment = toMoment(run);
@@ -144,12 +158,23 @@ export function QuizScreen() {
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-5 px-4 py-6">
       <ScreenHeader title={theme.terms.navQuiz} subtitle="確認テスト" />
       <CharacterPanel theme={theme} mood={quizMood(moment)} lines={[cheer]} />
+      {run !== null && current === undefined && (
+        <LevelUpBanner
+          theme={theme.progress}
+          totals={progress.data}
+          previousLevel={run.startLevel}
+        />
+      )}
 
       {run !== null && (
         <QuizStage
           key={run.queue[0]?.id}
           theme={theme}
-          score={{ correct: countCorrect(run), total: run.queue.length }}
+          score={{
+            correct: scoreQuiz(answered(run)).correct,
+            total: run.queue.length,
+          }}
+          combo={comboCount(answered(run))}
           isHit={run.judged?.isCorrect === true}
         />
       )}
@@ -177,6 +202,10 @@ export function QuizScreen() {
           onRetry={startQuiz}
           onFinish={() => setRun(null)}
         />
+      )}
+
+      {run !== null && current === undefined && (
+        <LevelPanel theme={theme} remote={progress} />
       )}
 
       {run === null && (
@@ -261,9 +290,11 @@ function isFinished(run: QuizRun | null): boolean {
   return run !== null && run.results.length === run.queue.length;
 }
 
-function countCorrect(run: QuizRun): number {
-  const { correct } = scoreQuiz(run.results);
-  return run.judged?.isCorrect ? correct + 1 : correct;
+/** 答え合わせ中の問題も含めた、これまでの正誤。 */
+function answered(run: QuizRun): readonly boolean[] {
+  return run.judged === null
+    ? run.results
+    : [...run.results, run.judged.isCorrect];
 }
 
 function toMoment(run: QuizRun | null): QuizMoment {

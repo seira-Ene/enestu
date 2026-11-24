@@ -131,6 +131,20 @@ export type ThemeQuest = {
   readonly lines: QuestLines;
 };
 
+/** 連続正解の数を埋め込む {count} を必ず含む。 */
+export type ComboLine = `${string}{count}${string}`;
+
+type FiveLines = readonly [string, string, string, string, string];
+
+/** レベルの演出。ranks と stories は RANK_LEVELS の順に解放される。 */
+export type ThemeProgress = {
+  readonly label: string;
+  readonly levelUp: string;
+  readonly combo: ComboLine;
+  readonly ranks: FiveLines;
+  readonly stories: FiveLines;
+};
+
 export type WorldTheme = {
   readonly id: WorldId;
   readonly displayName: string;
@@ -143,4 +157,5 @@ export type WorldTheme = {
   readonly terms: ThemeTerms;
   readonly quiz: ThemeQuiz;
   readonly quest: ThemeQuest;
+  readonly progress: ThemeProgress;
 };
