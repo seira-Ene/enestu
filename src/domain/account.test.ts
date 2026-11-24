@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { decideOwner, parseAccount, type OwnerClues } from "./account";
+import {
+  accountLabel,
+  decideOwner,
+  describeCounts,
+  hasRecords,
+  parseAccount,
+  toAccountState,
+  type OwnerClues,
+} from "./account";
 
 const ALICE = "11111111-1111-4111-8111-111111111111";
 const BOB = "22222222-2222-4222-8222-222222222222";
@@ -57,6 +65,54 @@ describe("parseAccount", () => {
     ["匿名", { ...claims, is_anonymous: true }],
   ])("「%s」なら利用者として扱わない", (_label, value) => {
     expect(parseAccount(value)).toBeNull();
+  });
+});
+
+describe("accountLabel", () => {
+  it.each([
+    ["花子", "a@example.com", "花子"],
+    [null, "a@example.com", "a@example.com"],
+    [null, null, "名前のないアカウント"],
+  ])("名前 %s・メール %s なら「%s」", (name, email, label) => {
+    expect(accountLabel({ id: ALICE, name, email })).toBe(label);
+  });
+});
+
+describe("記録の件数", () => {
+  it.each([
+    [3, 6, 10, "学習3件・カード6枚・解答10件"],
+    [3, 0, 0, "学習3件"],
+    [0, 1, 0, "カード1枚"],
+    [0, 0, 2, "解答2件"],
+    [0, 0, 0, "なし"],
+  ])("学習%i・カード%i・解答%i は「%s」", (studyLogs, cards, answers, text) => {
+    const counts = { studyLogs, cards, answers };
+    expect(describeCounts(counts)).toBe(text);
+    expect(hasRecords(counts)).toBe(text !== "なし");
+  });
+});
+
+describe("toAccountState", () => {
+  const account = { id: ALICE, name: "花子", email: null };
+  const claimable = { studyLogs: 1, cards: 0, answers: 0 };
+
+  it("画面とサーバーが一致すれば、そのままの状態", () => {
+    expect(toAccountState(null, null, null)).toEqual({ kind: "guest" });
+    expect(toAccountState(ALICE, account, claimable)).toEqual({
+      kind: "signed_in",
+      account,
+      claimable,
+    });
+  });
+
+  it("ログイン中のはずが切れていたら、未ログインにしない", () => {
+    expect(toAccountState(ALICE, null, null)).toEqual({ kind: "expired" });
+  });
+
+  it("別の人や、未ログインのはずがログイン中なら、変わったと伝える", () => {
+    const changed = { kind: "changed" };
+    expect(toAccountState(BOB, account, claimable)).toEqual(changed);
+    expect(toAccountState(null, account, claimable)).toEqual(changed);
   });
 });
 

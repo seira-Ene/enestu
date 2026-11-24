@@ -1,13 +1,7 @@
+import type { RecordCounts } from "@/domain/account";
 import { readDeviceId, serverError, success } from "@/lib/api-response";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 import { readSession } from "@/lib/supabase/session";
-
-/** 端末に残っていて、引き継げる記録の件数。隠したカードは数えない。 */
-type Claimable = {
-  readonly studyLogs: number;
-  readonly cards: number;
-  readonly answers: number;
-};
 
 /** ログインの状態と、この端末から引き継げる記録の件数を返す。 */
 export async function GET(request: Request): Promise<Response> {
@@ -17,18 +11,21 @@ export async function GET(request: Request): Promise<Response> {
   const action = "アカウントの取得";
   try {
     const session = await readSession();
-    if (session === null) return success({ account: null, claimable: null });
-
+    if (session === null) {
+      return success({ status: { account: null, claimable: null } });
+    }
     return success({
-      account: session.account,
-      claimable: deviceId.ok ? await countRecords(deviceId.value) : null,
+      status: {
+        account: session.account,
+        claimable: deviceId.ok ? await countRecords(deviceId.value) : null,
+      },
     });
   } catch (error) {
     return serverError(action, error);
   }
 }
 
-async function countRecords(deviceId: string): Promise<Claimable> {
+async function countRecords(deviceId: string): Promise<RecordCounts> {
   const db = createSupabaseAdminClient();
   const onlyCount = { count: "exact", head: true } as const;
   const [studyLogs, cards, answers] = await Promise.all([

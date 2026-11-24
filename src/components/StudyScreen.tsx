@@ -11,6 +11,7 @@ import {
   sumTodaySeconds,
   type StudyLog,
 } from "@/domain/study-time";
+import { getPageAccountId } from "@/lib/account-marker";
 import type { ApiResult } from "@/lib/api-client";
 import {
   getActiveSession,
@@ -95,6 +96,7 @@ export function StudyScreen() {
     setPreviousLevel(null);
     setActiveSession({
       id: crypto.randomUUID(),
+      accountId: getPageAccountId(),
       subject: subject.value,
       startedAt: new Date().toISOString(),
       endedAt: null,
@@ -117,6 +119,12 @@ export function StudyScreen() {
   async function save() {
     const current = getActiveSession();
     if (current === null || current.endedAt === null) return;
+    if (current.accountId !== getPageAccountId()) {
+      setMessage(
+        "計測を始めたときとログインの状態が違うため、保存できません。元の状態に戻してから、もう一度保存してください。",
+      );
+      return;
+    }
     setIsSaving(true);
     setMessage(null);
     const result = await saveStudyLog({

@@ -7,9 +7,11 @@ import {
   useEffect,
   useLayoutEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
+import { getPageAccountId } from "@/lib/account-marker";
 import { fetchWorld, saveWorld } from "@/lib/settings-api";
 import { PENDING_ATTRIBUTE } from "@/lib/world-boot";
 import { loadWorldFont } from "@/lib/world-fonts";
@@ -41,17 +43,22 @@ export function useWorld(): WorldContextValue {
 export function WorldProvider({ children }: { children: ReactNode }) {
   const worldId = useWorldId();
   const [isPickerOpen, setIsPickerOpen] = useState(false);
+  /** 読み込みの間に選んだら、その選択を優先する。 */
+  const hasSelected = useRef(false);
 
   useWorldAppearance(worldId);
 
   // 端末とDBの選択をそろえる。どちらにもなければ、初回として選んでもらう。
+  // ログイン中は、ほかの端末で選んだ世界線に合わせるため、DBを優先する。
   useEffect(() => {
     let isCurrent = true;
     void fetchWorld().then((result) => {
-      if (!isCurrent) return;
+      if (!isCurrent || hasSelected.current) return;
       const stored = getStoredWorld();
       const saved = result.ok ? result.value : null;
-      if (stored !== null) {
+      if (saved !== null && getPageAccountId() !== null) {
+        if (saved !== stored) setStoredWorld(saved);
+      } else if (stored !== null) {
         if (result.ok && saved !== stored) void saveWorld(stored);
       } else if (saved !== null) {
         setStoredWorld(saved);
@@ -65,6 +72,7 @@ export function WorldProvider({ children }: { children: ReactNode }) {
   }, []);
 
   function handleSelect(next: WorldId) {
+    hasSelected.current = true;
     setStoredWorld(next);
     setIsPickerOpen(false);
     // 失敗しても、次に開いたときに端末の選択を送り直す。
