@@ -12,10 +12,10 @@ import {
 export async function GET(request: Request): Promise<Response> {
   const params = new URL(request.url).searchParams;
   if (params.get("error") === "access_denied") {
-    return seeOther("/?login=cancelled");
+    return seeOther("/account?login=cancelled");
   }
   const code = params.get("code");
-  if (code === null) return seeOther("/?login=failed");
+  if (code === null) return seeOther("/account?login=failed");
 
   try {
     const client = await createSessionClient();
@@ -23,9 +23,9 @@ export async function GET(request: Request): Promise<Response> {
     if (error) throw error;
     await saveAccountMarker(data.user.id);
     await clearLoginAttempts();
-    return seeOther("/?login=ok");
+    return seeOther("/account?login=ok");
   } catch (error) {
     console.error("ログインの完了に失敗", error);
-    return seeOther("/?login=failed");
+    return seeOther("/account?login=failed");
   }
 }

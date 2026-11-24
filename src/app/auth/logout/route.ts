@@ -18,5 +18,5 @@ export async function POST(request: Request): Promise<Response> {
     console.error("ログアウトの通知に失敗", error);
   }
   await clearSessionCookies();
-  return seeOther("/");
+  return seeOther("/account");
 }

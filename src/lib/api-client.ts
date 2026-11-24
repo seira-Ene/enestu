@@ -5,6 +5,10 @@ import { getDeviceId } from "./device-id";
 
 const TIMEOUT_MS = 15_000;
 
+/** サーバーが、ログインの食い違いを見つけたときに window へ送る。 */
+export const ACCOUNT_PROBLEM_EVENT = "enestu:account-problem";
+const ACCOUNT_PROBLEMS: readonly unknown[] = ["signed_out", "account_changed"];
+
 export type ApiResult<T> =
   | { readonly ok: true; readonly value: T }
   | { readonly ok: false; readonly error: string };
@@ -15,7 +19,24 @@ export async function getField<T>(
   key: string,
   isValid: (value: unknown) => value is T,
 ): Promise<ApiResult<T>> {
-  const result = await request(endpoint, { method: "GET" });
+  return pickField(await request(endpoint, { method: "GET" }), key, isValid);
+}
+
+/** 送信し、応答の1項目を、形を確かめてから返す。 */
+export async function postForField<T>(
+  endpoint: string,
+  body: object,
+  key: string,
+  isValid: (value: unknown) => value is T,
+): Promise<ApiResult<T>> {
+  return pickField(await sendBody("POST", endpoint, body), key, isValid);
+}
+
+function pickField<T>(
+  result: ApiResult<unknown>,
+  key: string,
+  isValid: (value: unknown) => value is T,
+): ApiResult<T> {
   if (!result.ok) return result;
   const value = readField(result.value, key);
   return isValid(value)
@@ -59,12 +80,20 @@ async function send(
   endpoint: string,
   body: object,
 ): Promise<ApiResult<null>> {
-  const result = await request(endpoint, {
+  const result = await sendBody(method, endpoint, body);
+  return result.ok ? { ok: true, value: null } : result;
+}
+
+function sendBody(
+  method: "POST" | "PATCH" | "DELETE",
+  endpoint: string,
+  body: object,
+): Promise<ApiResult<unknown>> {
+  return request(endpoint, {
     method,
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-  return result.ok ? { ok: true, value: null } : result;
 }
 
 async function request(
@@ -83,6 +112,9 @@ async function request(
     });
     const body: unknown = await response.json();
     if (response.ok) return { ok: true, value: body };
+    if (ACCOUNT_PROBLEMS.includes(readField(body, "code"))) {
+      window.dispatchEvent(new Event(ACCOUNT_PROBLEM_EVENT));
+    }
     const message = readField(body, "error");
     return {
       ok: false,

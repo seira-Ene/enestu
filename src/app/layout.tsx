@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
+import { AccountProvider } from "@/components/AccountProvider";
 import { BottomNav } from "@/components/BottomNav";
 import { WorldProvider } from "@/components/WorldProvider";
 import { WORLD_BOOT_SCRIPT } from "@/lib/world-boot";
@@ -31,10 +32,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <script dangerouslySetInnerHTML={{ __html: WORLD_BOOT_SCRIPT }} />
       </head>
       <body className="flex min-h-full flex-col">
-        <WorldProvider>
-          {children}
-          <BottomNav />
-        </WorldProvider>
+        <AccountProvider>
+          <WorldProvider>
+            {children}
+            <BottomNav />
+          </WorldProvider>
+        </AccountProvider>
       </body>
     </html>
   );

@@ -40,6 +40,59 @@ function profileText(value: unknown): string | null {
   return text.ok ? text.value : null;
 }
 
+/** 画面に出す、アカウントの呼び名。 */
+export function accountLabel(account: Account): string {
+  return account.name ?? account.email ?? "名前のないアカウント";
+}
+
+/** 記録の件数。隠したカードは数えない。 */
+export type RecordCounts = {
+  readonly studyLogs: number;
+  readonly cards: number;
+  readonly answers: number;
+};
+
+export function hasRecords(counts: RecordCounts): boolean {
+  return counts.studyLogs > 0 || counts.cards > 0 || counts.answers > 0;
+}
+
+/** 「学習3件・カード6枚」のように、ある分だけを並べる。 */
+export function describeCounts(counts: RecordCounts): string {
+  const parts = [
+    counts.studyLogs > 0 && `学習${counts.studyLogs}件`,
+    counts.cards > 0 && `カード${counts.cards}枚`,
+    counts.answers > 0 && `解答${counts.answers}件`,
+  ].filter((part) => part !== false);
+  return parts.length > 0 ? parts.join("・") : "なし";
+}
+
+/** 画面から見たログインの状態。 */
+export type AccountState =
+  | { readonly kind: "guest" }
+  | {
+      readonly kind: "signed_in";
+      readonly account: Account;
+      /** 端末に残っていて、引き継げる記録。 */
+      readonly claimable: RecordCounts | null;
+    }
+  | { readonly kind: "expired" }
+  /** 画面を開いた後に、別の人になった。 */
+  | { readonly kind: "changed" };
+
+/** 画面を開いたときの利用者と、サーバーが確かめた利用者を突き合わせる。 */
+export function toAccountState(
+  pageAccountId: string | null,
+  account: Account | null,
+  claimable: RecordCounts | null,
+): AccountState {
+  if (account === null) {
+    return { kind: pageAccountId === null ? "guest" : "expired" };
+  }
+  return account.id === pageAccountId
+    ? { kind: "signed_in", account, claimable }
+    : { kind: "changed" };
+}
+
 /** 記録の持ち主を決める材料。 */
 export type OwnerClues = {
   /** 画面が「この利用者として使っている」と伝えた値。未ログインの画面なら null。 */

@@ -1,7 +1,11 @@
 import { parseSubject } from "@/domain/validation";
 import type { SavedQuest } from "@/domain/weakness";
+import { getPageAccountId } from "./account-marker";
 
 /** その日に選んだクエストを、この端末に覚えておく。 */
+
+/** 端末を共有していても、ほかの人のクエストを出さないために覚える持ち主。 */
+type StoredQuest = SavedQuest & { readonly accountId: string | null };
 
 const STORAGE_KEY = "enestu_daily_quest";
 
@@ -19,8 +23,13 @@ export function loadSavedQuest(): SavedQuest | null {
   }
   if (typeof value !== "object" || value === null) return null;
 
-  const { date, kind, subject }: Partial<Record<keyof SavedQuest, unknown>> =
-    value;
+  const {
+    date,
+    kind,
+    subject,
+    accountId = null,
+  }: Partial<Record<keyof StoredQuest, unknown>> = value;
+  if (accountId !== getPageAccountId()) return null;
   const parsed = parseSubject(subject);
   if (typeof date !== "string" || !parsed.ok) return null;
   if (kind !== "weak" && kind !== "neglected") return null;
@@ -28,7 +37,8 @@ export function loadSavedQuest(): SavedQuest | null {
 }
 
 export function saveQuest(quest: SavedQuest): void {
-  memoryRaw = JSON.stringify(quest);
+  const stored: StoredQuest = { ...quest, accountId: getPageAccountId() };
+  memoryRaw = JSON.stringify(stored);
   try {
     localStorage.setItem(STORAGE_KEY, memoryRaw);
   } catch {

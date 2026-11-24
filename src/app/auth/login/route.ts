@@ -21,6 +21,6 @@ export async function POST(request: Request): Promise<Response> {
     return seeOther(data.url);
   } catch (error) {
     console.error("ログインの開始に失敗", error);
-    return seeOther("/?login=failed");
+    return seeOther("/account?login=failed");
   }
 }

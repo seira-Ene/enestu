@@ -7,6 +7,8 @@ import { parseSubject, parseUuid } from "@/domain/validation";
  */
 export type ActiveSession = {
   readonly id: string;
+  /** 計測を始めた利用者。未ログインなら null。別の人の記録にしないために覚える。 */
+  readonly accountId: string | null;
   readonly subject: string;
   readonly startedAt: string;
   /** null なら計測中、値があれば保存待ち。 */
@@ -80,7 +82,16 @@ function parseSession(raw: string | null): ActiveSession | null {
   const { startedAt, endedAt } = fields;
   if (!id.ok || !subject.ok || !isTime(startedAt)) return null;
   if (endedAt !== null && !isTime(endedAt)) return null;
-  return { id: id.value, subject: subject.value, startedAt, endedAt };
+  // ログイン機能より前に始めた計測には、利用者の欄がない。
+  const account = parseUuid(fields.accountId);
+  if (fields.accountId != null && !account.ok) return null;
+  return {
+    id: id.value,
+    accountId: account.ok ? account.value : null,
+    subject: subject.value,
+    startedAt,
+    endedAt,
+  };
 }
 
 function isTime(value: unknown): value is string {
