@@ -19,6 +19,11 @@ jobs:
     name: check
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # E2E用の、本物ではない値。まねたSupabaseにだけつながる。
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: http://localhost:54999
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_dummy
+      SUPABASE_SECRET_KEY: sb_secret_dummy
     steps:
       - uses: actions/checkout@v7
         with:
@@ -36,3 +41,7 @@ jobs:
         run: npm test
       - name: ビルド
         run: npm run build
+      - name: ブラウザの準備
+        run: npx playwright install --with-deps chromium
+      - name: E2E
+        run: npm run e2e

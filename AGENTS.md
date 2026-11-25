@@ -25,6 +25,7 @@ npx tsc --noEmit   # 型検査
 npm test           # Vitest
 npm run lint       # ESLint
 npm run build      # 本番ビルド
+npm run e2e        # Playwright（まねたSupabaseで動かす。本番にはつながない）
 ```
 
 clone直後はNext.jsの型が未生成のため、`npx tsc --noEmit` の代わりに `npm run typecheck` を使う。
@@ -47,7 +48,7 @@ clone直後はNext.jsの型が未生成のため、`npx tsc --noEmit` の代わ�
 | 画面 | Next.js（App Router）、TypeScript、Tailwind CSS（モバイルファースト・PWA） |
 | バックエンド・DB | Supabase（PostgreSQL / Auth / Storage / Realtime） |
 | 公開 | Vercel |
-| テスト・CI | Vitest、PGlite（DBのテスト）、GitHub Actions、Playwright（導入予定） |
+| テスト・CI | Vitest、PGlite（DBのテスト）、Playwright、GitHub Actions |
 
 ## 5. ディレクトリの役割
 
@@ -61,6 +62,7 @@ clone直後はNext.jsの型が未生成のため、`npx tsc --noEmit` の代わ�
 | `src/lib/supabase/` | Supabase接続、ログインの検証、DBの型 |
 | `supabase/migrations/` | DBスキーマの変更履歴（SQL） |
 | `supabase/tests/` | DBの権限・制約・集計のテスト（PGlite） |
+| `e2e/` | 画面を通したテスト（Playwright）と、まねたSupabase |
 | `docs/agents/` | 作業手順ごとの規範 |
 
 ## 6. 設計規則
