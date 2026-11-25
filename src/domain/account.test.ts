@@ -80,21 +80,25 @@ describe("accountLabel", () => {
 
 describe("記録の件数", () => {
   it.each([
-    [3, 6, 10, "学習3件・カード6枚・解答10件"],
-    [3, 0, 0, "学習3件"],
-    [0, 1, 0, "カード1枚"],
-    [0, 0, 2, "解答2件"],
-    [0, 0, 0, "なし"],
-  ])("学習%i・カード%i・解答%i は「%s」", (studyLogs, cards, answers, text) => {
-    const counts = { studyLogs, cards, answers };
-    expect(describeCounts(counts)).toBe(text);
-    expect(hasRecords(counts)).toBe(text !== "なし");
-  });
+    [3, 6, 10, "そら", "学習3件・カード6枚・解答10件・名前「そら」"],
+    [3, 0, 0, null, "学習3件"],
+    [0, 1, 0, null, "カード1枚"],
+    [0, 0, 2, null, "解答2件"],
+    [0, 0, 0, "そら", "名前「そら」"],
+    [0, 0, 0, null, "なし"],
+  ])(
+    "学習%i・カード%i・解答%i・名前%s は「%s」",
+    (studyLogs, cards, answers, heroName, text) => {
+      const counts = { studyLogs, cards, answers, heroName };
+      expect(describeCounts(counts)).toBe(text);
+      expect(hasRecords(counts)).toBe(text !== "なし");
+    },
+  );
 });
 
 describe("toAccountState", () => {
   const account = { id: ALICE, name: "花子", email: null };
-  const claimable = { studyLogs: 1, cards: 0, answers: 0 };
+  const claimable = { studyLogs: 1, cards: 0, answers: 0, heroName: null };
 
   it("画面とサーバーが一致すれば、そのままの状態", () => {
     expect(toAccountState(null, null, null)).toEqual({ kind: "guest" });

@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { AccountPanel } from "./AccountPanel";
 import { useAccount } from "./AccountProvider";
 import { ALERT, HEADING, PANEL } from "./form-styles";
+import { HeroNamePanel } from "./HeroNamePanel";
 import { ScreenHeader } from "./ScreenHeader";
 import { ScreenLayout } from "./ScreenLayout";
 
@@ -31,7 +32,10 @@ export function AccountScreen() {
         </p>
       )}
       <div className="flex flex-col gap-5 lg:grid lg:grid-cols-2 lg:items-start">
-        <AccountPanel justSignedIn={login === "ok"} />
+        <div className="flex flex-col gap-5">
+          <AccountPanel justSignedIn={login === "ok"} />
+          <HeroNamePanel />
+        </div>
         <PrivacyNote />
       </div>
     </ScreenLayout>
@@ -57,7 +61,7 @@ function PrivacyNote() {
         </div>
         <div>
           <dt className="font-bold">このアプリで付けたもの</dt>
-          <dd>学習の記録、カード、解答、選んだ世界線、写真とメモ。</dd>
+          <dd>学習の記録、カード、解答、選んだ世界線、主人公の名前、写真とメモ。</dd>
         </div>
         <div>
           <dt className="font-bold">写真とメモの扱い</dt>

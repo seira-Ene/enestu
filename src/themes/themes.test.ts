@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { RANK_LEVELS } from "@/domain/progress";
 import { DEFAULT_WORLD_ID, themes, themeToCssVars, worldsToCss } from "@/themes";
+import { fillHeroName, MAX_HERO_NAME_LENGTH } from "@/domain/hero-name";
 import { isWorldId, WORLD_IDS, type HexColor } from "@/themes/types";
 
 function collectStrings(value: unknown): string[] {
@@ -68,6 +69,21 @@ describe.each(WORLD_IDS)("世界線 %s", (id) => {
     expect(talk.length).toBeGreaterThanOrEqual(5);
     expect(new Set(talk).size).toBe(talk.length);
     for (const line of talk) expect([...line].length).toBeLessThanOrEqual(40);
+  });
+
+  it("名前を呼ぶセリフは、いちばん長い名前でも長すぎず、{name} が残らない", () => {
+    const name = "あ".repeat(MAX_HERO_NAME_LENGTH);
+    for (const named of [
+      theme.character.namedTalk,
+      theme.cheers.namedWelcome,
+    ]) {
+      for (const line of named) expect(line).toContain("{name}");
+      for (const line of fillHeroName(named, name)) {
+        expect(line).toContain(name);
+        expect(line).not.toContain("{");
+        expect([...line].length).toBeLessThanOrEqual(50);
+      }
+    }
   });
 
   it("キャラクターの絵が public/ にあり、重すぎない", () => {

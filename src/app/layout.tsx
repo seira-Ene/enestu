@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { AccountProvider } from "@/components/AccountProvider";
 import { BottomNav } from "@/components/BottomNav";
+import { SettingsProvider } from "@/components/SettingsProvider";
 import { SideNav } from "@/components/SideNav";
 import { WorldProvider } from "@/components/WorldProvider";
 import { WORLD_BOOT_SCRIPT } from "@/lib/world-boot";
@@ -34,11 +35,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       </head>
       <body className="flex min-h-full flex-col lg:pl-60">
         <AccountProvider>
-          <WorldProvider>
-            <SideNav />
-            {children}
-            <BottomNav />
-          </WorldProvider>
+          <SettingsProvider>
+            <WorldProvider>
+              <SideNav />
+              {children}
+              <BottomNav />
+            </WorldProvider>
+          </SettingsProvider>
         </AccountProvider>
       </body>
     </html>

@@ -45,15 +45,22 @@ export function accountLabel(account: Account): string {
   return account.name ?? account.email ?? "名前のないアカウント";
 }
 
-/** 記録の件数。隠したカードは数えない。 */
+/** 引き継ぐ記録の件数と名前。隠したカードは数えない。 */
 export type RecordCounts = {
   readonly studyLogs: number;
   readonly cards: number;
   readonly answers: number;
+  /** 引き継ぐ主人公の名前。なければ null。 */
+  readonly heroName: string | null;
 };
 
 export function hasRecords(counts: RecordCounts): boolean {
-  return counts.studyLogs > 0 || counts.cards > 0 || counts.answers > 0;
+  return (
+    counts.studyLogs > 0 ||
+    counts.cards > 0 ||
+    counts.answers > 0 ||
+    counts.heroName !== null
+  );
 }
 
 /** 「学習3件・カード6枚」のように、ある分だけを並べる。 */
@@ -62,6 +69,7 @@ export function describeCounts(counts: RecordCounts): string {
     counts.studyLogs > 0 && `学習${counts.studyLogs}件`,
     counts.cards > 0 && `カード${counts.cards}枚`,
     counts.answers > 0 && `解答${counts.answers}件`,
+    counts.heroName !== null && `名前「${counts.heroName}」`,
   ].filter((part) => part !== false);
   return parts.length > 0 ? parts.join("・") : "なし";
 }

@@ -34,6 +34,11 @@ export const detective = {
       "難事件ほど、小さな証拠から解けるものですよ。",
       "休憩も立派な捜査です。お茶をどうぞ、先生。",
     ],
+    namedTalk: [
+      "{name}先生の推理、今日も冴えていますね！",
+      "報告書の宛名は「{name}先生」っと。……よし。",
+      "{name}先生、その表情……何かひらめきましたね？",
+    ],
     images: {
       face: "/characters/detective-face.webp",
       scene: "/characters/detective-scene.webp",
@@ -44,6 +49,10 @@ export const detective = {
     welcome: [
       "お待ちしていました、先生。本日の案件はこちらです。",
       "先生、資料はそろえてあります。どこから調べましょう。",
+    ],
+    namedWelcome: [
+      "お待ちしていました、{name}先生。本日の案件です。",
+      "{name}先生、資料はそろえてありますよ。",
     ],
     timerStart: [
       "捜査開始ですね。時刻を記録します。",

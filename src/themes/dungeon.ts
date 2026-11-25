@@ -33,6 +33,11 @@ export const dungeon = {
       "おなか空いてない？ 携帯食、半分こしようか。",
       "この松明、きみが来ると少しだけ明るくなるんだ。",
     ],
+    namedTalk: [
+      "{name}って名前、松明の火みたいであったかいね。",
+      "{name}の足音なら、暗闇でもすぐわかるよ。",
+      "次の階層も、{name}と一緒なら怖くないな。",
+    ],
     images: {
       face: "/characters/dungeon-face.webp",
       scene: "/characters/dungeon-scene.webp",
@@ -43,6 +48,10 @@ export const dungeon = {
     welcome: [
       "来てくれたんだね。今日はどの階層から行こうか？",
       "灯りはともしておいたよ。一歩だけでも進んでみよう。",
+    ],
+    namedWelcome: [
+      "おかえり、{name}。今日はどの階層から行こうか？",
+      "{name}、待ってたよ。灯りはともしておいたからね。",
     ],
     timerStart: [
       "冒険開始！ 足もとはぼくが照らすよ。",

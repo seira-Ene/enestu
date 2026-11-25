@@ -469,6 +469,71 @@ describe("引き継ぎ", () => {
     expect(await countRows(ofDevice(device))).toEqual([1, 1, 1, 1]);
   });
 
+  describe("名前", () => {
+    const setup = async (column: OwnerColumn, id: string, name: string | null) =>
+      db.asOwner(
+        `insert into user_settings (${column}, world_id, hero_name)
+         values ($1, $2, $3)`,
+        [id, column === "user_id" ? "live" : "cafe", name],
+      );
+    const settingsOf = (column: OwnerColumn, id: string) =>
+      db.asOwner(
+        `select world_id, hero_name from user_settings where ${column} = $1`,
+        [id],
+      );
+
+    it("アカウントに設定がなければ、世界線ごと移る", async () => {
+      await setup("device_id", device, "そら");
+      await claim(alice);
+      expect(await settingsOf("user_id", alice)).toEqual([
+        { world_id: "cafe", hero_name: "そら" },
+      ]);
+      expect(await settingsOf("device_id", device)).toEqual([]);
+    });
+
+    it("設定があって名前がなければ、名前だけ移り、端末からは消える", async () => {
+      await setup("device_id", device, "そら");
+      await setup("user_id", alice, null);
+      await setup("user_id", bob, null);
+      await claim(alice);
+      await claim(alice);
+      await claim(bob);
+      expect(await settingsOf("user_id", alice)).toEqual([
+        { world_id: "live", hero_name: "そら" },
+      ]);
+      expect(await settingsOf("device_id", device)).toEqual([
+        { world_id: "cafe", hero_name: null },
+      ]);
+      expect(await settingsOf("user_id", bob)).toEqual([
+        { world_id: "live", hero_name: null },
+      ]);
+    });
+
+    it("アカウントの名前を優先し、端末の名前も消さない", async () => {
+      await setup("device_id", device, "そら");
+      await setup("user_id", alice, "うみ");
+      await claim(alice);
+      expect(await settingsOf("user_id", alice)).toEqual([
+        { world_id: "live", hero_name: "うみ" },
+      ]);
+      expect(await settingsOf("device_id", device)).toEqual([
+        { world_id: "cafe", hero_name: "そら" },
+      ]);
+    });
+
+    it("他人の名前は、見ることも変えることもできない", async () => {
+      await setup("user_id", bob, "うみ");
+      const as: Actor = { user: alice };
+      expect(await db.as(as, "select hero_name from user_settings")).toEqual([]);
+      expect(
+        await db.as(as, "update user_settings set hero_name = 'x' returning id"),
+      ).toEqual([]);
+      expect(await settingsOf("user_id", bob)).toEqual([
+        { world_id: "live", hero_name: "うみ" },
+      ]);
+    });
+  });
+
   it("画面からは直接呼べず、アプリの鍵でも持ち主を書き換えられない", async () => {
     await seed(ofDevice(device));
     for (const actor of ["anon", { user: alice }] as const) {

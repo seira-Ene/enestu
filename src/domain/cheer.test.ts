@@ -10,6 +10,7 @@ import {
 import type { Quest } from "./weakness";
 
 const cheers: ThemeCheers = {
+  namedWelcome: ["{name}、おかえり"],
   welcome: ["ようこそA", "ようこそB"],
   timerStart: ["開始"],
   timerStop: ["停止"],
