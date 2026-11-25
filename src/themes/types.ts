@@ -54,6 +54,8 @@ export type CharacterImages = {
 export type ThemeCharacter = {
   readonly name: string;
   readonly introduction: string;
+  /** 話しかけたときのセリフ。学習の状況に関わらず言える内容にする。 */
+  readonly talk: CheerLines;
   /** null なら src/components/characters のSVGを使う。 */
   readonly images: CharacterImages | null;
 };

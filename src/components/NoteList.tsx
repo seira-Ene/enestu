@@ -55,7 +55,10 @@ export function NoteList({ title, notes }: Props) {
         <p className="opacity-80">まだありません。スマホから送ってみましょう。</p>
       )}
       {data !== null && data.length > 0 && (
-        <ul aria-live="polite" className="flex flex-col gap-3">
+        <ul
+          aria-live="polite"
+          className="flex flex-col gap-3 xl:grid xl:grid-cols-2 xl:items-start 2xl:grid-cols-3"
+        >
           {data.map((note) => (
             <li
               key={note.id}

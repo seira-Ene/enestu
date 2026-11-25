@@ -63,6 +63,13 @@ describe.each(WORLD_IDS)("世界線 %s", (id) => {
     }
   });
 
+  it("話しかけたときのセリフが5つ以上あり、長すぎず、重ならない", () => {
+    const { talk } = theme.character;
+    expect(talk.length).toBeGreaterThanOrEqual(5);
+    expect(new Set(talk).size).toBe(talk.length);
+    for (const line of talk) expect([...line].length).toBeLessThanOrEqual(40);
+  });
+
   it("キャラクターの絵が public/ にあり、重すぎない", () => {
     const { images } = theme.character;
     if (images === null) return;

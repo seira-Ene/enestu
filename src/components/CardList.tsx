@@ -85,7 +85,7 @@ export function CardList({ terms, cards }: Props) {
         <p className="opacity-80">まだカードがありません。</p>
       )}
       {data !== null && data.length > 0 && (
-        <ul className="flex flex-col gap-2">
+        <ul className="flex flex-col gap-2 xl:grid xl:grid-cols-2 xl:items-start">
           {data.map((card) => (
             <li key={card.id} className={ITEM}>
               {editing?.id === card.id ? (

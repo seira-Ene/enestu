@@ -3,7 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { selectCheers, studyMood, type StudyStatus } from "@/domain/cheer";
-import { levelState } from "@/domain/progress";
+import { levelState, unlockedRankCount } from "@/domain/progress";
 import { parseSubject } from "@/domain/validation";
 import {
   elapsedSeconds,
@@ -28,6 +28,7 @@ import { DailyQuest } from "./DailyQuest";
 import { LevelPanel } from "./LevelPanel";
 import { LevelUpBanner } from "./LevelUpBanner";
 import { ScreenHeader } from "./ScreenHeader";
+import { ScreenLayout } from "./ScreenLayout";
 import { StudyHistory } from "./StudyHistory";
 import { StudyTimer, type TimerPhase } from "./StudyTimer";
 import { useWorld } from "./WorldProvider";
@@ -163,39 +164,59 @@ export function StudyScreen() {
     totalSeconds,
   });
 
+  // 仲良くなるほど、話しかけたときのセリフも増える。
+  const storyCount =
+    progress.data === null
+      ? 0
+      : unlockedRankCount(levelState(progress.data).level);
+  const talkLines = [
+    ...theme.character.talk,
+    ...theme.progress.stories.slice(0, storyCount),
+  ];
+
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-5 px-4 py-6">
+    <ScreenLayout>
       <ScreenHeader title="エネスタ" subtitle={theme.tagline} />
-      <CharacterHero theme={theme} mood={studyMood(status)} lines={lines} />
-      <LevelUpBanner
-        theme={theme}
-        totals={progress.data}
-        previousLevel={previousLevel}
-        // すぐ上に同じ絵がある。
-        hasArt={false}
-      />
-      <StudyTimer
-        terms={theme.terms}
-        phase={toPhase(session, isSaving)}
-        subject={session?.subject ?? subjectInput}
-        seconds={toSeconds(session, now)}
-        message={message}
-        onSubjectChange={(subject) => setTyped({ requested, subject })}
-        onStart={handleStart}
-        onStop={handleStop}
-        onRetry={() => void save()}
-        onDiscard={handleDiscard}
-      />
-      <DailyQuest theme={theme.quest} remote={stats} />
-      <StudyHistory
-        terms={theme.terms}
-        logs={todayLogs}
-        totalSeconds={totalSeconds}
-        error={loadError}
-        onReload={() => void loadLogs()}
-      />
-      <LevelPanel theme={theme} remote={progress} />
-    </main>
+      {/* PC版では、左に絵とレベル、右にタイマーなどを並べる。 */}
+      <div className="flex flex-col gap-5 lg:grid lg:grid-cols-[minmax(0,1.4fr)_minmax(20rem,1fr)] lg:grid-rows-[auto_1fr] lg:items-start">
+        <CharacterHero
+          theme={theme}
+          mood={studyMood(status)}
+          lines={lines}
+          talkLines={talkLines}
+        />
+        <div className="flex flex-col gap-5 lg:col-start-2 lg:row-span-2 lg:row-start-1">
+          <LevelUpBanner
+            theme={theme}
+            totals={progress.data}
+            previousLevel={previousLevel}
+            // すぐ上に同じ絵がある。
+            hasArt={false}
+          />
+          <StudyTimer
+            terms={theme.terms}
+            phase={toPhase(session, isSaving)}
+            subject={session?.subject ?? subjectInput}
+            seconds={toSeconds(session, now)}
+            message={message}
+            onSubjectChange={(subject) => setTyped({ requested, subject })}
+            onStart={handleStart}
+            onStop={handleStop}
+            onRetry={() => void save()}
+            onDiscard={handleDiscard}
+          />
+          <DailyQuest theme={theme.quest} remote={stats} />
+          <StudyHistory
+            terms={theme.terms}
+            logs={todayLogs}
+            totalSeconds={totalSeconds}
+            error={loadError}
+            onReload={() => void loadLogs()}
+          />
+        </div>
+        <LevelPanel theme={theme} remote={progress} />
+      </div>
+    </ScreenLayout>
   );
 }
 
