@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { AccountProvider } from "@/components/AccountProvider";
 import { BottomNav } from "@/components/BottomNav";
+import { SideNav } from "@/components/SideNav";
 import { WorldProvider } from "@/components/WorldProvider";
 import { WORLD_BOOT_SCRIPT } from "@/lib/world-boot";
 import { DEFAULT_WORLD_ID, worldsToCss } from "@/themes";
@@ -31,9 +32,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <style dangerouslySetInnerHTML={{ __html: worldsToCss() }} />
         <script dangerouslySetInnerHTML={{ __html: WORLD_BOOT_SCRIPT }} />
       </head>
-      <body className="flex min-h-full flex-col">
+      <body className="flex min-h-full flex-col lg:pl-60">
         <AccountProvider>
           <WorldProvider>
+            <SideNav />
             {children}
             <BottomNav />
           </WorldProvider>

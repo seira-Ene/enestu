@@ -5,6 +5,7 @@ import { AccountPanel } from "./AccountPanel";
 import { useAccount } from "./AccountProvider";
 import { ALERT, HEADING, PANEL } from "./form-styles";
 import { ScreenHeader } from "./ScreenHeader";
+import { ScreenLayout } from "./ScreenLayout";
 
 export function AccountScreen() {
   const { data } = useAccount();
@@ -12,7 +13,7 @@ export function AccountScreen() {
   const isSignedIn = data?.kind === "signed_in";
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-5 px-4 py-6">
+    <ScreenLayout>
       <ScreenHeader title="アカウント" subtitle="記録の持ち主" />
       {login === "ok" && isSignedIn && (
         <p role="status" className={`panel ${ALERT}`}>
@@ -29,9 +30,11 @@ export function AccountScreen() {
           ログインをやめました。
         </p>
       )}
-      <AccountPanel justSignedIn={login === "ok"} />
-      <PrivacyNote />
-    </main>
+      <div className="flex flex-col gap-5 lg:grid lg:grid-cols-2 lg:items-start">
+        <AccountPanel justSignedIn={login === "ok"} />
+        <PrivacyNote />
+      </div>
+    </ScreenLayout>
   );
 }
 

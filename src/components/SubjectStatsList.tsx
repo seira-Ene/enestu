@@ -25,7 +25,7 @@ export function SubjectStatsList({
           まだ記録がありません。学習かテストをすると、ここに集計が出ます。
         </p>
       ) : (
-        <ul className="flex flex-col gap-3">
+        <ul className="flex flex-col gap-3 lg:grid lg:grid-cols-2 lg:items-start 2xl:grid-cols-3">
           {sortByWeakness(stats).map((item) => (
             <SubjectRow key={item.subject} item={item} all={stats} />
           ))}

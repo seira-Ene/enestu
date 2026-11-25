@@ -13,6 +13,7 @@ import { LoginForm } from "./LoginForm";
 import { NoteForm } from "./NoteForm";
 import { NoteList } from "./NoteList";
 import { ScreenHeader } from "./ScreenHeader";
+import { ScreenLayout } from "./ScreenLayout";
 import { useWorld } from "./WorldProvider";
 
 export function NotesScreen() {
@@ -22,7 +23,7 @@ export function NotesScreen() {
   const title = theme.terms.navNotes;
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-5 px-4 py-6 md:max-w-4xl">
+    <ScreenLayout isWideFromMedium>
       <ScreenHeader title={title} subtitle="写真とメモ" />
       {data?.kind === "signed_in" && (
         // 別の人に変わったら、前の人のメモを残さない。
@@ -33,7 +34,7 @@ export function NotesScreen() {
         />
       )}
       {data !== null && data.kind !== "signed_in" && (
-        <section className={PANEL}>
+        <section className={`${PANEL} lg:max-w-2xl`}>
           <p>
             スマホで撮ったノートや疑問メモを、PCで開いている画面へすぐに届けます。使うにはログインが必要です。
           </p>
@@ -48,7 +49,7 @@ export function NotesScreen() {
           <p>{error ?? "確認しています…"}</p>
         </section>
       )}
-    </main>
+    </ScreenLayout>
   );
 }
 
@@ -72,8 +73,10 @@ function NotesBoard({ userId, title }: { userId: string; title: string }) {
         <ConnectionStatus status={status} />
       </div>
       {/* 広い画面では、届いたメモがすぐ見えるよう横に並べる。 */}
-      <div className="grid gap-5 md:grid-cols-2 md:items-start">
-        <NoteForm onSaved={reload} />
+      <div className="grid gap-5 md:grid-cols-2 md:items-start lg:grid-cols-[minmax(20rem,1fr)_minmax(0,2.2fr)]">
+        <div className="lg:sticky lg:top-6">
+          <NoteForm onSaved={reload} />
+        </div>
         <NoteList title={title} notes={notes} />
       </div>
     </>

@@ -11,12 +11,13 @@ const SHAPES = {
     frame: "aspect-[16/10]",
     crop: "",
   },
-  // タイマーを画面の上の方に出すため、低くする。あごが切れないよう、上を多く切る。
+  // 狭い画面では、タイマーを上の方に出すため低くする。
+  // あごが切れないよう、上を多く切る。PC版では全体を見せる。
   hero: {
     source: "scene",
     width: 896,
     height: 560,
-    frame: "aspect-[2/1]",
+    frame: "aspect-[2/1] lg:aspect-[16/10]",
     crop: "object-[50%_70%]",
   },
   banner: {

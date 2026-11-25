@@ -19,7 +19,9 @@ import { comboCount, levelState } from "@/domain/progress";
 import { fetchProgress } from "@/lib/progress-api";
 import { fetchAnswerLogs, fetchCards, saveAnswerLog } from "@/lib/quiz-api";
 import { useRemote } from "@/lib/use-remote";
+import { useWide } from "@/lib/use-wide";
 import { AnswerHistory } from "./AnswerHistory";
+import { CharacterArt } from "./CharacterArt";
 import { CharacterPanel } from "./CharacterPanel";
 import { PANEL, PRIMARY_BUTTON, TEXT_INPUT } from "./form-styles";
 import { LevelPanel } from "./LevelPanel";
@@ -28,6 +30,7 @@ import { QuizQuestion, type Judged } from "./QuizQuestion";
 import { QuizResult } from "./QuizResult";
 import { QuizStage } from "./QuizStage";
 import { ScreenHeader } from "./ScreenHeader";
+import { ScreenLayout } from "./ScreenLayout";
 import { useWorld } from "./WorldProvider";
 
 /** 1回のテスト。results が queue と同じ長さになったら終了。 */
@@ -42,6 +45,7 @@ type QuizRun = {
 
 export function QuizScreen() {
   const { theme } = useWorld();
+  const isWide = useWide();
   const cards = useRemote(fetchCards);
   const history = useRemote(fetchAnswerLogs);
   const progress = useRemote(fetchProgress);
@@ -155,136 +159,147 @@ export function QuizScreen() {
   );
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-5 px-4 py-6">
+    <ScreenLayout>
       <ScreenHeader title={theme.terms.navQuiz} subtitle="確認テスト" />
-      <CharacterPanel theme={theme} mood={quizMood(moment)} lines={[cheer]} />
-      {run !== null && current === undefined && (
-        <LevelUpBanner
-          theme={theme}
-          totals={progress.data}
-          previousLevel={run.startLevel}
-          // 全問正解なら、結果の欄に絵が出る。
-          hasArt={moment !== "perfect"}
-        />
-      )}
-
-      {run !== null && (
-        <QuizStage
-          key={run.queue[0]?.id}
-          theme={theme}
-          score={{
-            correct: scoreQuiz(answered(run)).correct,
-            total: run.queue.length,
-          }}
-          combo={comboCount(answered(run))}
-          isHit={run.judged?.isCorrect === true}
-        />
-      )}
-
-      {run !== null && current !== undefined && (
-        <QuizQuestion
-          key={`${run.results.length}-${current.id}`}
-          card={current}
-          number={run.results.length + 1}
-          total={run.queue.length}
-          judged={run.judged}
-          isSaving={isSaving}
-          error={error}
-          onAnswer={handleAnswer}
-          onToggleCorrect={handleToggleCorrect}
-          onReasonChange={handleReasonChange}
-          onNext={() => void handleNext()}
-        />
-      )}
-
-      {run !== null && current === undefined && (
-        <QuizResult
-          theme={theme}
-          score={scoreQuiz(run.results)}
-          onRetry={startQuiz}
-          onFinish={() => setRun(null)}
-        />
-      )}
-
-      {run !== null && current === undefined && (
-        <LevelPanel theme={theme} remote={progress} />
-      )}
-
-      {run === null && (
-        <section className={PANEL}>
-          {cards.error !== null && (
-            <div role="alert" className="flex flex-col items-start gap-2">
-              <p>{cards.error}</p>
-              <button
-                type="button"
-                onClick={() => void cards.reload()}
-                className="underline"
-              >
-                もう一度読み込む
-              </button>
+      {/* PC版では、左にキャラと演出、右に問題や結果を並べる。 */}
+      <div className="flex flex-col gap-5 lg:grid lg:grid-cols-[minmax(20rem,1fr)_minmax(0,1.4fr)] lg:items-start">
+        <div className="flex flex-col gap-5 lg:sticky lg:top-6">
+          {isWide && run === null && (
+            <div className="panel overflow-hidden">
+              <CharacterArt theme={theme} kind="scene" />
             </div>
           )}
-          {cards.data === null && cards.error === null && (
-            <p>読み込んでいます…</p>
+          <CharacterPanel theme={theme} mood={quizMood(moment)} lines={[cheer]} />
+          {run !== null && current === undefined && (
+            <LevelUpBanner
+              theme={theme}
+              totals={progress.data}
+              previousLevel={run.startLevel}
+              // 全問正解なら、結果の欄に絵が出る。
+              hasArt={moment !== "perfect"}
+            />
           )}
-          {cards.data !== null && cards.data.length === 0 && (
-            <p>
-              まだカードがありません。
-              <Link href="/cards" className="text-primary underline">
-                {theme.quiz.terms.addCard}
-              </Link>
-            </p>
+
+          {run !== null && (
+            <QuizStage
+              key={run.queue[0]?.id}
+              theme={theme}
+              score={{
+                correct: scoreQuiz(answered(run)).correct,
+                total: run.queue.length,
+              }}
+              combo={comboCount(answered(run))}
+              isHit={run.judged?.isCorrect === true}
+            />
           )}
-          {allCards.length > 0 && (
-            <>
-              {isSubjectMissing && (
-                <p role="status" className="break-words">
-                  「{subject}」のカードはまだありません。すべての科目から出題します。
+        </div>
+        <div className="flex flex-col gap-5">
+          {run !== null && current !== undefined && (
+            <QuizQuestion
+              key={`${run.results.length}-${current.id}`}
+              card={current}
+              number={run.results.length + 1}
+              total={run.queue.length}
+              judged={run.judged}
+              isSaving={isSaving}
+              error={error}
+              onAnswer={handleAnswer}
+              onToggleCorrect={handleToggleCorrect}
+              onReasonChange={handleReasonChange}
+              onNext={() => void handleNext()}
+            />
+          )}
+
+          {run !== null && current === undefined && (
+            <QuizResult
+              theme={theme}
+              score={scoreQuiz(run.results)}
+              onRetry={startQuiz}
+              onFinish={() => setRun(null)}
+            />
+          )}
+
+          {run !== null && current === undefined && (
+            <LevelPanel theme={theme} remote={progress} />
+          )}
+
+          {run === null && (
+            <section className={PANEL}>
+              {cards.error !== null && (
+                <div role="alert" className="flex flex-col items-start gap-2">
+                  <p>{cards.error}</p>
+                  <button
+                    type="button"
+                    onClick={() => void cards.reload()}
+                    className="underline"
+                  >
+                    もう一度読み込む
+                  </button>
+                </div>
+              )}
+              {cards.data === null && cards.error === null && (
+                <p>読み込んでいます…</p>
+              )}
+              {cards.data !== null && cards.data.length === 0 && (
+                <p>
+                  まだカードがありません。
+                  <Link href="/cards" className="text-primary underline">
+                    {theme.quiz.terms.addCard}
+                  </Link>
                 </p>
               )}
-              <label className="flex flex-col gap-1">
-                <span className="text-sm text-accent">出題する科目</span>
-                <select
-                  value={isSubjectMissing ? "" : (subject ?? "")}
-                  onChange={(event) =>
-                    setChoice({
-                      requested,
-                      subject:
-                        event.target.value === "" ? null : event.target.value,
-                    })
-                  }
-                  className={TEXT_INPUT}
-                >
-                  <option value="">すべて</option>
-                  {subjects.map((name) => (
-                    <option key={name} value={name}>
-                      {name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <button
-                type="button"
-                onClick={startQuiz}
-                className={PRIMARY_BUTTON}
-              >
-                {theme.quiz.terms.start}（最大{MAX_QUIZ_QUESTIONS}問）
-              </button>
-            </>
+              {allCards.length > 0 && (
+                <>
+                  {isSubjectMissing && (
+                    <p role="status" className="break-words">
+                      「{subject}」のカードはまだありません。すべての科目から出題します。
+                    </p>
+                  )}
+                  <label className="flex flex-col gap-1">
+                    <span className="text-sm text-accent">出題する科目</span>
+                    <select
+                      value={isSubjectMissing ? "" : (subject ?? "")}
+                      onChange={(event) =>
+                        setChoice({
+                          requested,
+                          subject:
+                            event.target.value === "" ? null : event.target.value,
+                        })
+                      }
+                      className={TEXT_INPUT}
+                    >
+                      <option value="">すべて</option>
+                      {subjects.map((name) => (
+                        <option key={name} value={name}>
+                          {name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={startQuiz}
+                    className={PRIMARY_BUTTON}
+                  >
+                    {theme.quiz.terms.start}（最大{MAX_QUIZ_QUESTIONS}問）
+                  </button>
+                </>
+              )}
+            </section>
           )}
-        </section>
-      )}
 
-      {(run === null || current === undefined) && (
-        <AnswerHistory
-          terms={theme.quiz.terms}
-          logs={history.data}
-          cards={cards.data}
-          error={history.error}
-          onReload={() => void history.reload()}
-        />
-      )}
-    </main>
+          {(run === null || current === undefined) && (
+            <AnswerHistory
+              terms={theme.quiz.terms}
+              logs={history.data}
+              cards={cards.data}
+              error={history.error}
+              onReload={() => void history.reload()}
+            />
+          )}
+        </div>
+      </div>
+    </ScreenLayout>
   );
 }
 
