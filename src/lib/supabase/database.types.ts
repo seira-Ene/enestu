@@ -5,6 +5,34 @@
 export type Database = {
   public: {
     Tables: {
+      notes: {
+        Row: {
+          id: string;
+          user_id: string;
+          body: string;
+          has_image: boolean;
+          image_uploaded_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id: string;
+          user_id: string;
+          body?: string;
+          has_image?: boolean;
+          /** 追加の後で、写真を送り終えてから書く。 */
+          image_uploaded_at?: never;
+          created_at?: never;
+        };
+        Update: {
+          id?: never;
+          user_id?: never;
+          body?: never;
+          has_image?: never;
+          image_uploaded_at?: string;
+          created_at?: never;
+        };
+        Relationships: [];
+      };
       user_settings: {
         Row: {
           id: string;

@@ -11,7 +11,7 @@ export type Actor = Role | { readonly user: string };
 export type Row = Record<string, unknown>;
 
 /**
- * Supabaseの権限の初期状態をまねる。
+ * Supabaseの権限の初期状態と、認証・写真・合図の仕組みの要点をまねる。
  * 新しいテーブルと関数が anon / authenticated に開放される、最も緩い設定にし、
  * マイグレーションで閉じ忘れたら検査で気づけるようにする。
  */
@@ -33,6 +33,50 @@ const SUPABASE_LIKE_SETUP = `
       nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'sub'
     )::uuid
   $$;
+
+  create schema storage;
+  grant usage on schema storage to anon, authenticated, service_role;
+  create table storage.buckets (
+    id text primary key,
+    name text not null,
+    public boolean not null default false,
+    file_size_limit bigint,
+    allowed_mime_types text[]
+  );
+  create table storage.objects (
+    id uuid primary key default gen_random_uuid(),
+    bucket_id text references storage.buckets (id),
+    name text not null,
+    unique (bucket_id, name)
+  );
+  alter table storage.objects enable row level security;
+  grant all on storage.objects to anon, authenticated, service_role;
+  create function storage.foldername(name text) returns text[]
+    language sql immutable as $$
+    select (string_to_array(name, '/'))[1:cardinality(string_to_array(name, '/')) - 1]
+  $$;
+
+  create schema realtime;
+  grant usage on schema realtime to anon, authenticated, service_role;
+  create table realtime.messages (
+    topic text not null,
+    extension text not null,
+    payload jsonb,
+    event text,
+    private boolean
+  );
+  alter table realtime.messages enable row level security;
+  grant select, insert on realtime.messages to anon, authenticated, service_role;
+  create function realtime.topic() returns text language sql stable as $$
+    select nullif(current_setting('realtime.topic', true), '')
+  $$;
+  create function realtime.send(
+    payload jsonb, event text, topic text, private boolean default true
+  ) returns void language sql as $$
+    insert into realtime.messages (payload, event, topic, private, extension)
+    values (payload, event, topic, private, 'broadcast')
+  $$;
+  revoke all on function realtime.send(jsonb, text, text, boolean) from public;
 `;
 
 /** マイグレーションのファイル名を、適用する順に返す。 */
@@ -67,7 +111,8 @@ export class TestDb {
       "select quote_ident(tablename) as name from pg_tables where schemaname = 'public'",
     );
     const names = tables.map((row) => `public.${String(row.name)}`);
-    await this.pg.exec(`truncate ${names.join(", ")}, auth.users cascade`);
+    names.push("auth.users", "storage.objects", "realtime.messages");
+    await this.pg.exec(`truncate ${names.join(", ")} cascade`);
   }
 
   /** 利用者を1人作り、IDを返す。 */
@@ -94,6 +139,18 @@ export class TestDb {
       return await this.asOwner(sql, params);
     } finally {
       await this.pg.exec("reset role; reset request.jwt.claims");
+    }
+  }
+
+  /** Realtimeの、その宛先につないだ状態で実行する。 */
+  async asTopic(actor: Actor, topic: string, sql: string): Promise<Row[]> {
+    await this.asOwner("select set_config('realtime.topic', $1, false)", [
+      topic,
+    ]);
+    try {
+      return await this.as(actor, sql);
+    } finally {
+      await this.pg.exec("reset realtime.topic");
     }
   }
 

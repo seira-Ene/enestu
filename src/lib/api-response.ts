@@ -17,6 +17,15 @@ export async function readJson(request: Request): Promise<unknown> {
   }
 }
 
+/** 読めないフォームは null にする。 */
+export async function readFormData(request: Request): Promise<FormData | null> {
+  try {
+    return await request.formData();
+  } catch {
+    return null;
+  }
+}
+
 export function success(body: Record<string, unknown>): Response {
   return Response.json(body, { headers: NO_STORE });
 }
@@ -36,6 +45,11 @@ export function signedOut(): Response {
     "signed_out",
     "ログインが切れました。もう一度ログインしてください。",
   );
+}
+
+/** ログインした人だけが使える機能。 */
+export function loginRequired(): Response {
+  return problem(401, "login_required", "ログインすると使えます。");
 }
 
 /** 画面を開いた後に、ログインの状態が変わっている。 */
