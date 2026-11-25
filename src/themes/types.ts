@@ -84,6 +84,7 @@ export type ThemeTerms = {
   readonly navCards: string;
   readonly navQuiz: string;
   readonly navStats: string;
+  readonly navNotes: string;
 };
 
 export type QuizTerms = {

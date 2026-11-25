@@ -59,6 +59,7 @@ export const detective = {
     navCards: "証拠",
     navQuiz: "推理",
     navStats: "事件簿",
+    navNotes: "覚書",
   },
   quiz: {
     terms: {

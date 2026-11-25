@@ -12,6 +12,7 @@ export function BottomNav() {
     { href: "/cards", label: terms.navCards, plain: "カード" },
     { href: "/quiz", label: terms.navQuiz, plain: "テスト" },
     { href: "/stats", label: terms.navStats, plain: "集計" },
+    { href: "/notes", label: terms.navNotes, plain: "メモ" },
   ];
 
   return (

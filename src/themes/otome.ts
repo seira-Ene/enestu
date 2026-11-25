@@ -59,6 +59,7 @@ export const otome = {
     navCards: "しおり",
     navQuiz: "舞踏会",
     navStats: "手帳",
+    navNotes: "手紙",
   },
   quiz: {
     terms: {
