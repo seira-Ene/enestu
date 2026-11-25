@@ -1,9 +1,9 @@
 import { randomUUID } from "node:crypto";
 import { readdirSync, readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
 import { PGlite } from "@electric-sql/pglite";
 
-const MIGRATIONS = fileURLToPath(new URL("../migrations/", import.meta.url));
+const MIGRATIONS = join(process.cwd(), "supabase/migrations/");
 
 export type Role = "anon" | "authenticated" | "service_role";
 /** 誰として操作するか。利用者なら、その人としてログインした状態になる。 */
