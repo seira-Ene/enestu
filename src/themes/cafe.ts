@@ -58,6 +58,7 @@ export const cafe = {
     navCards: "レシピ",
     navQuiz: "開店",
     navStats: "帳簿",
+    navNotes: "伝言板",
   },
   quiz: {
     terms: {

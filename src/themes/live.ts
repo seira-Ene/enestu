@@ -59,6 +59,7 @@ export const live = {
     navCards: "セトリ",
     navQuiz: "本番",
     navStats: "楽屋",
+    navNotes: "歌詞帳",
   },
   quiz: {
     terms: {

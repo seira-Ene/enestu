@@ -4,6 +4,8 @@ import { getDeviceId } from "./device-id";
 /** 画面から自前のAPIを呼ぶための共通処理。 */
 
 const TIMEOUT_MS = 15_000;
+/** 写真は大きいので、遅い回線でも待つ。 */
+const UPLOAD_TIMEOUT_MS = 60_000;
 
 /** サーバーが、ログインの食い違いを見つけたときに window へ送る。 */
 export const ACCOUNT_PROBLEM_EVENT = "enestu:account-problem";
@@ -64,6 +66,19 @@ export function postJson(
   return send("POST", endpoint, body);
 }
 
+/** 写真を含むフォームを送る。 */
+export async function postForm(
+  endpoint: string,
+  form: FormData,
+): Promise<ApiResult<null>> {
+  const result = await request(
+    endpoint,
+    { method: "POST", body: form },
+    UPLOAD_TIMEOUT_MS,
+  );
+  return result.ok ? { ok: true, value: null } : result;
+}
+
 export function patchJson(
   endpoint: string,
   body: object,
@@ -101,14 +116,15 @@ async function request(
   init: {
     method: "GET" | "POST" | "PATCH" | "DELETE";
     headers?: Record<string, string>;
-    body?: string;
+    body?: string | FormData;
   },
+  timeoutMs = TIMEOUT_MS,
 ): Promise<ApiResult<unknown>> {
   try {
     const response = await fetch(endpoint, {
       ...init,
       headers: { ...init.headers, ...ownerHeaders() },
-      signal: AbortSignal.timeout(TIMEOUT_MS),
+      signal: AbortSignal.timeout(timeoutMs),
     });
     const body: unknown = await response.json();
     if (response.ok) return { ok: true, value: body };

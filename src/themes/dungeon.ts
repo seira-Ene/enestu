@@ -58,6 +58,7 @@ export const dungeon = {
     navCards: "巻物",
     navQuiz: "番人戦",
     navStats: "地図",
+    navNotes: "手記",
   },
   quiz: {
     terms: {
