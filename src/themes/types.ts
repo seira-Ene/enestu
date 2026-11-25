@@ -56,6 +56,8 @@ export type ThemeCharacter = {
   readonly introduction: string;
   /** 話しかけたときのセリフ。学習の状況に関わらず言える内容にする。 */
   readonly talk: CheerLines;
+  /** 名前を決めた人に、話しかけたときのセリフ。 */
+  readonly namedTalk: NamedLines;
   /** null なら src/components/characters のSVGを使う。 */
   readonly images: CharacterImages | null;
 };
@@ -63,11 +65,17 @@ export type ThemeCharacter = {
 /** 1つ以上のセリフ。空配列は型エラーになる。 */
 export type CheerLines = readonly [string, ...string[]];
 
+/** 主人公の名前を埋め込む {name} を必ず含む。 */
+export type NamedLine = `${string}{name}${string}`;
+export type NamedLines = readonly [NamedLine, ...NamedLine[]];
+
 /** 合計時間のセリフ。分数を埋め込む {minutes} を必ず含む。 */
 export type TotalCheerLine = `${string}{minutes}${string}`;
 
 export type ThemeCheers = {
   readonly welcome: CheerLines;
+  /** 名前を決めた人への、welcome の代わり。 */
+  readonly namedWelcome: NamedLines;
   readonly timerStart: CheerLines;
   readonly timerStop: CheerLines;
   readonly dailyTotal: readonly [TotalCheerLine, ...TotalCheerLine[]];

@@ -51,7 +51,9 @@ const COLUMN_UPDATES: Readonly<
     authenticated: ["answer", "archived_at", "question", "subject"],
     service_role: ["answer", "archived_at", "question", "subject"],
   },
-  user_settings: { authenticated: ["updated_at", "user_id", "world_id"] },
+  user_settings: {
+    authenticated: ["hero_name", "updated_at", "user_id", "world_id"],
+  },
   notes: { authenticated: ["image_uploaded_at"] },
 };
 

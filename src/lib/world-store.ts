@@ -19,6 +19,11 @@ export function useWorldId(): WorldId {
   );
 }
 
+/** この端末で選んだ世界線。サーバーと初回描画、まだ選んでいないときは null。 */
+export function useStoredWorld(): WorldId | null {
+  return useSyncExternalStore(subscribe, getStoredWorld, () => null);
+}
+
 /** まだ選んでいなければ null。 */
 export function getStoredWorld(): WorldId | null {
   try {

@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { MAX_HERO_NAME_LENGTH } from "@/domain/hero-name";
 import { WORLD_IDS } from "@/themes/types";
 import { listMigrations, SQLSTATE, TestDb, type Row } from "./test-db";
 
@@ -201,6 +202,35 @@ describe("user_settings", () => {
   it("知らない世界線は拒否する", async () => {
     expect(await save("space")).toBe(SQLSTATE.checkViolation);
   });
+
+  const saveName = (name: string | null) =>
+    failure(
+      `insert into user_settings (device_id, hero_name) values ($1, $2)
+       on conflict (device_id) do update set hero_name = excluded.hero_name`,
+      [device, name],
+    );
+  const saved = () => server("select world_id, hero_name from user_settings");
+
+  it("名前と世界線は、どちらを先に決めても、もう片方を消さない", async () => {
+    expect(await saveName("そら")).toBeNull();
+    expect(await saved()).toEqual([{ world_id: null, hero_name: "そら" }]);
+    expect(await save("cafe")).toBeNull();
+    expect(await saved()).toEqual([{ world_id: "cafe", hero_name: "そら" }]);
+    expect(await saveName(null)).toBeNull();
+    expect(await saved()).toEqual([{ world_id: "cafe", hero_name: null }]);
+  });
+
+  it("名前は、アプリの上限まで受け付ける", async () => {
+    expect(await saveName("あ".repeat(MAX_HERO_NAME_LENGTH))).toBeNull();
+    expect(await saveName("😀".repeat(MAX_HERO_NAME_LENGTH))).toBeNull();
+  });
+
+  it.each(["", " そら", "そ\nら", "あ".repeat(MAX_HERO_NAME_LENGTH + 1)])(
+    "名前「%s」は拒否する",
+    async (name) => {
+      expect(await saveName(name)).toBe(SQLSTATE.checkViolation);
+    },
+  );
 });
 
 describe("集計", () => {

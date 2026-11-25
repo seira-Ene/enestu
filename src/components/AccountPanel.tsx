@@ -6,6 +6,7 @@ import {
   type AccountState,
   type RecordCounts,
 } from "@/domain/account";
+import type { MovedCounts } from "@/lib/account-api";
 import { useActiveSession } from "@/lib/active-session";
 import { useAccount } from "./AccountProvider";
 import { ClaimDialog } from "./ClaimDialog";
@@ -17,6 +18,7 @@ import {
   SECONDARY_BUTTON,
 } from "./form-styles";
 import { LoginForm } from "./LoginForm";
+import { useSettings } from "./SettingsProvider";
 
 type SignedIn = Extract<AccountState, { kind: "signed_in" }>;
 
@@ -109,12 +111,14 @@ function SignedInBody({
   /** null は、まだ開くとも閉じるとも選んでいない状態。 */
   const [isOpen, setIsOpen] = useState<boolean | null>(null);
   const [moved, setMoved] = useState<RecordCounts | null>(null);
+  const { reload: reloadSettings } = useSettings();
   const counts = claimable !== null && hasRecords(claimable) ? claimable : null;
 
-  async function handleClaimed(result: RecordCounts) {
-    setMoved(result);
+  async function handleClaimed(result: MovedCounts) {
+    setMoved({ ...result, heroName: counts?.heroName ?? null });
     setIsOpen(false);
-    await onReload();
+    // 名前も移っているので、呼び方を直す。
+    await Promise.all([onReload(), reloadSettings()]);
   }
 
   return (

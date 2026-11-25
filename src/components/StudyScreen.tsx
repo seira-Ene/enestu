@@ -3,6 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { selectCheers, studyMood, type StudyStatus } from "@/domain/cheer";
+import { fillHeroName } from "@/domain/hero-name";
 import { levelState, unlockedRankCount } from "@/domain/progress";
 import { parseSubject } from "@/domain/validation";
 import {
@@ -29,12 +30,14 @@ import { LevelPanel } from "./LevelPanel";
 import { LevelUpBanner } from "./LevelUpBanner";
 import { ScreenHeader } from "./ScreenHeader";
 import { ScreenLayout } from "./ScreenLayout";
+import { useSettings } from "./SettingsProvider";
 import { StudyHistory } from "./StudyHistory";
 import { StudyTimer, type TimerPhase } from "./StudyTimer";
 import { useWorld } from "./WorldProvider";
 
 export function StudyScreen() {
   const { theme } = useWorld();
+  const heroName = useSettings().data?.heroName ?? null;
   const session = useActiveSession();
   const now = useNow();
   const stats = useRemote(fetchStats);
@@ -159,7 +162,14 @@ export function StudyScreen() {
     logs !== null && now !== null ? sumTodaySeconds(logs, now) : null;
 
   const status = toStatus(session, lastSaved);
-  const lines = selectCheers(theme.cheers, status, {
+  const cheers =
+    heroName === null
+      ? theme.cheers
+      : {
+          ...theme.cheers,
+          welcome: fillHeroName(theme.cheers.namedWelcome, heroName),
+        };
+  const lines = selectCheers(cheers, status, {
     seed: cheerSeed(session, lastSaved, todayLogs),
     totalSeconds,
   });
@@ -171,6 +181,9 @@ export function StudyScreen() {
       : unlockedRankCount(levelState(progress.data).level);
   const talkLines = [
     ...theme.character.talk,
+    ...(heroName === null
+      ? []
+      : fillHeroName(theme.character.namedTalk, heroName)),
     ...theme.progress.stories.slice(0, storyCount),
   ];
 

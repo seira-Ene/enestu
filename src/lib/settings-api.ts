@@ -1,17 +1,27 @@
+import type { Settings } from "@/domain/settings-input";
 import { isWorldId, type WorldId } from "@/themes/types";
 import { getField, postJson, type ApiResult } from "./api-client";
 
 const ENDPOINT = "/api/settings";
 
-/** まだ選んでいなければ null。 */
-export function fetchWorld(): Promise<ApiResult<WorldId | null>> {
-  return getField(ENDPOINT, "worldId", isWorldIdOrNull);
+export function fetchSettings(): Promise<ApiResult<Settings>> {
+  return getField(ENDPOINT, "settings", isSettings);
 }
 
 export function saveWorld(worldId: WorldId): Promise<ApiResult<null>> {
   return postJson(ENDPOINT, { worldId });
 }
 
-function isWorldIdOrNull(value: unknown): value is WorldId | null {
-  return value === null || isWorldId(value);
+/** 空なら、名前を消す。 */
+export function saveHeroName(heroName: string): Promise<ApiResult<null>> {
+  return postJson(ENDPOINT, { heroName });
+}
+
+function isSettings(value: unknown): value is Settings {
+  if (typeof value !== "object" || value === null) return false;
+  const { worldId, heroName }: Partial<Record<keyof Settings, unknown>> = value;
+  return (
+    (worldId === null || isWorldId(worldId)) &&
+    (heroName === null || typeof heroName === "string")
+  );
 }

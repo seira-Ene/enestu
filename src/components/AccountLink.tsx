@@ -1,11 +1,13 @@
 import Link from "next/link";
-import type { AccountState } from "@/domain/account";
+import { accountLabel, type AccountState } from "@/domain/account";
 import { useAccount } from "./AccountProvider";
+import { useSettings } from "./SettingsProvider";
 
 /** 見出しの下に出す、ログインの状態とアカウント画面への入口。 */
 export function AccountLink() {
   const { data, error } = useAccount();
-  const { status, action } = describe(data, error);
+  const heroName = useSettings().data?.heroName ?? null;
+  const { status, action } = describe(data, error, heroName);
   return (
     <Link
       href="/account"
@@ -20,13 +22,14 @@ export function AccountLink() {
 function describe(
   state: AccountState | null,
   error: string | null,
+  heroName: string | null,
 ): { status: string; action: string } {
   switch (state?.kind) {
     case "guest":
       return { status: "記録はこの端末だけ", action: "ログイン" };
     case "signed_in":
       return {
-        status: `${state.account.name ?? state.account.email ?? "利用者"} さん`,
+        status: `${heroName ?? accountLabel(state.account)} さん`,
         action: "アカウント",
       };
     case "expired":

@@ -23,9 +23,12 @@ export async function fetchAccountState(): Promise<ApiResult<AccountState>> {
   };
 }
 
-/** この端末の記録を、ログイン中の利用者へ移す。移した件数を返す。 */
-export function claimRecords(): Promise<ApiResult<RecordCounts>> {
-  return postForField("/api/account/claim", {}, "moved", isRecordCounts);
+/** 移した件数。 */
+export type MovedCounts = Omit<RecordCounts, "heroName">;
+
+/** この端末の記録と名前を、ログイン中の利用者へ移す。移した件数を返す。 */
+export function claimRecords(): Promise<ApiResult<MovedCounts>> {
+  return postForField("/api/account/claim", {}, "moved", isMovedCounts);
 }
 
 function isAccountStatus(value: unknown): value is AccountStatus {
@@ -50,7 +53,15 @@ function isAccount(value: unknown): value is Account {
 
 function isRecordCounts(value: unknown): value is RecordCounts {
   if (typeof value !== "object" || value === null) return false;
-  const counts: Partial<Record<keyof RecordCounts, unknown>> = value;
+  const { heroName }: { heroName?: unknown } = value;
+  return (
+    isMovedCounts(value) && (heroName === null || typeof heroName === "string")
+  );
+}
+
+function isMovedCounts(value: unknown): value is MovedCounts {
+  if (typeof value !== "object" || value === null) return false;
+  const counts: Partial<Record<keyof MovedCounts, unknown>> = value;
   return (
     typeof counts.studyLogs === "number" &&
     typeof counts.cards === "number" &&

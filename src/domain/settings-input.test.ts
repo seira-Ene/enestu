@@ -11,6 +11,18 @@ describe("parseSettingsInput", () => {
   });
 
   it.each([
+    [{ heroName: " そら " }, { heroName: "そら" }],
+    [{ heroName: null }, { heroName: null }],
+    [{ heroName: "" }, { heroName: null }],
+    [
+      { worldId: "cafe", heroName: "そら" },
+      { worldId: "cafe", heroName: "そら" },
+    ],
+  ])("%j から、変える項目だけを取り出す", (body, value) => {
+    expect(parseSettingsInput(body)).toEqual({ ok: true, value });
+  });
+
+  it.each([
     null,
     undefined,
     "cafe",
@@ -18,6 +30,11 @@ describe("parseSettingsInput", () => {
     {},
     { worldId: "space" },
     { worldId: 1 },
+    { worldId: null },
+    { heroName: 1 },
+    { heroName: "あ".repeat(13) },
+    { worldId: "space", heroName: "そら" },
+    { worldId: "cafe", heroName: "そ\nら" },
   ])("%j を拒否する", (body) => {
     expect(parseSettingsInput(body).ok).toBe(false);
   });

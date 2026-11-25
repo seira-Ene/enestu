@@ -33,6 +33,11 @@ export const cafe = {
       "ゆっくりでいいよ。お湯だって、すぐには沸かないもの。",
       "きみが来る時間になると、つい入口を見ちゃうんだ。",
     ],
+    namedTalk: [
+      "{name}さんのカップ、取っ手に目印つけておいたの。",
+      "今日のおすすめは、{name}さんの好きそうな味だよ。",
+      "{name}さんが来ると、お店が少し明るくなるんだ。",
+    ],
     images: {
       face: "/characters/cafe-face.webp",
       scene: "/characters/cafe-scene.webp",
@@ -43,6 +48,10 @@ export const cafe = {
     welcome: [
       "いらっしゃい。いつもの席、空いてるよ。",
       "今日もお疲れさま。まずは深呼吸しよっか。",
+    ],
+    namedWelcome: [
+      "いらっしゃい、{name}さん。いつもの席、空いてるよ。",
+      "{name}さん、今日もお疲れさま。まずは深呼吸しよっか。",
     ],
     timerStart: [
       "はーい、仕込み開始。ことこといこうね。",

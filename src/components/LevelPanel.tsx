@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   levelState,
   nextRankLevel,
@@ -9,6 +10,7 @@ import {
 import type { Remote } from "@/lib/use-remote";
 import type { WorldTheme } from "@/themes/types";
 import { HEADING, PANEL } from "./form-styles";
+import { useSettings } from "./SettingsProvider";
 
 type Props = {
   theme: WorldTheme;
@@ -23,6 +25,7 @@ export function LevelPanel({ theme, remote }: Props) {
   return (
     <section aria-label={label} className={PANEL}>
       <h2 className={HEADING}>{label}</h2>
+      <HeroName />
       {error !== null && (
         <div role="alert" className="flex flex-col items-start gap-2">
           <p>{error}</p>
@@ -38,6 +41,19 @@ export function LevelPanel({ theme, remote }: Props) {
       {data === null && error === null && <p>読み込んでいます…</p>}
       {data !== null && <LevelBody theme={theme} totals={data} />}
     </section>
+  );
+}
+
+/** 主人公の名前。まだ決めていなければ、決める画面へ進める。 */
+function HeroName() {
+  const { data } = useSettings();
+  if (data === null) return null;
+  return data.heroName === null ? (
+    <Link href="/account#hero" className="text-sm text-accent underline">
+      主人公の名前を決める
+    </Link>
+  ) : (
+    <p className="font-display text-lg break-words">{data.heroName}</p>
   );
 }
 

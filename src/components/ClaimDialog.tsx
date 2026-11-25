@@ -5,7 +5,7 @@ import {
   type Account,
   type RecordCounts,
 } from "@/domain/account";
-import { claimRecords } from "@/lib/account-api";
+import { claimRecords, type MovedCounts } from "@/lib/account-api";
 import { ALERT, PRIMARY_BUTTON } from "./form-styles";
 
 type Props = {
@@ -13,7 +13,7 @@ type Props = {
   account: Account;
   counts: RecordCounts;
   onClose: () => void;
-  onClaimed: (moved: RecordCounts) => void;
+  onClaimed: (moved: MovedCounts) => void;
 };
 
 /** 端末の記録をアカウントへ移す前の確認。元に戻せないため、自動では移さない。 */

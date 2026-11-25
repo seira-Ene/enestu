@@ -18,10 +18,16 @@ export async function setRealtimeDown(isDown: boolean): Promise<void> {
 }
 
 /** 初めて開いたときの、世界線の選択を済ませる。 */
-export async function openFirstTime(page: Page, path = "/"): Promise<void> {
+export async function openFirstTime(
+  page: Page,
+  path = "/",
+  world = "カフェ",
+): Promise<void> {
   await page.goto(path);
   const dialog = page.getByRole("dialog");
-  await dialog.getByRole("button", { name: /^カフェ/ }).click();
+  await dialog
+    .getByRole("button", { name: new RegExp(`^${world}`) })
+    .click();
   await expect(dialog).toHaveCount(0);
 }
 

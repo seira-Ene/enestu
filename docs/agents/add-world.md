@@ -6,6 +6,7 @@
    - 配色は6桁・小文字の16進カラーにし、文字と背景の明暗差を4.5:1以上にする。
    - キャラクターとセリフはオリジナルにする。実在の作品や人物を使わない。
    - `dailyTotal` のセリフには `{minutes}`、クエストの `weak` と `neglected` には `{subject}`、`combo` には `{count}` を含める。
+   - `namedWelcome` と `namedTalk` のセリフには `{name}` を含める。
 4. 次の登録表に足す（足りなければ型エラーになる）。
    - `src/themes/index.ts` の `themes`
    - `src/lib/world-fonts.ts` の `LOADERS`（フォントは `src/lib/fonts/<id>.ts`）

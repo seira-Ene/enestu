@@ -38,21 +38,24 @@ export type Database = {
           id: string;
           device_id: string | null;
           user_id: string | null;
-          world_id: string;
+          world_id: string | null;
+          hero_name: string | null;
           updated_at: string;
         };
         Insert: {
           id?: string;
           device_id?: string | null;
           user_id?: string | null;
-          world_id: string;
+          world_id?: string | null;
+          hero_name?: string | null;
           updated_at?: string;
         };
         Update: {
           id?: string;
           device_id?: string | null;
           user_id?: string | null;
-          world_id?: string;
+          world_id?: string | null;
+          hero_name?: string | null;
           updated_at?: string;
         };
         Relationships: [];

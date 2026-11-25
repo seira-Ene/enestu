@@ -34,6 +34,11 @@ export const live = {
       "のどが渇いたらお水！ 頭が疲れたら深呼吸！",
       "いっせーの、で笑って！ ……うん、最高！",
     ],
+    namedTalk: [
+      "{name}コール、いっくよー！ せーのっ、{name}！",
+      "次の新曲、{name}のために書いたんだ！",
+      "{name}の声援、ステージのどこにいても聞こえるよ！",
+    ],
     images: {
       face: "/characters/live-face.webp",
       scene: "/characters/live-scene.webp",
@@ -44,6 +49,10 @@ export const live = {
     welcome: [
       "待ってたよ！ 今日もいい音、鳴らしていこう！",
       "きたきた！ 最初の一音、どこから始める？",
+    ],
+    namedWelcome: [
+      "{name}、待ってたよ！ 今日もいい音、鳴らそう！",
+      "{name}が来た！ これで全員そろったね！",
     ],
     timerStart: [
       "ワン、ツー、スリー！ いくよー！",

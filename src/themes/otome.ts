@@ -34,6 +34,11 @@ export const otome = {
       "少し休もうか。紅茶を淹れるよ。砂糖はいくつ？",
       "名前を呼んでくれるだけで、今日はいい日になる。",
     ],
+    namedTalk: [
+      "{name}。……呼んでみただけだよ。",
+      "{name}の名前を、僕はいちばんよく覚えている。",
+      "今夜の最初の一曲は、{name}と踊りたいな。",
+    ],
     images: {
       face: "/characters/otome-face.webp",
       scene: "/characters/otome-scene.webp",
@@ -44,6 +49,10 @@ export const otome = {
     welcome: [
       "来てくれたんだね。隣の席、空けておいたよ。",
       "おかえり。今日は何を一緒に学ぼうか。",
+    ],
+    namedWelcome: [
+      "おかえり、{name}。隣の席、空けておいたよ。",
+      "{name}、来てくれたんだね。会いたかった。",
     ],
     timerStart: [
       "では始めようか。僕も隣で公務を片づけるよ。",
