@@ -44,6 +44,8 @@ const TABLE_PRIVILEGES: Readonly<
   },
   // ガチャの記録は、引く関数の中でだけ足す。景品の表は誰にも見せない。
   gacha_pulls: { authenticated: ["SELECT"], service_role: ["SELECT"] },
+  // 受け取りの記録も、受け取る関数の中でだけ足す。
+  daily_claims: { authenticated: ["SELECT"], service_role: ["SELECT"] },
   gacha_items: {},
   gacha_rarities: {},
 };
@@ -106,15 +108,28 @@ const FUNCTION_ROLES: Readonly<Record<string, readonly Role[]>> = {
   gacha_min_rarity: [],
   gacha_counts: [],
   gacha_draw: [],
+  my_daily_status: ["authenticated"],
+  my_daily_claim: ["authenticated"],
+  daily_status: ["service_role"],
+  daily_claim: ["service_role"],
+  daily_day: [],
+  daily_status_of: [],
+  daily_material: [],
+  daily_claim_for: [],
   notify_notes_changed: [],
 };
 
 /** 所有者の権限で動く関数。RLSを迂回するため、増やすときは理由を確かめる。 */
 const SECURITY_DEFINER: readonly string[] = [
   "claim_device_records",
+  // 毎日の報酬も、受け取りの記録を本人に書き換えさせないため。
+  "daily_claim",
+  "daily_status",
   // ガチャは、券と記録を本人に書き換えさせないため。持ち主は引数で選ばせない。
   "gacha_pull",
   "gacha_status",
+  "my_daily_claim",
+  "my_daily_status",
   "my_gacha_pull",
   "my_gacha_status",
   "notify_notes_changed",
