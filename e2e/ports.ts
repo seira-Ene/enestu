@@ -8,4 +8,6 @@ export const FAKE_ENV = {
   NEXT_PUBLIC_SUPABASE_URL: FAKE_URL,
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "sb_publishable_dummy",
   SUPABASE_SECRET_KEY: "sb_secret_dummy",
+  // テスト用の暗号化の鍵（32バイト）。本番の鍵ではない。
+  BYOK_ENCRYPTION_KEY: Buffer.alloc(32, 7).toString("base64"),
 } as const;

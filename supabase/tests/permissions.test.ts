@@ -48,6 +48,9 @@ const TABLE_PRIVILEGES: Readonly<
   daily_claims: { authenticated: ["SELECT"], service_role: ["SELECT"] },
   gacha_items: {},
   gacha_rarities: {},
+  // AIのキーは、本人は暗号文以外の列だけを読める（列ごとの権限）。暗号文は secret key だけが読む。
+  ai_keys: { authenticated: ["DELETE"], service_role: ["SELECT"] },
+  ai_requests: { authenticated: ["SELECT"] },
 };
 
 /** 列だけに許す追加。 */
@@ -55,6 +58,10 @@ const COLUMN_INSERTS: Readonly<
   Record<string, Partial<Record<Role, readonly string[]>>>
 > = {
   notes: { authenticated: ["body", "has_image", "id", "user_id"] },
+  ai_keys: {
+    authenticated: ["ciphertext", "last4", "provider", "updated_at", "user_id"],
+  },
+  ai_requests: { authenticated: ["kind", "user_id"] },
 };
 
 /** 列だけに許す更新。 */
@@ -69,6 +76,7 @@ const COLUMN_UPDATES: Readonly<
     authenticated: ["hero_name", "updated_at", "user_id", "world_id"],
   },
   notes: { authenticated: ["image_uploaded_at"] },
+  ai_keys: { authenticated: ["ciphertext", "last4", "provider", "updated_at"] },
   explain_terms: {
     authenticated: ["archived_at", "keywords", "subject", "term"],
     service_role: ["archived_at", "keywords", "subject", "term"],
@@ -87,7 +95,7 @@ const POLICY_COMMANDS: Readonly<Record<string, readonly string[]>> = {
 };
 
 /** 本人が行を消せるテーブル。増やすときは理由を確かめる。 */
-const DELETABLE: readonly string[] = ["notes"];
+const DELETABLE: readonly string[] = ["notes", "ai_keys"];
 
 /** 関数を実行できるロール。 */
 const FUNCTION_ROLES: Readonly<Record<string, readonly Role[]>> = {
@@ -98,6 +106,7 @@ const FUNCTION_ROLES: Readonly<Record<string, readonly Role[]>> = {
   claim_device_records: ["service_role"],
   enforce_notes_limit: [],
   enforce_row_limit: [],
+  enforce_ai_request_limit: [],
   my_gacha_status: ["authenticated"],
   my_gacha_pull: ["authenticated"],
   my_gacha_collection: ["authenticated"],

@@ -16,9 +16,9 @@ export type RestReply = {
   readonly count?: number;
 };
 
-/** 名前として使える文字だけを受け付ける。 */
+/** 名前として使える文字（小文字・数字・下線。先頭は数字以外）だけを受け付ける。 */
 function quote(name: string): string {
-  if (!/^[a-z_]+$/.test(name)) throw new Error(`使えない名前: ${name}`);
+  if (!/^[a-z_][a-z0-9_]*$/.test(name)) throw new Error(`使えない名前: ${name}`);
   return `"${name}"`;
 }
 

@@ -22,6 +22,20 @@ export async function addStudy(
   await control(`add-study?kind=${kind}&owner=${id}&minutes=${minutes}`);
 }
 
+/** 保存されたAIのキーの行（暗号文と末尾4文字）。 */
+export async function readAiKeyRow(
+  user: string,
+): Promise<readonly { ciphertext: string; last4: string }[]> {
+  const body = await control(`ai-key?user=${user}`);
+  const rows = toRecord(body).rows;
+  return Array.isArray(rows)
+    ? rows.map((row) => ({
+        ciphertext: toText(toRecord(row).ciphertext),
+        last4: toText(toRecord(row).last4),
+      }))
+    : [];
+}
+
 /** ミッションを試すため、その端末に今日の解答を count 件足す。 */
 export async function addAnswers(device: string, count: number): Promise<void> {
   await control(`add-answers?device=${device}&count=${count}`);

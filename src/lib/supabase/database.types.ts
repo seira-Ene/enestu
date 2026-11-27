@@ -252,6 +252,37 @@ export type Database = {
           },
         ];
       };
+      /** 利用者のAIのAPIキー。本人は ciphertext を読めない（secret key だけが読む）。 */
+      ai_keys: {
+        Row: {
+          user_id: string;
+          provider: string;
+          ciphertext: string;
+          last4: string;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          provider: string;
+          ciphertext: string;
+          last4: string;
+          updated_at?: string;
+        };
+        Update: {
+          provider?: string;
+          ciphertext?: string;
+          last4?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      /** AIを呼んだ記録。1日の回数の上限に使う。 */
+      ai_requests: {
+        Row: { id: number; user_id: string; kind: string; created_at: string };
+        Insert: { user_id: string; kind: string };
+        Update: never;
+        Relationships: [];
+      };
       /** ログインボーナスとミッションを受け取った記録。追記は受け取る関数だけ。 */
       daily_claims: {
         Row: {
