@@ -66,6 +66,18 @@ export function jstDateKey(now: Date): string {
   return new Date(now.getTime() + JST_OFFSET_MS).toISOString().slice(0, 10);
 }
 
+/**
+ * 記録の時間帯。同じ日なら「14:05〜15:10」、日をまたぐと
+ * 「11/24 14:05〜11/25 15:10」と日付も付ける。日付は日本時間。
+ */
+export function formatStudyRange(startedAt: string, endedAt: string): string {
+  const now = new Date(endedAt);
+  if (jstDateKey(new Date(startedAt)) === jstDateKey(now)) {
+    return `${formatJstTime(startedAt)}〜${formatJstTime(endedAt)}`;
+  }
+  return `${formatJstDateTime(startedAt)}〜${formatJstDateTime(endedAt)}`;
+}
+
 /** 日本時間の「11/24 14:05」。 */
 export function formatJstDateTime(iso: string): string {
   const jst = new Date(Date.parse(iso) + JST_OFFSET_MS);

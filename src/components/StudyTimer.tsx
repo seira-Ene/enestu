@@ -54,7 +54,15 @@ export function StudyTimer({
         />
       </label>
 
-      <p role="timer" className="font-display text-center text-[clamp(2rem,13vw,3rem)] whitespace-nowrap">
+      <p
+        role="timer"
+        className={`font-display text-center whitespace-nowrap ${
+          // 100時間を超えると桁が増えるので、狭い画面でもはみ出さないよう小さくする。
+          seconds >= 100 * 60 * 60
+            ? "text-[clamp(1.6rem,10.5vw,3rem)]"
+            : "text-[clamp(2rem,13vw,3rem)]"
+        }`}
+      >
         <span className="sr-only">{formatClock(seconds)}</span>
         {[...formatClock(seconds)].map((char, index) => (
           // 書体によらず、数字が変わっても位置がずれないようにする。

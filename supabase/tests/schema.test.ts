@@ -87,7 +87,7 @@ describe("study_logs", () => {
   it.each([
     ["1秒未満", "数学", "2026-11-24T00:00:00Z", "2026-11-24T00:00:00.9Z"],
     ["逆向き", "数学", "2026-11-24T00:01:00Z", "2026-11-24T00:00:00Z"],
-    ["24時間超", "数学", "2026-11-23T00:00:00Z", "2026-11-24T00:00:01Z"],
+    ["999時間超", "数学", "2026-10-13T08:59:59Z", "2026-11-24T00:00:00Z"],
     ["空の科目", " ", "2026-11-24T00:00:00Z", "2026-11-24T00:01:00Z"],
     [
       "長い科目",
@@ -97,6 +97,16 @@ describe("study_logs", () => {
     ],
   ])("%s は拒否する", async (_label, subject, start, end) => {
     expect(await insert(subject, start, end)).toBe(SQLSTATE.checkViolation);
+  });
+
+  it.each([
+    ["24時間1秒", "2026-11-22T23:59:59Z", 86_401],
+    ["999時間ちょうど", "2026-10-13T09:00:00Z", 3_596_400],
+  ])("%s の記録を保存できる", async (_label, start, seconds) => {
+    expect(await insert("数学", start, "2026-11-24T00:00:00Z")).toBeNull();
+    expect(
+      await server("select duration_seconds from study_logs order by 1 desc"),
+    ).toContainEqual({ duration_seconds: seconds });
   });
 
   it("同じIDは二重に登録できない", async () => {

@@ -6,6 +6,7 @@ import {
   formatDuration,
   formatJstDateTime,
   formatJstTime,
+  formatStudyRange,
   jstDateKey,
   jstDayRange,
   sumTodaySeconds,
@@ -103,6 +104,10 @@ describe("formatDuration", () => {
     [3600, "1時間0分0秒"],
     [3661, "1時間1分1秒"],
     [86400, "24時間0分0秒"],
+    [91800, "25時間30分0秒"],
+    [360000, "100時間0分0秒"],
+    [3596400, "999時間0分0秒"],
+    [3599999, "999時間59分59秒"],
     [1.9, "1秒"],
     [-5, "0秒"],
     [Number.NaN, "0秒"],
@@ -111,12 +116,41 @@ describe("formatDuration", () => {
   });
 });
 
+describe("formatStudyRange", () => {
+  it.each([
+    ["同じ日", "2026-11-24T01:00:00Z", "2026-11-24T02:30:00Z", "10:00〜11:30"],
+    [
+      "日本時間で日をまたぐ",
+      "2026-11-24T14:30:00Z",
+      "2026-11-24T15:30:00Z",
+      "11/24 23:30〜11/25 00:30",
+    ],
+    [
+      "25時間",
+      "2026-11-23T01:00:00Z",
+      "2026-11-24T02:00:00Z",
+      "11/23 10:00〜11/24 11:00",
+    ],
+    [
+      "UTCでは日をまたぐが、日本時間では同じ日",
+      "2026-11-23T23:00:00Z",
+      "2026-11-24T01:00:00Z",
+      "08:00〜10:00",
+    ],
+  ])("%s", (_label, startedAt, endedAt, text) => {
+    expect(formatStudyRange(startedAt, endedAt)).toBe(text);
+  });
+});
+
 describe("formatClock", () => {
   it.each([
     [0, "00:00:00"],
     [61, "00:01:01"],
     [3661, "01:01:01"],
+    [86400, "24:00:00"],
+    [91800, "25:30:00"],
     [360000, "100:00:00"],
+    [3596400, "999:00:00"],
   ])("%s秒 → %s", (seconds, expected) => {
     expect(formatClock(seconds)).toBe(expected);
   });

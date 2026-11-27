@@ -1,7 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { parseStudyLogInput } from "./study-log-input";
+import {
+  MAX_DURATION_SECONDS,
+  parseStudyLogInput,
+} from "./study-log-input";
 
 const now = new Date("2026-11-24T03:00:00.000Z");
+
+/** 2026-11-24T02:30Z に終わる、seconds 秒の記録。 */
+function lasting(seconds: number): { startedAt: string; endedAt: string } {
+  const endedMs = Date.parse("2026-11-24T02:30:00.000Z");
+  return {
+    startedAt: new Date(endedMs - seconds * 1000).toISOString(),
+    endedAt: new Date(endedMs).toISOString(),
+  };
+}
 const valid = {
   id: "3f2504e0-4f89-41d3-9a0c-0305e82c3301",
   subject: "線形代数",
@@ -36,19 +48,25 @@ describe("parseStudyLogInput", () => {
     expect(isOk({ endedAt: "2026-11-24T01:59:00.000Z" })).toBe(false);
   });
 
-  it("24時間ちょうどまで受け付ける", () => {
-    expect(
-      isOk({
-        startedAt: "2026-11-23T02:30:00.000Z",
-        endedAt: "2026-11-24T02:30:00.000Z",
-      }),
-    ).toBe(true);
-    expect(
-      isOk({
-        startedAt: "2026-11-23T02:29:59.000Z",
-        endedAt: "2026-11-24T02:30:00.000Z",
-      }),
-    ).toBe(false);
+  it.each([
+    ["24時間", 24 * 3600],
+    ["24時間1秒", 24 * 3600 + 1],
+    ["30時間", 30 * 3600],
+    ["999時間ちょうど", MAX_DURATION_SECONDS],
+  ])("%s の記録を受け付ける", (_label, seconds) => {
+    expect(isOk(lasting(seconds))).toBe(true);
+  });
+
+  it("999時間を1秒でも超えたら拒否する", () => {
+    const result = parseStudyLogInput(
+      { ...valid, ...lasting(MAX_DURATION_SECONDS + 1) },
+      now,
+    );
+    expect(result).toEqual({
+      ok: false,
+      error:
+        "999時間を超える記録は保存できません。「記録せずにやめる」を選んでください。",
+    });
   });
 
   it("未来の終了時刻は5分のずれまで許す", () => {
