@@ -1,8 +1,11 @@
+import { limitMessage } from "@/domain/limits";
 import type { QuizCard } from "@/domain/quiz";
 import { parseQuizCardInput } from "@/domain/quiz-input";
 import {
   badRequest,
   created,
+  isRowLimit,
+  limitReached,
   readJson,
   serverError,
   success,
@@ -32,6 +35,7 @@ export async function POST(request: Request): Promise<Response> {
         },
         { onConflict: "id", ignoreDuplicates: true },
       );
+    if (isRowLimit(error)) return limitReached(limitMessage("quiz_cards"));
     return error ? serverError(action, error) : created();
   } catch (error) {
     return serverError(action, error);

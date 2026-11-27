@@ -1,7 +1,10 @@
+import { limitMessage } from "@/domain/limits";
 import { parseBulkCards } from "@/domain/quiz-input";
 import {
   badRequest,
   created,
+  isRowLimit,
+  limitReached,
   readJson,
   serverError,
 } from "@/lib/api-response";
@@ -30,6 +33,7 @@ export async function POST(request: Request): Promise<Response> {
         })),
         { onConflict: "id", ignoreDuplicates: true },
       );
+    if (isRowLimit(error)) return limitReached(limitMessage("quiz_cards"));
     return error ? serverError(action, error) : created();
   } catch (error) {
     return serverError(action, error);

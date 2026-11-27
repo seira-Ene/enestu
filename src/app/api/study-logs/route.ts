@@ -1,8 +1,11 @@
+import { limitMessage } from "@/domain/limits";
 import { parseStudyLogInput } from "@/domain/study-log-input";
 import { jstDayRange, type StudyLog } from "@/domain/study-time";
 import {
   badRequest,
   created,
+  isRowLimit,
+  limitReached,
   readJson,
   serverError,
   success,
@@ -33,6 +36,7 @@ export async function POST(request: Request): Promise<Response> {
         },
         { onConflict: "id", ignoreDuplicates: true },
       );
+    if (isRowLimit(error)) return limitReached(limitMessage("study_logs"));
     return error ? serverError(action, error) : created();
   } catch (error) {
     return serverError(action, error);

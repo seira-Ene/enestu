@@ -1,8 +1,11 @@
+import { limitMessage } from "@/domain/limits";
 import type { ExplainTerm } from "@/domain/explanation";
 import { parseTermInput } from "@/domain/explanation-input";
 import {
   badRequest,
   created,
+  isRowLimit,
+  limitReached,
   readJson,
   serverError,
   success,
@@ -30,6 +33,7 @@ export async function POST(request: Request): Promise<Response> {
       },
       { onConflict: "id", ignoreDuplicates: true },
     );
+    if (isRowLimit(error)) return limitReached(limitMessage("explain_terms"));
     return error ? serverError(action, error) : created();
   } catch (error) {
     return serverError(action, error);

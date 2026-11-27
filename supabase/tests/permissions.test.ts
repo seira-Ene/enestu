@@ -88,6 +88,7 @@ const FUNCTION_ROLES: Readonly<Record<string, readonly Role[]>> = {
   my_progress_totals: ["authenticated"],
   claim_device_records: ["service_role"],
   enforce_notes_limit: [],
+  enforce_row_limit: [],
   notify_notes_changed: [],
 };
 

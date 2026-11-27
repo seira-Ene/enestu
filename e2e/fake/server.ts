@@ -132,6 +132,36 @@ class Backend {
         this.auth.nextUser =
           this.users.get(url.searchParams.get("id") ?? "") ?? null;
         return {};
+      case "/control/fill-explanations": {
+        // 件数の上限を試すため、用語を1つ作り、上限を通さずに説明を入れる。
+        const device = url.searchParams.get("device") ?? "";
+        const count = Number(url.searchParams.get("count"));
+        await this.exclusive(async () => {
+          const term = crypto.randomUUID();
+          await this.db.asOwner(
+            `insert into explain_terms (id, device_id, subject, term, keywords)
+             values ($1, $2, '理科', '光合成', '{酸素}')`,
+            [term, device],
+          );
+          await this.db.asOwner(
+            "alter table explanation_logs disable trigger explanation_logs_limit",
+          );
+          try {
+            await this.db.asOwner(
+              `insert into explanation_logs
+                 (id, device_id, term_id, body, total_count, missing, explained_at)
+               select gen_random_uuid(), $1, $2, '説明', 1, '{}', now()
+               from generate_series(1, $3::int)`,
+              [device, term, count],
+            );
+          } finally {
+            await this.db.asOwner(
+              "alter table explanation_logs enable trigger explanation_logs_limit",
+            );
+          }
+        });
+        return {};
+      }
       case "/control/realtime-down":
         this.realtime.isDown = true;
         this.realtime.dropAll();

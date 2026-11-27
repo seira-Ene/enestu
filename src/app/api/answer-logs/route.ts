@@ -1,8 +1,11 @@
+import { limitMessage } from "@/domain/limits";
 import { isMistakeReason, type AnswerLog } from "@/domain/quiz";
 import { parseAnswerLogInput } from "@/domain/quiz-input";
 import {
   badRequest,
   created,
+  isRowLimit,
+  limitReached,
   readJson,
   serverError,
   success,
@@ -39,6 +42,7 @@ export async function POST(request: Request): Promise<Response> {
         },
         { onConflict: "id", ignoreDuplicates: true },
       );
+    if (isRowLimit(error)) return limitReached(limitMessage("answer_logs"));
     if (error?.code === FOREIGN_KEY_VIOLATION) {
       return badRequest("カードが見つかりません。");
     }

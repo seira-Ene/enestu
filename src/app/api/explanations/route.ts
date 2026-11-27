@@ -1,6 +1,14 @@
+import { limitMessage } from "@/domain/limits";
 import { judgeExplanation, type ExplanationLog } from "@/domain/explanation";
 import { parseExplanationInput } from "@/domain/explanation-input";
-import { badRequest, readJson, serverError, success } from "@/lib/api-response";
+import {
+  badRequest,
+  isRowLimit,
+  limitReached,
+  readJson,
+  serverError,
+  success,
+} from "@/lib/api-response";
 import { resolveOwner } from "@/lib/owner";
 
 const HISTORY_LIMIT = 20;
@@ -45,6 +53,7 @@ export async function POST(request: Request): Promise<Response> {
       },
       { onConflict: "id", ignoreDuplicates: true },
     );
+    if (isRowLimit(error)) return limitReached(limitMessage("explanation_logs"));
     return error ? serverError(action, error) : success({ log });
   } catch (error) {
     return serverError(action, error);
