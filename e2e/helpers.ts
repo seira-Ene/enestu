@@ -22,6 +22,11 @@ export async function addStudy(
   await control(`add-study?kind=${kind}&owner=${id}&minutes=${minutes}`);
 }
 
+/** ミッションを試すため、その端末に今日の解答を count 件足す。 */
+export async function addAnswers(device: string, count: number): Promise<void> {
+  await control(`add-answers?device=${device}&count=${count}`);
+}
+
 /** 連続日数を試すため、その端末が daysAgo 日前に訪れたことにする。 */
 export async function addPastVisits(
   device: string,
