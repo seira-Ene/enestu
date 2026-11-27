@@ -7,6 +7,7 @@ import { TestDb, type Actor } from "../../supabase/tests/test-db";
 import { FAKE_ENV, FAKE_PORT, FAKE_URL } from "../ports";
 import { FakeAuth, type FakeUser } from "./auth";
 import { toText } from "./json";
+import { FakeGemini } from "./gemini";
 import { FakeRealtime } from "./realtime";
 import { handleRest } from "./rest";
 import { FakeStorage } from "./storage";
@@ -41,6 +42,7 @@ export async function startFakeSupabase(): Promise<() => Promise<void>> {
 class Backend {
   readonly auth = new FakeAuth();
   readonly realtime = new FakeRealtime((token) => this.auth.verifyToken(token));
+  readonly gemini = new FakeGemini();
   private readonly storage: FakeStorage;
   private readonly users = new Map<string, FakeUser>();
   /** DBのロールは接続に1つなので、1件ずつ処理する。 */
@@ -64,6 +66,16 @@ class Backend {
 
     if (url.pathname.startsWith("/control/")) {
       return sendJson(response, 200, await this.control(url));
+    }
+    if (url.pathname.startsWith("/v1beta/models/")) {
+      const reply = this.gemini.handle(
+        method,
+        url.pathname,
+        url.search,
+        toText(request.headers["x-goog-api-key"]),
+        bytes.toString(),
+      );
+      return sendJson(response, reply.status, reply.body);
     }
     if (url.pathname.startsWith("/auth/v1/")) {
       const reply = this.auth.handle(
@@ -185,6 +197,25 @@ class Backend {
         );
         return {};
       }
+      case "/control/ai-requests": {
+        // 1日の上限を試すため、その利用者がAIを count 回呼んだことにする。
+        const user = url.searchParams.get("user") ?? "";
+        const count = Number(url.searchParams.get("count"));
+        await this.exclusive(async () => {
+          await this.db.asOwner("alter table ai_requests disable trigger ai_requests_limit");
+          try {
+            await this.db.asOwner(
+              "insert into ai_requests (user_id, kind) select $1, 'cards' from generate_series(1, $2::int)",
+              [user, count],
+            );
+          } finally {
+            await this.db.asOwner("alter table ai_requests enable trigger ai_requests_limit");
+          }
+        });
+        return {};
+      }
+      case "/control/gemini-last":
+        return { last: this.gemini.last, count: this.gemini.count };
       case "/control/ai-key": {
         // 保存されたキーが暗号文になっているかを確かめるため、そのまま返す。
         const user = url.searchParams.get("user") ?? "";

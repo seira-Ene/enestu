@@ -20,7 +20,7 @@ export const MAX_TERM_LENGTH = 40;
 const MIN_MEANING_LENGTH = 4;
 
 /** どの形から作ったか。 */
-export type GenerationRule = "naming" | "definition" | "glossary" | "cloze";
+export type GenerationRule = "naming" | "definition" | "glossary" | "cloze" | "ai";
 
 export type GeneratedCandidate = ImportCandidate & {
   /** 候補を作った元の文。 */

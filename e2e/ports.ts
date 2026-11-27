@@ -10,4 +10,6 @@ export const FAKE_ENV = {
   SUPABASE_SECRET_KEY: "sb_secret_dummy",
   // テスト用の暗号化の鍵（32バイト）。本番の鍵ではない。
   BYOK_ENCRYPTION_KEY: Buffer.alloc(32, 7).toString("base64"),
+  // Gemini の代わりに、まねたサーバーへ送る。
+  GEMINI_API_BASE_URL: FAKE_URL,
 } as const;

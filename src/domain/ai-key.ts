@@ -8,7 +8,11 @@ import { fail, type ParseResult } from "./validation";
 export const AI_PROVIDERS = ["gemini"] as const;
 export type AiProvider = (typeof AI_PROVIDERS)[number];
 
-/** 1人1日に、AIを呼べる回数。 */
+/**
+ * 1人1日に、AIを呼べる回数。
+ * DBのトリガー（20261203000000_add_ai_keys.sql の enforce_ai_request_limit）と合わせる。
+ * そのファイルのコメントには「src/domain/limits.ts」とあるが、値はここに置いている。
+ */
 export const AI_DAILY_LIMIT = 20;
 
 /** Gemini のキーの形。「AIza」で始まる39文字。 */

@@ -22,6 +22,24 @@ export async function addStudy(
   await control(`add-study?kind=${kind}&owner=${id}&minutes=${minutes}`);
 }
 
+/** 1日の上限を試すため、その利用者がAIを count 回呼んだことにする。 */
+export async function addAiRequests(user: string, count: number): Promise<void> {
+  await control(`ai-requests?user=${user}&count=${count}`);
+}
+
+/** まねた Gemini が最後に受け取った頼み（確かめたい部分だけ）と、受け取った回数。 */
+export async function readGeminiLast(): Promise<{
+  last: Record<string, unknown> | null;
+  count: number;
+}> {
+  const body = toRecord(await control("gemini-last"));
+  const last = body.last;
+  return {
+    last: typeof last === "object" && last !== null ? toRecord(last) : null,
+    count: Number(body.count),
+  };
+}
+
 /** 保存されたAIのキーの行（暗号文と末尾4文字）。 */
 export async function readAiKeyRow(
   user: string,
