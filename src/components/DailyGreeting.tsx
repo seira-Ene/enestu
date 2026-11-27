@@ -12,6 +12,7 @@ import type { WorldTheme } from "@/themes/types";
 import { CharacterArt } from "./CharacterArt";
 import { ALERT, HEADING, PANEL, PRIMARY_BUTTON, SECONDARY_BUTTON } from "./form-styles";
 import { rewardPreview, rewardText } from "./reward-text";
+import { useSound } from "./SoundProvider";
 
 /**
  * その日初めてホームを開いたときのあいさつと、ログインボーナス。
@@ -26,6 +27,7 @@ export function DailyGreeting({ theme }: { theme: WorldTheme }) {
   const [error, setError] = useState<string | null>(null);
   /** セリフを選ぶ乱数。描き直しても変えない。 */
   const [pick] = useState(() => Math.random());
+  const { play } = useSound();
 
   const status = remote.data;
   if (status === null || isClosed) return null;
@@ -37,8 +39,12 @@ export function DailyGreeting({ theme }: { theme: WorldTheme }) {
     setError(null);
     const result = await claimDaily("login", theme.id);
     setIsClaiming(false);
-    if (result.ok) setClaim(result.value);
-    else setError(result.error);
+    if (result.ok) {
+      play("claim");
+      setClaim(result.value);
+    } else {
+      setError(result.error);
+    }
   }
 
   if (isFolded) {

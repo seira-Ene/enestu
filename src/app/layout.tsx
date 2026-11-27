@@ -4,6 +4,7 @@ import { AccountProvider } from "@/components/AccountProvider";
 import { BottomNav } from "@/components/BottomNav";
 import { SettingsProvider } from "@/components/SettingsProvider";
 import { SideNav } from "@/components/SideNav";
+import { SoundProvider } from "@/components/SoundProvider";
 import { WorldProvider } from "@/components/WorldProvider";
 import { WORLD_BOOT_SCRIPT } from "@/lib/world-boot";
 import { DEFAULT_WORLD_ID, worldsToCss } from "@/themes";
@@ -37,9 +38,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <AccountProvider>
           <SettingsProvider>
             <WorldProvider>
-              <SideNav />
-              {children}
-              <BottomNav />
+              <SoundProvider>
+                <SideNav />
+                {children}
+                <BottomNav />
+              </SoundProvider>
             </WorldProvider>
           </SettingsProvider>
         </AccountProvider>
