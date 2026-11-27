@@ -9,8 +9,8 @@ import {
   TEXT_INPUT,
 } from "./form-styles";
 
-/** 登録前の候補。検証を通るまではカードとして扱わない。 */
-export type ReviewItem = QuizCard;
+/** 登録前の候補。検証を通るまではカードとして扱わない。source は、候補を作った元の文。 */
+export type ReviewItem = QuizCard & { readonly source?: string };
 
 type Props = {
   terms: QuizTerms;
@@ -74,6 +74,9 @@ export function ImportReview({
                 外す
               </button>
             </div>
+            {item.source !== undefined && (
+              <p className="text-xs break-words opacity-80">元の文：{item.source}</p>
+            )}
             <input
               type="text"
               aria-label={`候補${index + 1}の科目名`}

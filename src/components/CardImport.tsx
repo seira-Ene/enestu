@@ -5,7 +5,9 @@ import {
   MAX_IMPORT_CARDS,
   MAX_IMPORT_LENGTH,
   parseImportedCards,
+  type ImportCandidate,
 } from "@/domain/card-import";
+import { generateCards, MAX_GENERATE_LENGTH } from "@/domain/card-generator";
 import type { QuizCard } from "@/domain/quiz";
 import { saveCards } from "@/lib/quiz-api";
 import { readTextFile } from "@/lib/read-text-file";
@@ -18,6 +20,14 @@ import {
   TEXT_INPUT,
 } from "./form-styles";
 import { ImportReview, type ReviewItem } from "./ImportReview";
+import { ModeTabs } from "./ModeTabs";
+
+/** 書式どおりに読むか、普通の文章から作るか。 */
+const METHODS = [
+  { id: "format", label: "書式どおり" },
+  { id: "generate", label: "文章から（AIなし）" },
+] as const;
+type Method = (typeof METHODS)[number]["id"];
 
 type Props = {
   terms: QuizTerms;
@@ -33,6 +43,7 @@ export function CardImport({
   existing,
   onRegistered,
 }: Props) {
+  const [method, setMethod] = useState<Method>("format");
   const [subject, setSubject] = useState("");
   const [text, setText] = useState("");
   const [items, setItems] = useState<readonly ReviewItem[] | null>(null);
@@ -85,18 +96,29 @@ export function CardImport({
       setError("文章を貼るか、ファイルを選んでください。");
       return;
     }
-    if (text.length > MAX_IMPORT_LENGTH) {
+    const limit = method === "generate" ? MAX_GENERATE_LENGTH : MAX_IMPORT_LENGTH;
+    if (text.length > limit) {
       setError(
-        `一度に読み取れるのは${MAX_IMPORT_LENGTH.toLocaleString("ja-JP")}文字までです。分けて取り込んでください。`,
+        `一度に読み取れるのは${limit.toLocaleString("ja-JP")}文字までです。分けて取り込んでください。`,
       );
       return;
     }
-    const result = parseImportedCards(text, existing);
+    // 文章から作った候補には、元の文を添える。
+    const result: {
+      readonly candidates: readonly (ImportCandidate & { readonly source?: string })[];
+      readonly duplicateCount: number;
+      readonly overflowCount: number;
+    } =
+      method === "generate"
+        ? generateCards(text, existing)
+        : parseImportedCards(text, existing);
     if (result.candidates.length === 0) {
       setError(
         result.duplicateCount > 0
           ? "読み取れた問題は、すべて登録済みでした。"
-          : "問題を読み取れませんでした。下の「読み取れる形」を確認してください。",
+          : method === "generate"
+            ? "問題にできる文が見つかりませんでした。下の「作れる形」を確認してください。"
+            : "問題を読み取れませんでした。下の「読み取れる形」を確認してください。",
       );
       return;
     }
@@ -107,9 +129,14 @@ export function CardImport({
         subject: candidate.subject ?? subject.trim(),
         question: candidate.question,
         answer: candidate.answer,
+        ...(candidate.source === undefined ? {} : { source: candidate.source }),
       })),
     );
-    setNotice(summaryText(result));
+    setNotice(
+      method === "generate"
+        ? `${summaryText(result)}簡易生成（AIなし）です。元の文と見比べて確かめてください。`
+        : summaryText(result),
+    );
   }
 
   async function handleRegister(cards: readonly QuizCard[]) {
@@ -156,6 +183,16 @@ export function CardImport({
 
   return (
     <section className={PANEL}>
+      <ModeTabs
+        label="取り込みかた"
+        modes={METHODS}
+        current={method}
+        onChange={(next) => {
+          setMethod(next);
+          setError(null);
+          setNotice(null);
+        }}
+      />
       <label className="flex flex-col gap-1">
         <span className="text-sm text-accent">科目名（全部に付けます）</span>
         <input
@@ -174,7 +211,7 @@ export function CardImport({
         </datalist>
       </label>
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2" hidden={method !== "format"}>
         <button
           type="button"
           onClick={() => void handleCopyPrompt()}
@@ -206,7 +243,11 @@ export function CardImport({
           value={text}
           onChange={(event) => setText(event.target.value)}
           rows={6}
-          placeholder={"Q: 首都は？\nA: 東京"}
+          placeholder={
+            method === "generate"
+              ? "例：光のエネルギーを使って養分をつくるはたらきを光合成という。"
+              : "Q: 首都は？\nA: 東京"
+          }
           className={TEXT_INPUT}
         />
       </label>
@@ -226,15 +267,28 @@ export function CardImport({
         </span>
       </label>
 
-      <details className="text-sm">
-        <summary className="cursor-pointer">読み取れる形</summary>
-        <ul className="mt-2 flex list-disc flex-col gap-1 pl-5">
-          <li>Q: 問題　A: 答え（行を分ける）</li>
-          <li>問題,答え　または　科目,問題,答え（タブや表も可）</li>
-          <li>「固有値とは、行列の拡大率である。」のような文</li>
-          <li>1回に{MAX_IMPORT_CARDS}枚まで</li>
-        </ul>
-      </details>
+      {method === "generate" ? (
+        <details className="text-sm">
+          <summary className="cursor-pointer">作れる形</summary>
+          <ul className="mt-2 flex list-disc flex-col gap-1 pl-5">
+            <li>「〜を光合成という」「〜と呼ぶ」のような文</li>
+            <li>「気孔とは、葉のすきまである。」のような文（1行に何文あってもよい）</li>
+            <li>用語集の形「蒸散：水が水蒸気となって出ること」</li>
+            <li>**水** や【道管】のように強調した語（穴埋めにします）</li>
+            <li>AIは使わない簡易生成です。1回に{MAX_IMPORT_CARDS}枚まで</li>
+          </ul>
+        </details>
+      ) : (
+        <details className="text-sm">
+          <summary className="cursor-pointer">読み取れる形</summary>
+          <ul className="mt-2 flex list-disc flex-col gap-1 pl-5">
+            <li>Q: 問題　A: 答え（行を分ける）</li>
+            <li>問題,答え　または　科目,問題,答え（タブや表も可）</li>
+            <li>「固有値とは、行列の拡大率である。」のような文</li>
+            <li>1回に{MAX_IMPORT_CARDS}枚まで</li>
+          </ul>
+        </details>
+      )}
 
       {error !== null && (
         <p role="alert" className={ALERT}>
