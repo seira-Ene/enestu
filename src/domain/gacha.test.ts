@@ -4,14 +4,17 @@ import {
   GACHA_RARITIES,
   GACHA_SLOTS,
   gachaItemId,
+  highestRarity,
   markNew,
   MAX_STARS,
   parseItemId,
   parsePullRequest,
   prizeKind,
+  pullSummary,
   pullsUntilPity,
   rarityRank,
   rarityRates,
+  spotlightPulls,
   ticketsEarned,
   ticketsLeft,
   starsOf,
@@ -177,5 +180,30 @@ describe("markNew", () => {
       false,
       false,
     ]);
+  });
+});
+
+describe("演出", () => {
+  const pull = (seq: number, rarity: "n" | "r" | "sr" | "ssr" | "ur" | "pr") => ({
+    seq,
+    itemId: `cafe-${rarity}1`,
+    rarity,
+  });
+
+  it("いちばん珍しいレアリティで色を決める", () => {
+    expect(highestRarity([pull(1, "n"), pull(2, "ssr"), pull(3, "r")])).toBe("ssr");
+    expect(highestRarity([pull(1, "pr"), pull(2, "ur")])).toBe("pr");
+    expect(highestRarity([])).toBe("n");
+  });
+
+  it("ウルトラレア以上だけを、順に大きく見せる", () => {
+    const pulls = [pull(1, "ur"), pull(2, "ssr"), pull(3, "pr"), pull(4, "n")];
+    expect(spotlightPulls(pulls).map(({ seq }) => seq)).toEqual([1, 3]);
+  });
+
+  it("結果のまとめは、珍しい順に数を言う", () => {
+    expect(pullSummary([pull(1, "n"), pull(2, "ur"), pull(3, "n")])).toBe(
+      "3枚引きました。ウルトラレア1枚、ノーマル2枚。",
+    );
   });
 });

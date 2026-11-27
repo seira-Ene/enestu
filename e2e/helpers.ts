@@ -22,6 +22,11 @@ export async function addStudy(
   await control(`add-study?kind=${kind}&owner=${id}&minutes=${minutes}`);
 }
 
+/** 天井を試すため、その端末がウルトラレア未満を過去に count 回引いたことにする。 */
+export async function addPastPulls(device: string, count: number): Promise<void> {
+  await control(`past-pulls?device=${device}&count=${count}`);
+}
+
 /** その端末に用語「光合成」を作り、上限を通さずに説明を count 件入れる。 */
 export async function fillExplanations(
   deviceId: string,

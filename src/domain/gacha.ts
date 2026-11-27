@@ -184,3 +184,31 @@ export function markNew(
 export function isRarityId(value: unknown): value is RarityId {
   return GACHA_RARITIES.some((rarity) => rarity.id === value);
 }
+
+/** いちばん珍しいレアリティ。演出の色を決める。 */
+export function highestRarity(pulls: readonly Pull[]): RarityId {
+  return pulls.reduce<RarityId>(
+    (best, pull) => (rarityRank(pull.rarity) > rarityRank(best) ? pull.rarity : best),
+    "n",
+  );
+}
+
+/** 演出の最後に、1枚ずつ大きく見せる景品（ウルトラレア以上）。 */
+export function spotlightPulls<T extends Pull>(pulls: readonly T[]): T[] {
+  return pulls.filter(
+    (pull) => rarityRank(pull.rarity) >= rarityRank(PITY_FLOOR),
+  );
+}
+
+/** 読み上げ用の、結果のまとめ。 */
+export function pullSummary(pulls: readonly Pull[]): string {
+  const counts = GACHA_RARITIES.map(({ id, label }) => ({
+    label,
+    count: pulls.filter((pull) => pull.rarity === id).length,
+  }))
+    .filter(({ count }) => count > 0)
+    .reverse();
+  return `${pulls.length}枚引きました。${counts
+    .map(({ label, count }) => `${label}${count}枚`)
+    .join("、")}。`;
+}

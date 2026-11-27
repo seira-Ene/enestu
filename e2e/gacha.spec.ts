@@ -1,6 +1,12 @@
 import { expect, test, type Page } from "@playwright/test";
 import { dungeon } from "../src/themes/dungeon";
-import { addStudy, createUser, login, openFirstTime } from "./helpers";
+import {
+  addPastPulls,
+  addStudy,
+  createUser,
+  login,
+  openFirstTime,
+} from "./helpers";
 
 const SUPER_OR_ABOVE =
   '[data-rarity="sr"], [data-rarity="ssr"], [data-rarity="ur"], [data-rarity="pr"]';
@@ -21,7 +27,19 @@ async function useDevice(page: Page): Promise<string> {
   return device;
 }
 
+function reveal(page: Page) {
+  return page.getByRole("dialog");
+}
+
+/** 引いて、演出を飛ばして閉じる。 */
 async function pull(page: Page, label: "単発" | "10連"): Promise<void> {
+  await startPull(page, label);
+  await reveal(page).getByRole("button", { name: "飛ばす" }).click();
+  await reveal(page).getByRole("button", { name: "閉じる" }).click();
+  await expect(reveal(page)).toHaveCount(0);
+}
+
+async function startPull(page: Page, label: "単発" | "10連"): Promise<void> {
   await ticketPanel(page)
     .getByRole("button", { name: new RegExp(`^${label}`) })
     .click();
@@ -118,4 +136,75 @@ test("PC版では、左のメニューからも開ける", async ({ page }) => {
     .getByRole("link", { name: /ガチャ/ })
     .click();
   await expect(page).toHaveURL(/\/gacha$/);
+});
+
+test("引くと、光がたまり、カードがめくれ、まとめが出る", async ({ page }) => {
+  const device = await useDevice(page);
+  await addStudy({ device }, 10 * 30);
+  await openFirstTime(page, "/gacha");
+  await startPull(page, "10連");
+
+  await expect(reveal(page).locator(".gacha-orb")).toBeVisible();
+  await expect(reveal(page).getByRole("button", { name: "飛ばす" })).toBeVisible();
+  // 待っていれば、自然にまとめまで進む。ウルトラレア以上が出たら、大きく見せる場面で次へ進める。
+  const done = reveal(page).getByRole("heading", { name: "ガチャの結果" });
+  const next = reveal(page).getByRole("button", { name: "次へ" });
+  await expect(done.or(next)).toBeVisible({ timeout: 15_000 });
+  while (await next.isVisible()) await next.click();
+  await expect(done).toBeVisible();
+  await expect(reveal(page).getByRole("status")).toContainText("10枚引きました。");
+  await expect(reveal(page).getByRole("listitem")).toHaveCount(10);
+  await reveal(page).getByRole("button", { name: "閉じる" }).click();
+  await expect(reveal(page)).toHaveCount(0);
+  await expect(
+    page.getByRole("region", { name: "引いた結果" }).getByRole("listitem"),
+  ).toHaveCount(10);
+});
+
+test("天井でウルトラレア以上が出ると、大きく見せてから、まとめに進む", async ({
+  page,
+}) => {
+  const device = await useDevice(page);
+  // 過去の99回でも券を使っているので、100枚分を用意する。
+  await addStudy({ device }, 100 * 30);
+  await addPastPulls(device, 99);
+  await openFirstTime(page, "/gacha");
+  await expect(ticketPanel(page)).toContainText("確定まで、あと1回");
+  await startPull(page, "単発");
+
+  await expect(reveal(page).getByText(/^(ウルトラレア|パラレルレア)！$/)).toBeVisible({
+    timeout: 15_000,
+  });
+  await reveal(page).getByRole("button", { name: "次へ" }).click();
+  await expect(reveal(page).getByRole("heading", { name: "ガチャの結果" })).toBeVisible();
+  await expect(reveal(page).getByRole("status")).toContainText(/ウルトラレア|パラレルレア/);
+});
+
+test("動きを減らす設定では、演出なしで、まとめから見せる", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  const device = await useDevice(page);
+  await addStudy({ device }, 10 * 30);
+  await openFirstTime(page, "/gacha");
+  await startPull(page, "10連");
+
+  // 演出すると3.6秒以上かかるので、2秒以内なら演出していない。
+  await expect(reveal(page).getByRole("heading", { name: "ガチャの結果" })).toBeVisible({
+    timeout: 2_000,
+  });
+  await expect(reveal(page).locator(".gacha-orb")).toHaveCount(0);
+  await expect(reveal(page).getByRole("button", { name: "飛ばす" })).toHaveCount(0);
+});
+
+test("飛ばすと、待たずにまとめになる", async ({ page }) => {
+  const device = await useDevice(page);
+  await addStudy({ device }, 10 * 30);
+  await openFirstTime(page, "/gacha");
+  await startPull(page, "10連");
+
+  await expect(reveal(page).locator(".gacha-orb")).toBeVisible();
+  await reveal(page).getByRole("button", { name: "飛ばす" }).click();
+  // 10連は自然に進むと3.6秒以上かかるので、2秒以内なら飛ばせている。
+  await expect(reveal(page).getByRole("heading", { name: "ガチャの結果" })).toBeVisible({
+    timeout: 2_000,
+  });
 });
