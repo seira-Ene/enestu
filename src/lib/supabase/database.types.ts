@@ -233,9 +233,48 @@ export type Database = {
           },
         ];
       };
+      /** 引いた記録。追記はくじの関数だけが行い、本人は読むだけ。 */
+      gacha_pulls: {
+        Row: {
+          id: number;
+          device_id: string | null;
+          user_id: string | null;
+          batch_id: string;
+          seq: number;
+          item_id: string;
+          created_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
     };
     Views: { [_ in never]: never };
     Functions: {
+      gacha_collection: {
+        Args: { p_device_id: string };
+        Returns: { item_id: string; copies: number }[];
+      };
+      gacha_pull: {
+        Args: { p_device_id: string; p_world_id: string; p_count: number };
+        Returns: { seq: number; item_id: string; rarity: string }[];
+      };
+      gacha_status: {
+        Args: { p_device_id: string };
+        Returns: { earned: number; spent: number; since_top: number }[];
+      };
+      my_gacha_collection: {
+        Args: Record<PropertyKey, never>;
+        Returns: { item_id: string; copies: number }[];
+      };
+      my_gacha_pull: {
+        Args: { p_world_id: string; p_count: number };
+        Returns: { seq: number; item_id: string; rarity: string }[];
+      };
+      my_gacha_status: {
+        Args: Record<PropertyKey, never>;
+        Returns: { earned: number; spent: number; since_top: number }[];
+      };
       claim_device_records: {
         Args: { p_device_id: string; p_user_id: string };
         Returns: {

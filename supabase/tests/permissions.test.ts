@@ -42,6 +42,10 @@ const TABLE_PRIVILEGES: Readonly<
     authenticated: ["SELECT", "INSERT"],
     service_role: ["SELECT", "INSERT"],
   },
+  // ガチャの記録は、引く関数の中でだけ足す。景品の表は誰にも見せない。
+  gacha_pulls: { authenticated: ["SELECT"], service_role: ["SELECT"] },
+  gacha_items: {},
+  gacha_rarities: {},
 };
 
 /** 列だけに許す追加。 */
@@ -75,6 +79,9 @@ const OWN_ROWS = "(user_id = ( SELECT auth.uid() AS uid))";
 /** 操作ごとのポリシー。書いていないテーブルは、全操作をまとめた1つ。 */
 const POLICY_COMMANDS: Readonly<Record<string, readonly string[]>> = {
   notes: ["DELETE", "INSERT", "SELECT", "UPDATE"],
+  // 持ち主のいない表。ポリシーを置かず、誰にも読ませない。
+  gacha_items: [],
+  gacha_rarities: [],
 };
 
 /** 本人が行を消せるテーブル。増やすときは理由を確かめる。 */
@@ -89,12 +96,27 @@ const FUNCTION_ROLES: Readonly<Record<string, readonly Role[]>> = {
   claim_device_records: ["service_role"],
   enforce_notes_limit: [],
   enforce_row_limit: [],
+  my_gacha_status: ["authenticated"],
+  my_gacha_pull: ["authenticated"],
+  my_gacha_collection: ["authenticated"],
+  gacha_status: ["service_role"],
+  gacha_pull: ["service_role"],
+  gacha_collection: ["service_role"],
+  gacha_rarity_for: [],
+  gacha_min_rarity: [],
+  gacha_counts: [],
+  gacha_draw: [],
   notify_notes_changed: [],
 };
 
 /** 所有者の権限で動く関数。RLSを迂回するため、増やすときは理由を確かめる。 */
 const SECURITY_DEFINER: readonly string[] = [
   "claim_device_records",
+  // ガチャは、券と記録を本人に書き換えさせないため。持ち主は引数で選ばせない。
+  "gacha_pull",
+  "gacha_status",
+  "my_gacha_pull",
+  "my_gacha_status",
   "notify_notes_changed",
 ];
 

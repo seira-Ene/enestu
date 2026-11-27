@@ -25,9 +25,12 @@ afterAll(async () => {
 
 type OwnerColumn = "device_id" | "user_id";
 
+/** ガチャの記録は引く関数でしか足せないので、gacha.test.ts で確かめる。 */
+type Table = Exclude<LimitedTable, "gacha_pulls">;
+
 /** 1行を入れるための列と値。$1 は持ち主、$2 は親（カードか用語）。 */
 const TABLES: Record<
-  LimitedTable,
+  Table,
   { columns: string; values: string; parent?: "card" | "term" }
 > = {
   quiz_cards: { columns: "subject, question, answer", values: "'s', 'q', 'a'" },
@@ -52,7 +55,7 @@ type Owner = { column: OwnerColumn; id: string; parent?: string };
 
 /** 解答と説明は、同じ持ち主のカードか用語が要る。 */
 async function ownerFor(
-  table: LimitedTable,
+  table: Table,
   column: OwnerColumn,
   id: string,
 ): Promise<Owner> {
@@ -74,7 +77,7 @@ const params = (owner: Owner) =>
 
 /** 上限を通さずに n 件を入れる。hoursAgo で、作った時刻を過去にする。 */
 async function fill(
-  table: LimitedTable,
+  table: Table,
   owner: Owner,
   n: number,
   hoursAgo = 0,
@@ -95,7 +98,7 @@ async function fill(
 
 /** rows 件を一度に入れる。失敗したら、その理由を返す。 */
 async function insert(
-  table: LimitedTable,
+  table: Table,
   owner: Owner,
   {
     actor = "service_role",
@@ -121,7 +124,7 @@ async function insert(
   }
 }
 
-const count = async (table: LimitedTable, owner: Owner) =>
+const count = async (table: Table, owner: Owner) =>
   Number(
     (
       await db.asOwner(
@@ -131,7 +134,7 @@ const count = async (table: LimitedTable, owner: Owner) =>
     )[0]?.n,
   );
 
-const tables = Object.keys(ROW_LIMITS) as LimitedTable[];
+const tables = Object.keys(TABLES) as Table[];
 
 describe("上限", () => {
   it.each(tables)("%s は、上限ちょうどまで入り、超えると止まる", async (table) => {
@@ -223,7 +226,7 @@ describe("設定", () => {
       }),
     );
     const expected = Object.fromEntries(
-      tables.map((table) => [
+      (Object.keys(ROW_LIMITS) as LimitedTable[]).map((table) => [
         table,
         [ROW_LIMITS[table].count, ROW_LIMITS[table].perDay ? "1 day" : ""],
       ]),

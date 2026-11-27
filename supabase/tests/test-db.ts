@@ -79,6 +79,9 @@ const SUPABASE_LIKE_SETUP = `
   revoke all on function realtime.send(jsonb, text, text, boolean) from public;
 `;
 
+/** マイグレーションで中身を入れる表。テストの間でも空にしない。 */
+const MASTER_TABLES = ["gacha_rarities", "gacha_items"];
+
 /** マイグレーションのファイル名を、適用する順に返す。 */
 export function listMigrations(): string[] {
   return readdirSync(MIGRATIONS)
@@ -105,10 +108,12 @@ export class TestDb {
     await this.pg.exec(readFileSync(MIGRATIONS + name, "utf8"));
   }
 
-  /** すべてのテーブルを空にする。テストの間で記録を持ち越さないため。 */
+  /** 記録のテーブルを空にする。テストの間で記録を持ち越さないため。 */
   async clear(): Promise<void> {
     const tables = await this.asOwner(
-      "select quote_ident(tablename) as name from pg_tables where schemaname = 'public'",
+      `select quote_ident(tablename) as name from pg_tables
+       where schemaname = 'public' and not (tablename = any($1))`,
+      [MASTER_TABLES],
     );
     const names = tables.map((row) => `public.${String(row.name)}`);
     names.push("auth.users", "storage.objects", "realtime.messages");
