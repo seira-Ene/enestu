@@ -246,4 +246,52 @@ export const dungeon = {
       },
     },
   },
+  // イ短調・4拍子。Am F G Em Am F E Am。このアプリのためのオリジナル曲。
+  bgm: {
+    tempo: 84,
+    beatsPerBar: 4,
+    stepsPerBeat: 2,
+    bars: 8,
+    tracks: [
+      {
+        wave: "triangle",
+        gain: 0.3,
+        score:
+          "A3/1 C4/1 E4/1 C4/1 A3/1 C4/1 E4/1 C4/1 |" +
+          "F3/1 A3/1 C4/1 A3/1 F3/1 A3/1 C4/1 A3/1 |" +
+          "G3/1 B3/1 D4/1 B3/1 G3/1 B3/1 D4/1 B3/1 |" +
+          "E3/1 G3/1 B3/1 G3/1 E3/1 G3/1 B3/1 G3/1 |" +
+          "A3/1 C4/1 E4/1 C4/1 A3/1 C4/1 E4/1 C4/1 |" +
+          "F3/1 A3/1 C4/1 A3/1 F3/1 A3/1 C4/1 A3/1 |" +
+          "E3/1 G#3/1 B3/1 G#3/1 E3/1 G#3/1 B3/1 G#3/1 |" +
+          "A3/1 C4/1 E4/1 C4/1 A3/1 C4/1 E4/1 C4/1",
+      },
+      {
+        wave: "square",
+        gain: 0.12,
+        score:
+          "A2/8 |" +
+          "F2/8 |" +
+          "G2/8 |" +
+          "E2/8 |" +
+          "A2/8 |" +
+          "F2/8 |" +
+          "E2/8 |" +
+          "A2/8",
+      },
+      {
+        wave: "sine",
+        gain: 0.3,
+        score:
+          "E5/4 D5/2 C5/2 |" +
+          "A4/6 r/2 |" +
+          "B4/4 D5/2 B4/2 |" +
+          "G4/6 r/2 |" +
+          "E5/2 F5/2 E5/2 C5/2 |" +
+          "A4/8 |" +
+          "B4/2 G#4/2 B4/2 D5/2 |" +
+          "A4/6 r/2",
+      },
+    ],
+  },
 } as const satisfies WorldTheme;

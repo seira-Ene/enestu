@@ -247,4 +247,52 @@ export const detective = {
       },
     },
   },
+  // ニ短調系・4拍子。Dm7 G7 Dm7 G7 Bbmaj7 A7 Dm7 A7。このアプリのためのオリジナル曲。
+  bgm: {
+    tempo: 110,
+    beatsPerBar: 4,
+    stepsPerBeat: 2,
+    bars: 8,
+    tracks: [
+      {
+        wave: "triangle",
+        gain: 0.3,
+        score:
+          "D2/2 F2/2 A2/2 C3/2 |" +
+          "G2/2 A2/2 B2/2 D3/2 |" +
+          "D2/2 E2/2 F2/2 A2/2 |" +
+          "G2/2 F2/2 E2/2 D2/2 |" +
+          "Bb2/2 A2/2 G2/2 F2/2 |" +
+          "A2/2 C#3/2 E3/2 G3/2 |" +
+          "D3/2 C3/2 A2/2 F2/2 |" +
+          "E2/2 G2/2 A2/2 C#3/2",
+      },
+      {
+        wave: "square",
+        gain: 0.1,
+        score:
+          "r/1 A4/1 r/1 C5/1 D5/2 r/2 |" +
+          "B4/1 r/1 G4/2 F4/2 r/2 |" +
+          "r/1 A4/1 r/1 C5/1 E5/2 D5/2 |" +
+          "r/2 B4/1 C5/1 B4/2 G4/2 |" +
+          "D5/2 F5/2 A4/4 |" +
+          "C#5/2 E5/2 G4/4 |" +
+          "F4/1 A4/1 D5/2 C5/2 A4/2 |" +
+          "E4/2 G4/2 C#5/2 r/2",
+      },
+      {
+        wave: "noise",
+        gain: 0.05,
+        score:
+          "r/1 x/1 r/1 x/1 r/1 x/1 r/1 x/1 |" +
+          "r/1 x/1 r/1 x/1 r/1 x/1 r/1 x/1 |" +
+          "r/1 x/1 r/1 x/1 r/1 x/1 r/1 x/1 |" +
+          "r/1 x/1 r/1 x/1 r/1 x/1 r/1 x/1 |" +
+          "r/1 x/1 r/1 x/1 r/1 x/1 r/1 x/1 |" +
+          "r/1 x/1 r/1 x/1 r/1 x/1 r/1 x/1 |" +
+          "r/1 x/1 r/1 x/1 r/1 x/1 r/1 x/1 |" +
+          "r/1 x/1 r/1 x/1 r/1 x/1 r/1 x/1",
+      },
+    ],
+  },
 } as const satisfies WorldTheme;

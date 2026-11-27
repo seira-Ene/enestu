@@ -1,3 +1,4 @@
+import type { BgmSong } from "@/domain/bgm";
 import type { GachaSlot } from "@/domain/gacha";
 
 /** エネスタが提供する5つの世界線。 */
@@ -225,4 +226,6 @@ export type WorldTheme = {
   readonly quest: ThemeQuest;
   readonly progress: ThemeProgress;
   readonly gacha: ThemeGacha;
+  /** 8小節のループ曲。src/domain/bgm.ts の書き方で書く。 */
+  readonly bgm: BgmSong;
 };

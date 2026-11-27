@@ -246,4 +246,65 @@ export const cafe = {
       },
     },
   },
+  // ハ長調・4拍子。Cmaj7 Am7 Dm7 G7 Cmaj7 Fmaj7 Dm7 G7。このアプリのためのオリジナル曲。
+  bgm: {
+    tempo: 76,
+    beatsPerBar: 4,
+    stepsPerBeat: 2,
+    bars: 8,
+    tracks: [
+      {
+        wave: "sine",
+        gain: 0.16,
+        score:
+          "C4+E4+G4+B4/8 |" +
+          "A3+C4+E4+G4/8 |" +
+          "D4+F4+A4+C5/8 |" +
+          "G3+B3+D4+F4/8 |" +
+          "C4+E4+G4+B4/8 |" +
+          "F3+A3+C4+E4/8 |" +
+          "D4+F4+A4+C5/8 |" +
+          "G3+B3+D4+F4/8",
+      },
+      {
+        wave: "triangle",
+        gain: 0.25,
+        score:
+          "C3/4 G2/4 |" +
+          "A2/4 E2/4 |" +
+          "D3/4 A2/4 |" +
+          "G2/4 D3/4 |" +
+          "C3/4 G2/4 |" +
+          "F2/4 C3/4 |" +
+          "D3/4 A2/4 |" +
+          "G2/4 B2/4",
+      },
+      {
+        wave: "triangle",
+        gain: 0.2,
+        score:
+          "E5/3 D5/1 C5/2 G4/2 |" +
+          "A4/6 r/2 |" +
+          "F5/3 E5/1 D5/2 A4/2 |" +
+          "B4/6 r/2 |" +
+          "E5/2 G5/2 B5/2 G5/2 |" +
+          "A5/6 r/2 |" +
+          "F5/2 E5/2 D5/2 C5/2 |" +
+          "D5/6 r/2",
+      },
+      {
+        wave: "noise",
+        gain: 0.03,
+        score:
+          "r/2 x/2 r/2 x/2 |" +
+          "r/2 x/2 r/2 x/2 |" +
+          "r/2 x/2 r/2 x/2 |" +
+          "r/2 x/2 r/2 x/2 |" +
+          "r/2 x/2 r/2 x/2 |" +
+          "r/2 x/2 r/2 x/2 |" +
+          "r/2 x/2 r/2 x/2 |" +
+          "r/2 x/2 r/2 x/2",
+      },
+    ],
+  },
 } as const satisfies WorldTheme;
