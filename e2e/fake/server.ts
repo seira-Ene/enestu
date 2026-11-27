@@ -148,6 +148,29 @@ class Backend {
         );
         return {};
       }
+      case "/control/past-pulls": {
+        // 天井を試すため、ウルトラレア未満を過去に count 回引いたことにする。
+        const device = url.searchParams.get("device") ?? "";
+        const count = Number(url.searchParams.get("count"));
+        await this.exclusive(async () => {
+          await this.db.asOwner(
+            "alter table gacha_pulls disable trigger gacha_pulls_limit",
+          );
+          try {
+            await this.db.asOwner(
+              `insert into gacha_pulls (device_id, batch_id, seq, item_id, created_at)
+               select $1, gen_random_uuid(), 1, 'dungeon-n1', now() - interval '2 days'
+               from generate_series(1, $2::int)`,
+              [device, count],
+            );
+          } finally {
+            await this.db.asOwner(
+              "alter table gacha_pulls enable trigger gacha_pulls_limit",
+            );
+          }
+        });
+        return {};
+      }
       case "/control/fill-explanations": {
         // 件数の上限を試すため、用語を1つ作り、上限を通さずに説明を入れる。
         const device = url.searchParams.get("device") ?? "";

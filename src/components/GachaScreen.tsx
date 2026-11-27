@@ -21,6 +21,7 @@ import { fetchGacha, pullGacha, type GachaState } from "@/lib/gacha-api";
 import { useRemote, type Remote } from "@/lib/use-remote";
 import type { WorldTheme } from "@/themes/types";
 import { ALERT, HEADING, PANEL, PRIMARY_BUTTON, SECONDARY_BUTTON } from "./form-styles";
+import { GachaReveal } from "./GachaReveal";
 import { PrizeCard } from "./PrizeCard";
 import { ScreenHeader } from "./ScreenHeader";
 import { ScreenLayout } from "./ScreenLayout";
@@ -34,14 +35,23 @@ export function GachaScreen() {
   const [results, setResults] = useState<readonly Result[] | null>(null);
   const [isPulling, setIsPulling] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  /** 演出の中の結果。閉じたら null。 */
+  const [revealing, setRevealing] = useState<readonly Result[] | null>(null);
+  const [drawId, setDrawId] = useState(0);
 
   async function handlePull(count: PullCount) {
     const before = remote.data?.collection ?? [];
     setIsPulling(true);
     setError(null);
     const result = await pullGacha(theme.id, count);
-    if (result.ok) setResults(markNew(result.value, before));
-    else setError(result.error);
+    if (result.ok) {
+      const marked = markNew(result.value, before);
+      setResults(marked);
+      setRevealing(marked);
+      setDrawId((id) => id + 1);
+    } else {
+      setError(result.error);
+    }
     await remote.reload();
     setIsPulling(false);
   }
@@ -62,6 +72,12 @@ export function GachaScreen() {
         </div>
         <CollectionPanel theme={theme} state={remote.data} />
       </div>
+      <GachaReveal
+        theme={theme}
+        pulls={revealing}
+        drawId={drawId}
+        onClose={() => setRevealing(null)}
+      />
     </ScreenLayout>
   );
 }
