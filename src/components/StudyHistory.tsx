@@ -1,6 +1,6 @@
 import {
   formatDuration,
-  formatJstTime,
+  formatStudyRange,
   type StudyLog,
 } from "@/domain/study-time";
 import type { ThemeTerms } from "@/themes/types";
@@ -24,7 +24,8 @@ export function StudyHistory({
 }: Props) {
   return (
     <section className={PANEL}>
-      <div className="flex items-baseline justify-between gap-2">
+      {/* 合計が長くても見出しを押しつぶさないよう、狭いときは折り返す。 */}
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <h2 className={HEADING}>{terms.todayTotal}</h2>
         <p className="font-display shrink-0 text-2xl tabular-nums">
           {totalSeconds === null ? "—" : formatDuration(totalSeconds)}
@@ -56,7 +57,7 @@ export function StudyHistory({
               <div className="min-w-0">
                 <p className="break-words font-bold">{log.subject}</p>
                 <p className="text-sm opacity-80">
-                  {formatJstTime(log.startedAt)}〜{formatJstTime(log.endedAt)}
+                  {formatStudyRange(log.startedAt, log.endedAt)}
                 </p>
               </div>
               <p className="shrink-0 tabular-nums">

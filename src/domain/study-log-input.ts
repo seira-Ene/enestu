@@ -14,7 +14,9 @@ export type StudyLogInput = {
   readonly endedAt: string;
 };
 
-export const MAX_DURATION_SECONDS = 24 * 60 * 60;
+/** 1回の記録の上限（999時間）。DBの制約と合わせる。 */
+export const MAX_DURATION_HOURS = 999;
+export const MAX_DURATION_SECONDS = MAX_DURATION_HOURS * 60 * 60;
 
 export function parseStudyLogInput(
   body: unknown,
@@ -42,7 +44,9 @@ export function parseStudyLogInput(
     return fail("1秒未満の記録は保存できません。");
   }
   if (durationSeconds > MAX_DURATION_SECONDS) {
-    return fail("24時間を超える記録は保存できません。");
+    return fail(
+      `${MAX_DURATION_HOURS}時間を超える記録は保存できません。「記録せずにやめる」を選んでください。`,
+    );
   }
 
   return {
