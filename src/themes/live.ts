@@ -247,4 +247,65 @@ export const live = {
       },
     },
   },
+  // ホ長調・4拍子。E B C#m A E B A B。このアプリのためのオリジナル曲。
+  bgm: {
+    tempo: 128,
+    beatsPerBar: 4,
+    stepsPerBeat: 2,
+    bars: 8,
+    tracks: [
+      {
+        wave: "kick",
+        gain: 0.5,
+        score:
+          "x/2 x/2 x/2 x/2 |" +
+          "x/2 x/2 x/2 x/2 |" +
+          "x/2 x/2 x/2 x/2 |" +
+          "x/2 x/2 x/2 x/2 |" +
+          "x/2 x/2 x/2 x/2 |" +
+          "x/2 x/2 x/2 x/2 |" +
+          "x/2 x/2 x/2 x/2 |" +
+          "x/2 x/2 x/2 x/2",
+      },
+      {
+        wave: "noise",
+        gain: 0.1,
+        score:
+          "r/2 x/2 r/2 x/2 |" +
+          "r/2 x/2 r/2 x/2 |" +
+          "r/2 x/2 r/2 x/2 |" +
+          "r/2 x/2 r/2 x/2 |" +
+          "r/2 x/2 r/2 x/2 |" +
+          "r/2 x/2 r/2 x/2 |" +
+          "r/2 x/2 r/2 x/2 |" +
+          "r/2 x/2 r/2 x/2",
+      },
+      {
+        wave: "square",
+        gain: 0.1,
+        score:
+          "E2/1 E2/1 E2/1 E2/1 E2/1 E2/1 E2/1 E2/1 |" +
+          "B2/1 B2/1 B2/1 B2/1 B2/1 B2/1 B2/1 B2/1 |" +
+          "C#3/1 C#3/1 C#3/1 C#3/1 C#3/1 C#3/1 C#3/1 C#3/1 |" +
+          "A2/1 A2/1 A2/1 A2/1 A2/1 A2/1 A2/1 A2/1 |" +
+          "E2/1 E2/1 E2/1 E2/1 E2/1 E2/1 E2/1 E2/1 |" +
+          "B2/1 B2/1 B2/1 B2/1 B2/1 B2/1 B2/1 B2/1 |" +
+          "A2/1 A2/1 A2/1 A2/1 A2/1 A2/1 A2/1 A2/1 |" +
+          "B2/1 B2/1 B2/1 B2/1 B2/1 B2/1 B2/1 B2/1",
+      },
+      {
+        wave: "sawtooth",
+        gain: 0.08,
+        score:
+          "B4/2 G#4/2 B4/2 E5/2 |" +
+          "D#5/4 B4/2 F#4/2 |" +
+          "E5/2 C#5/2 E5/2 G#5/2 |" +
+          "F#5/4 E5/2 C#5/2 |" +
+          "B4/2 E5/2 G#5/2 B5/2 |" +
+          "A5/2 G#5/2 F#5/4 |" +
+          "E5/2 F#5/2 C#5/2 A4/2 |" +
+          "B4/6 r/2",
+      },
+    ],
+  },
 } as const satisfies WorldTheme;

@@ -1,17 +1,25 @@
 import { expect, test, type Page } from "@playwright/test";
+import { eventsBetween, eventTones, songSteps } from "../src/domain/bgm";
 import { SOUND_EFFECTS, VOLUME_GAINS } from "../src/domain/sound";
+import { cafe } from "../src/themes/cafe";
+import { live } from "../src/themes/live";
+import type { WorldTheme } from "../src/themes/types";
 import { addStudy, openFirstTime, openTab, screen } from "./helpers";
 
 /** 鳴らした音。偽物の音の出口が記録する。 */
-type Played = { wave: string; freq: number };
+type Played = { wave: string; freq: number; channel: "se" | "bgm" };
 
 /**
  * ブラウザの音の出口（AudioContext）を、鳴らした音を記録する偽物に替える。
- * 最初に作られる2つの音量は、効果音とBGMの全体の音量。
+ * 最初に作られる2つの音量は、効果音とBGMの全体の音量。鳴らした音が、どちらにつながっていたかも記録する。
  */
 async function installFakeAudio(page: Page): Promise<void> {
   await page.addInitScript(() => {
-    const log = { tones: [] as { wave: string; freq: number }[], gains: [] as { value: number }[] };
+    const log = {
+      tones: [] as { wave: string; freq: number; channel: string }[],
+      gains: [] as { value: number }[],
+      nodes: [] as unknown[],
+    };
     Object.assign(window, { __sound: log });
     class Param {
       constructor(public value = 0) {}
@@ -30,8 +38,15 @@ async function installFakeAudio(page: Page): Promise<void> {
       }
     }
     class AudioNodeStub {
-      connect() {
-        return this;
+      target: unknown = null;
+      connect(target: unknown) {
+        this.target = target;
+        return target;
+      }
+      /** つながった先をたどって、効果音とBGMのどちらかを返す。 */
+      channel(): string {
+        const envelope = this.target as AudioNodeStub | null;
+        return envelope?.target === log.nodes[1] ? "bgm" : "se";
       }
     }
     class GainStub extends AudioNodeStub {
@@ -41,25 +56,28 @@ async function installFakeAudio(page: Page): Promise<void> {
       type = "sine";
       frequency = new Param(0);
       start() {
-        log.tones.push({ wave: this.type, freq: this.frequency.value });
+        log.tones.push({ wave: this.type, freq: this.frequency.value, channel: this.channel() });
       }
       stop() {}
     }
     class SourceStub extends AudioNodeStub {
       buffer: unknown = null;
       start() {
-        log.tones.push({ wave: "noise", freq: 0 });
+        log.tones.push({ wave: "noise", freq: 0, channel: this.channel() });
       }
       stop() {}
     }
     class FakeAudioContext {
       state = "running";
-      currentTime = 0;
+      get currentTime() {
+        return performance.now() / 1000;
+      }
       sampleRate = 8000;
       destination = new AudioNodeStub();
       createGain() {
         const node = new GainStub();
         log.gains.push(node.gain);
+        log.nodes.push(node);
         return node;
       }
       createOscillator() {
@@ -196,4 +214,111 @@ test("音を出せないブラウザでも、画面はそのまま使える", as
   await page.getByRole("button", { name: /に話しかける$/ }).click();
   await openTab(page, "カード");
   await expect(screen(page)).toHaveCount(1);
+});
+
+/** その曲で鳴る音の高さ（小数2桁）。打楽器も含む。 */
+function songFrequencies({ bgm }: Pick<WorldTheme, "bgm">): Set<string> {
+  return new Set(
+    eventsBetween(bgm, 0, songSteps(bgm)).flatMap((event) =>
+      eventTones(bgm, event)
+        .filter((tone) => tone.wave !== "noise")
+        .map((tone) => tone.from.toFixed(2)),
+    ),
+  );
+}
+
+const bgmTones = async (page: Page) =>
+  (await played(page)).filter((tone) => tone.channel === "bgm");
+
+/** BGMで鳴った音のうち、その曲にだけある高さの音の数。 */
+async function onlyIn(page: Page, song: Set<string>, other: Set<string>): Promise<number> {
+  return (await bgmTones(page)).filter((tone) => {
+    const freq = tone.freq.toFixed(2);
+    return song.has(freq) && !other.has(freq);
+  }).length;
+}
+
+async function turnBgm(page: Page, isOn: boolean): Promise<void> {
+  const dialog = await openSoundSettings(page);
+  const toggle = dialog.getByRole("button", { name: "BGM", exact: true });
+  if ((await toggle.getAttribute("aria-pressed")) !== String(isOn)) await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-pressed", String(isOn));
+  await dialog.getByRole("button", { name: "閉じる" }).click();
+}
+
+const CAFE = songFrequencies(cafe);
+// ライブの曲は、1拍目からキックが鳴るので、切り替わりをすぐ見分けられる。
+const LIVE = songFrequencies(live);
+
+test("BGMは最初は鳴らず、ONにすると世界線の曲が鳴る", async ({ page }) => {
+  await installFakeAudio(page);
+  await openFirstTime(page);
+  await page.getByRole("button", { name: /に話しかける$/ }).click();
+  await page.waitForTimeout(800);
+  expect(await bgmTones(page)).toEqual([]);
+
+  await turnBgm(page, true);
+  await expect.poll(() => onlyIn(page, CAFE, LIVE)).toBeGreaterThan(0);
+});
+
+test("世界線を変えると、BGMが別の曲になる", async ({ page }) => {
+  await installFakeAudio(page);
+  await openFirstTime(page);
+  await turnBgm(page, true);
+  await expect.poll(() => onlyIn(page, CAFE, LIVE)).toBeGreaterThan(0);
+
+  await screen(page).getByRole("button", { name: /世界線を変える/ }).click();
+  await page.getByRole("dialog").getByRole("button", { name: /^ライブ/ }).click();
+  // 次の小節の頭で切り替わる（カフェの1小節は約3.2秒）。
+  await expect.poll(() => onlyIn(page, LIVE, CAFE), { timeout: 10_000 }).toBeGreaterThan(0);
+});
+
+test("BGMをOFFにすると止まる", async ({ page }) => {
+  await installFakeAudio(page);
+  await openFirstTime(page);
+  await turnBgm(page, true);
+  await expect.poll(async () => (await bgmTones(page)).length).toBeGreaterThan(0);
+
+  await turnBgm(page, false);
+  // 予約済みの分が鳴り終わるのを待ってから、増えないことを確かめる。
+  await page.waitForTimeout(600);
+  const stopped = (await bgmTones(page)).length;
+  await page.waitForTimeout(1500);
+  expect((await bgmTones(page)).length).toBe(stopped);
+});
+
+test("BGMの設定は読み込み直しても残り、画面を押すまでは鳴らない", async ({ page }) => {
+  await installFakeAudio(page);
+  await openFirstTime(page);
+  await turnBgm(page, true);
+
+  await page.reload();
+  await expect(page.getByRole("region", { name: /の応援$/ })).toBeVisible();
+  await page.waitForTimeout(800);
+  expect(await bgmTones(page)).toEqual([]);
+
+  await page.getByRole("button", { name: /に話しかける$/ }).click();
+  await expect.poll(async () => (await bgmTones(page)).length).toBeGreaterThan(0);
+});
+
+test("別のタブを見ている間はBGMを止め、戻ると再び鳴らす", async ({ page }) => {
+  await installFakeAudio(page);
+  await openFirstTime(page);
+  await turnBgm(page, true);
+  await expect.poll(async () => (await bgmTones(page)).length).toBeGreaterThan(0);
+
+  const setHidden = (isHidden: boolean) =>
+    page.evaluate((hidden) => {
+      Object.defineProperty(document, "hidden", { configurable: true, get: () => hidden });
+      document.dispatchEvent(new Event("visibilitychange"));
+    }, isHidden);
+
+  await setHidden(true);
+  await page.waitForTimeout(600);
+  const hidden = (await bgmTones(page)).length;
+  await page.waitForTimeout(1500);
+  expect((await bgmTones(page)).length).toBe(hidden);
+
+  await setHidden(false);
+  await expect.poll(async () => (await bgmTones(page)).length).toBeGreaterThan(hidden);
 });

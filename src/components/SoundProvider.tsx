@@ -16,8 +16,10 @@ import {
   type SoundName,
   type SoundSettings,
 } from "@/domain/sound";
+import { playBgm, stopBgm } from "@/lib/bgm-player";
 import { playTones, setChannelGain, unlockAudio } from "@/lib/sound-engine";
 import { loadSoundSettings, saveSoundSettings } from "@/lib/sound-settings-store";
+import { useWorld } from "./WorldProvider";
 
 type SoundContextValue = {
   readonly settings: SoundSettings;
@@ -46,6 +48,23 @@ export function SoundProvider({ children }: { children: ReactNode }) {
     setChannelGain("se", channelGain("se", settings.se));
     setChannelGain("bgm", channelGain("bgm", settings.bgm));
   }, [settings]);
+
+  // BGMは、ONで、画面が見えている間だけ鳴らす。世界線を変えたら、次の小節から替える。
+  const { theme } = useWorld();
+  const isBgmOn = settings.bgm.isOn;
+  useEffect(() => {
+    if (!isBgmOn) {
+      stopBgm();
+      return;
+    }
+    const update = () => {
+      if (document.hidden) stopBgm();
+      else playBgm(theme.bgm);
+    };
+    update();
+    document.addEventListener("visibilitychange", update);
+    return () => document.removeEventListener("visibilitychange", update);
+  }, [isBgmOn, theme.bgm]);
 
   // 消しているときは全体の音量が0になり、鳴らす側が何もしない。
   const play = useCallback((name: SoundName, delay = 0) => {

@@ -63,7 +63,14 @@ function SoundSettingsDialog({
             setting={settings.se}
             onChange={(setting) => change("se", setting)}
           />
-          <p className="text-xs opacity-80">設定は、この端末に保存されます。</p>
+          <ChannelRow
+            label="BGM"
+            setting={settings.bgm}
+            onChange={(setting) => change("bgm", setting)}
+          />
+          <p className="text-xs opacity-80">
+            設定は、この端末に保存されます。BGMは、世界線ごとに曲が変わります。
+          </p>
           <button type="button" onClick={onClose} className={SECONDARY_BUTTON}>
             閉じる
           </button>

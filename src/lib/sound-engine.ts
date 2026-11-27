@@ -67,16 +67,31 @@ export function setChannelGain(channel: Channel, gain: number): void {
   }
 }
 
+/** 音の時計の今の時刻（秒）。まだ音を出せなければ null。 */
+export function audioNow(): number | null {
+  return engine === null ? null : engine.context.currentTime;
+}
+
 /** 音を予約して鳴らす。delay は今からの秒数。 */
 export function playTones(
   tones: readonly Tone[],
   channel: Channel = "se",
   delay = 0,
 ): void {
+  if (engine === null) return;
+  playTonesAt(tones, channel, engine.context.currentTime + delay);
+}
+
+/** 音を、音の時計の決まった時刻に鳴らす。BGMは、この形で先回りして予約する。 */
+export function playTonesAt(
+  tones: readonly Tone[],
+  channel: Channel,
+  at: number,
+): void {
   if (engine === null || pendingGains[channel] === 0) return;
   try {
     const { context, master, noise } = engine;
-    const base = context.currentTime + delay;
+    const base = at;
     for (const tone of tones) {
       const start = base + tone.start;
       const end = start + tone.duration;
