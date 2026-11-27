@@ -33,7 +33,15 @@ async function findClaimable(
 ): Promise<RecordCounts> {
   const db = createSupabaseAdminClient();
   const onlyCount = { count: "exact", head: true } as const;
-  const [studyLogs, cards, answers, device, mine] = await Promise.all([
+  const [
+    studyLogs,
+    cards,
+    answers,
+    terms,
+    explanations,
+    device,
+    mine,
+  ] = await Promise.all([
     db.from("study_logs").select("id", onlyCount).eq("device_id", deviceId),
     db
       .from("quiz_cards")
@@ -41,6 +49,15 @@ async function findClaimable(
       .eq("device_id", deviceId)
       .is("archived_at", null),
     db.from("answer_logs").select("id", onlyCount).eq("device_id", deviceId),
+    db
+      .from("explain_terms")
+      .select("id", onlyCount)
+      .eq("device_id", deviceId)
+      .is("archived_at", null),
+    db
+      .from("explanation_logs")
+      .select("id", onlyCount)
+      .eq("device_id", deviceId),
     db.from("user_settings").select("hero_name").eq("device_id", deviceId),
     session.client
       .from("user_settings")
@@ -51,6 +68,8 @@ async function findClaimable(
     studyLogs.error ??
     cards.error ??
     answers.error ??
+    terms.error ??
+    explanations.error ??
     device.error ??
     mine.error;
   if (error) throw error;
@@ -60,6 +79,8 @@ async function findClaimable(
     studyLogs: studyLogs.count ?? 0,
     cards: cards.count ?? 0,
     answers: answers.count ?? 0,
+    terms: terms.count ?? 0,
+    explanations: explanations.count ?? 0,
     heroName: hasName ? null : (device.data?.[0]?.hero_name ?? null),
   };
 }

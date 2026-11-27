@@ -33,6 +33,8 @@ export async function POST(request: Request): Promise<Response> {
         studyLogs: row?.study_logs ?? 0,
         cards: row?.cards ?? 0,
         answers: row?.answers ?? 0,
+        terms: row?.terms ?? 0,
+        explanations: row?.explanations ?? 0,
       },
     });
   } catch (error) {

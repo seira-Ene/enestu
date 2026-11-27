@@ -34,6 +34,14 @@ const TABLE_PRIVILEGES: Readonly<
     service_role: ["SELECT", "INSERT", "UPDATE"],
   },
   notes: { authenticated: ["SELECT", "DELETE"] },
+  explain_terms: {
+    authenticated: ["SELECT", "INSERT"],
+    service_role: ["SELECT", "INSERT"],
+  },
+  explanation_logs: {
+    authenticated: ["SELECT", "INSERT"],
+    service_role: ["SELECT", "INSERT"],
+  },
 };
 
 /** 列だけに許す追加。 */
@@ -55,6 +63,10 @@ const COLUMN_UPDATES: Readonly<
     authenticated: ["hero_name", "updated_at", "user_id", "world_id"],
   },
   notes: { authenticated: ["image_uploaded_at"] },
+  explain_terms: {
+    authenticated: ["archived_at", "keywords", "subject", "term"],
+    service_role: ["archived_at", "keywords", "subject", "term"],
+  },
 };
 
 /** RLSのポリシーの条件は、どのテーブルも「ログインした本人の行だけ」。 */

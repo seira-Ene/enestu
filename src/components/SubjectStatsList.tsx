@@ -11,6 +11,7 @@ import {
 import { isNeglected, isWeak, sortByWeakness } from "@/domain/weakness";
 import { HEADING, ITEM, PANEL } from "./form-styles";
 import { MISTAKE_LABELS } from "./MistakeReasonPicker";
+import { RatioBar } from "./RatioBar";
 
 export function SubjectStatsList({
   stats,
@@ -55,7 +56,7 @@ function SubjectRow({
         {isNeglected(item, all) && <Badge mark="◇" label="学習不足" />}
       </div>
 
-      <Bar
+      <RatioBar
         label="正答率"
         ratio={rate}
         value={
@@ -64,7 +65,7 @@ function SubjectRow({
             : `${toPercent(rate)}%（${item.answerCount}問中${item.correctCount}問）`
         }
       />
-      <Bar
+      <RatioBar
         label="学習時間の割合"
         ratio={share}
         value={
@@ -96,41 +97,6 @@ function Badge({ mark, label }: { mark: string; label: string }) {
       <span aria-hidden="true">{mark} </span>
       {label}
     </span>
-  );
-}
-
-function Bar({
-  label,
-  ratio,
-  value,
-}: {
-  label: string;
-  /** 0〜1。値がなければ null。 */
-  ratio: number | null;
-  value: string;
-}) {
-  const percent = ratio === null ? 0 : toPercent(ratio);
-  return (
-    <div className="flex flex-col gap-1">
-      <p className="flex flex-wrap justify-between gap-x-2 text-sm">
-        <span className="opacity-80">{label}</span>
-        <span className="tabular-nums">{value}</span>
-      </p>
-      <div
-        role="meter"
-        aria-label={label}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-valuenow={percent}
-        aria-valuetext={value}
-        className="h-2 overflow-hidden rounded-full bg-surface"
-      >
-        <div
-          className="h-full rounded-r bg-accent"
-          style={{ width: `${percent}%` }}
-        />
-      </div>
-    </div>
   );
 }
 

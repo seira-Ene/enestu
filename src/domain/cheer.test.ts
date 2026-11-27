@@ -5,6 +5,8 @@ import {
   selectCheers,
   selectQuestLine,
   selectQuizCheer,
+  explainMood,
+  selectExplainCheer,
   studyMood,
 } from "./cheer";
 import type { Quest } from "./weakness";
@@ -16,6 +18,27 @@ const cheers: ThemeCheers = {
   timerStop: ["停止"],
   dailyTotal: ["{minutes}分。{minutes}分！"],
 };
+
+describe("言語化のセリフと表情", () => {
+  const explain = {
+    label: "説明",
+    setup: ["準備"],
+    great: ["すごいA", "すごいB"],
+    good: ["あと少し"],
+    retry: ["もう一度"],
+  } as const;
+
+  it.each([
+    [null, 0, "準備", "normal"],
+    ["great", 0, "すごいA", "happy"],
+    ["great", 1, "すごいB", "happy"],
+    ["good", 0, "あと少し", "happy"],
+    ["retry", 0, "もう一度", "worried"],
+  ] as const)("結果が %s なら「%s」", (rank, seed, line, mood) => {
+    expect(selectExplainCheer(explain, rank, seed)).toBe(line);
+    expect(explainMood(rank)).toBe(mood);
+  });
+});
 
 describe("selectCheers", () => {
   it("状態に応じたセリフを返す", () => {

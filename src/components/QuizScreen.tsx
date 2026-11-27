@@ -4,7 +4,14 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useLayoutEffect, useState } from "react";
 import { judgeAnswer } from "@/domain/answer-judge";
-import { quizMood, selectQuizCheer, type QuizMoment } from "@/domain/cheer";
+import {
+  explainMood,
+  quizMood,
+  selectExplainCheer,
+  selectQuizCheer,
+  type QuizMoment,
+} from "@/domain/cheer";
+import type { ExplanationRank } from "@/domain/explanation";
 import {
   listSubjects,
   MAX_QUIZ_QUESTIONS,
@@ -23,15 +30,24 @@ import { useWide } from "@/lib/use-wide";
 import { AnswerHistory } from "./AnswerHistory";
 import { CharacterArt } from "./CharacterArt";
 import { CharacterPanel } from "./CharacterPanel";
+import { ExplainBoard } from "./ExplainBoard";
 import { PANEL, PRIMARY_BUTTON, TEXT_INPUT } from "./form-styles";
 import { LevelPanel } from "./LevelPanel";
 import { LevelUpBanner } from "./LevelUpBanner";
+import { ModeTabs } from "./ModeTabs";
 import { QuizQuestion, type Judged } from "./QuizQuestion";
 import { QuizResult } from "./QuizResult";
 import { QuizStage } from "./QuizStage";
 import { ScreenHeader } from "./ScreenHeader";
 import { ScreenLayout } from "./ScreenLayout";
 import { useWorld } from "./WorldProvider";
+
+const MODES = [
+  { id: "quiz", label: "一問一答" },
+  { id: "explain", label: "言語化" },
+] as const;
+
+type Mode = (typeof MODES)[number]["id"];
 
 /** 1回のテスト。results が queue と同じ長さになったら終了。 */
 type QuizRun = {
@@ -46,6 +62,10 @@ type QuizRun = {
 export function QuizScreen() {
   const { theme } = useWorld();
   const isWide = useWide();
+  const [mode, setMode] = useState<Mode>("quiz");
+  /** 一度でも言語化を開いたか。開くまでは、用語を読み込まない。 */
+  const [hasOpenedExplain, setHasOpenedExplain] = useState(false);
+  const [explainRank, setExplainRank] = useState<ExplanationRank | null>(null);
   const cards = useRemote(fetchCards);
   const history = useRemote(fetchAnswerLogs);
   const progress = useRemote(fetchProgress);
@@ -158,9 +178,22 @@ export function QuizScreen() {
     run?.results.length ?? 0,
   );
 
+  const isExplaining = mode === "explain";
+
   return (
     <ScreenLayout>
       <ScreenHeader title={theme.terms.navQuiz} subtitle="確認テスト" />
+      {run === null && (
+        <ModeTabs
+          label="テストの種類"
+          modes={MODES}
+          current={mode}
+          onChange={(next) => {
+            setMode(next);
+            if (next === "explain") setHasOpenedExplain(true);
+          }}
+        />
+      )}
       {/* PC版では、左にキャラと演出、右に問題や結果を並べる。 */}
       <div className="flex flex-col gap-5 lg:grid lg:grid-cols-[minmax(20rem,1fr)_minmax(0,1.4fr)] lg:items-start">
         <div className="flex flex-col gap-5 lg:sticky lg:top-6">
@@ -169,7 +202,19 @@ export function QuizScreen() {
               <CharacterArt theme={theme} kind="scene" />
             </div>
           )}
-          <CharacterPanel theme={theme} mood={quizMood(moment)} lines={[cheer]} />
+          {isExplaining ? (
+            <CharacterPanel
+              theme={theme}
+              mood={explainMood(explainRank)}
+              lines={[selectExplainCheer(theme.quiz.explain, explainRank, 0)]}
+            />
+          ) : (
+            <CharacterPanel
+              theme={theme}
+              mood={quizMood(moment)}
+              lines={[cheer]}
+            />
+          )}
           {run !== null && current === undefined && (
             <LevelUpBanner
               theme={theme}
@@ -193,7 +238,16 @@ export function QuizScreen() {
             />
           )}
         </div>
-        <div className="flex flex-col gap-5">
+        {/* 切り替えても書きかけが消えないよう、隠すだけにする。 */}
+        {hasOpenedExplain && (
+          <div hidden={!isExplaining} className="flex flex-col gap-5">
+            <ExplainBoard
+              title={theme.quiz.explain.label}
+              onRank={setExplainRank}
+            />
+          </div>
+        )}
+        <div hidden={isExplaining} className="flex flex-col gap-5">
           {run !== null && current !== undefined && (
             <QuizQuestion
               key={`${run.results.length}-${current.id}`}

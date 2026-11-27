@@ -12,6 +12,14 @@ import {
 const ALICE = "11111111-1111-4111-8111-111111111111";
 const BOB = "22222222-2222-4222-8222-222222222222";
 const DEVICE = "33333333-3333-4333-8333-333333333333";
+const NO_RECORDS = {
+  studyLogs: 0,
+  cards: 0,
+  answers: 0,
+  terms: 0,
+  explanations: 0,
+  heroName: null,
+};
 
 describe("parseAccount", () => {
   const claims = {
@@ -80,25 +88,34 @@ describe("accountLabel", () => {
 
 describe("記録の件数", () => {
   it.each([
-    [3, 6, 10, "そら", "学習3件・カード6枚・解答10件・名前「そら」"],
-    [3, 0, 0, null, "学習3件"],
-    [0, 1, 0, null, "カード1枚"],
-    [0, 0, 2, null, "解答2件"],
-    [0, 0, 0, "そら", "名前「そら」"],
-    [0, 0, 0, null, "なし"],
-  ])(
-    "学習%i・カード%i・解答%i・名前%s は「%s」",
-    (studyLogs, cards, answers, heroName, text) => {
-      const counts = { studyLogs, cards, answers, heroName };
-      expect(describeCounts(counts)).toBe(text);
-      expect(hasRecords(counts)).toBe(text !== "なし");
-    },
-  );
+    [
+      {
+        studyLogs: 3,
+        cards: 6,
+        answers: 10,
+        terms: 2,
+        explanations: 4,
+        heroName: "そら",
+      },
+      "学習3件・カード6枚・解答10件・用語2個・説明4件・名前「そら」",
+    ],
+    [{ studyLogs: 3 }, "学習3件"],
+    [{ cards: 1 }, "カード1枚"],
+    [{ answers: 2 }, "解答2件"],
+    [{ terms: 1 }, "用語1個"],
+    [{ explanations: 1 }, "説明1件"],
+    [{ heroName: "そら" }, "名前「そら」"],
+    [{}, "なし"],
+  ])("%j は「%s」", (some, text) => {
+    const counts = { ...NO_RECORDS, ...some };
+    expect(describeCounts(counts)).toBe(text);
+    expect(hasRecords(counts)).toBe(text !== "なし");
+  });
 });
 
 describe("toAccountState", () => {
   const account = { id: ALICE, name: "花子", email: null };
-  const claimable = { studyLogs: 1, cards: 0, answers: 0, heroName: null };
+  const claimable = { ...NO_RECORDS, studyLogs: 1 };
 
   it("画面とサーバーが一致すれば、そのままの状態", () => {
     expect(toAccountState(null, null, null)).toEqual({ kind: "guest" });

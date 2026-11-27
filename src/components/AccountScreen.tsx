@@ -61,7 +61,7 @@ function PrivacyNote() {
         </div>
         <div>
           <dt className="font-bold">このアプリで付けたもの</dt>
-          <dd>学習の記録、カード、解答、選んだ世界線、主人公の名前、写真とメモ。</dd>
+          <dd>学習の記録、カード、解答、用語、説明、選んだ世界線、主人公の名前、写真とメモ。</dd>
         </div>
         <div>
           <dt className="font-bold">写真とメモの扱い</dt>

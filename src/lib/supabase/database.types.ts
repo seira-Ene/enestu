@@ -5,6 +5,61 @@
 export type Database = {
   public: {
     Tables: {
+      explain_terms: {
+        Row: {
+          id: string;
+          device_id: string | null;
+          user_id: string | null;
+          subject: string;
+          term: string;
+          keywords: string[];
+          archived_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id: string;
+          device_id?: string | null;
+          user_id?: string | null;
+          subject: string;
+          term: string;
+          keywords: string[];
+          archived_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          subject?: string;
+          term?: string;
+          keywords?: string[];
+          archived_at?: string | null;
+        };
+        Relationships: [];
+      };
+      explanation_logs: {
+        Row: {
+          id: string;
+          device_id: string | null;
+          user_id: string | null;
+          term_id: string;
+          body: string;
+          total_count: number;
+          missing: string[];
+          explained_at: string;
+          created_at: string;
+        };
+        Insert: {
+          id: string;
+          device_id?: string | null;
+          user_id?: string | null;
+          term_id: string;
+          body: string;
+          total_count: number;
+          missing: string[];
+          explained_at: string;
+          created_at?: string;
+        };
+        Update: Record<PropertyKey, never>;
+        Relationships: [];
+      };
       notes: {
         Row: {
           id: string;
@@ -183,7 +238,13 @@ export type Database = {
     Functions: {
       claim_device_records: {
         Args: { p_device_id: string; p_user_id: string };
-        Returns: { study_logs: number; cards: number; answers: number }[];
+        Returns: {
+          study_logs: number;
+          cards: number;
+          answers: number;
+          terms: number;
+          explanations: number;
+        }[];
       };
       my_progress_totals: {
         Args: Record<PropertyKey, never>;
