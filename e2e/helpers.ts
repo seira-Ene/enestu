@@ -13,6 +13,15 @@ export async function createUser(name: string): Promise<string> {
   return toText(toRecord(body).id);
 }
 
+/** 端末か利用者に、minutes 分の学習の記録を足す。ガチャの券を用意するときに使う。 */
+export async function addStudy(
+  owner: { readonly device: string } | { readonly user: string },
+  minutes: number,
+): Promise<void> {
+  const [kind, id] = "user" in owner ? ["user", owner.user] : ["device", owner.device];
+  await control(`add-study?kind=${kind}&owner=${id}&minutes=${minutes}`);
+}
+
 /** その端末に用語「光合成」を作り、上限を通さずに説明を count 件入れる。 */
 export async function fillExplanations(
   deviceId: string,

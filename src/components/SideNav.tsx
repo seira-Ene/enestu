@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AccountLink } from "./AccountLink";
-import { navItems } from "./nav-items";
+import { GACHA_NAV, navItems } from "./nav-items";
 import { WorldButton } from "./WorldButton";
 import { useWorld } from "./WorldProvider";
 
@@ -20,7 +20,7 @@ export function SideNav() {
       </div>
       <nav aria-label="画面の切り替え（左）">
         <ul className="flex flex-col gap-1">
-          {navItems(theme.terms).map(({ href, label, plain }) => {
+          {[...navItems(theme.terms), GACHA_NAV].map(({ href, label, plain }) => {
             const isCurrent = pathname === href;
             return (
               <li key={href}>

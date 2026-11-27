@@ -3,6 +3,9 @@ import { BURST_TAPS, BURST_WINDOW_MS } from "../src/domain/talk";
 import { cafe } from "../src/themes/cafe";
 import { openFirstTime, screen } from "./helpers";
 
+/** ふだんのセリフ。レベル1で解放される思い出の話も混ざる。 */
+const NORMAL_LINES = [...cafe.character.talk, ...cafe.progress.stories];
+
 /** ホームの、キャラクターのセリフ。 */
 function speech(page: Page) {
   return page.getByRole("region", { name: /の応援$/ }).locator("[aria-live]");
@@ -54,7 +57,7 @@ test("何度も続けて押すと、くすぐったがり、間を空けると�
 
   for (let tap = 1; tap < BURST_TAPS; tap += 1) {
     await button.click();
-    expect(cafe.character.talk).toContain(await said());
+    expect(NORMAL_LINES).toContain(await said());
   }
   await button.click();
   await expect(speech(page)).toHaveText(
@@ -71,5 +74,5 @@ test("何度も続けて押すと、くすぐったがり、間を空けると�
   await expect(speech(page)).not.toHaveText(
     new RegExp(`^(${cafe.character.burstTalk.join("|")})$`),
   );
-  expect(cafe.character.talk).toContain(await said());
+  expect(NORMAL_LINES).toContain(await said());
 });

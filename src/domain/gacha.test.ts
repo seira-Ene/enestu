@@ -4,11 +4,17 @@ import {
   GACHA_RARITIES,
   GACHA_SLOTS,
   gachaItemId,
+  markNew,
+  MAX_STARS,
+  parseItemId,
+  parsePullRequest,
+  prizeKind,
   pullsUntilPity,
   rarityRank,
   rarityRates,
   ticketsEarned,
   ticketsLeft,
+  starsOf,
 } from "./gacha";
 
 describe("レアリティ", () => {
@@ -101,5 +107,75 @@ describe("pullsUntilPity", () => {
     expect(until(0)).toBe(GACHA_PITY);
     expect(until(GACHA_PITY - 1)).toBe(1);
     expect(until(GACHA_PITY + 5)).toBe(1);
+  });
+});
+
+describe("景品の種類と★", () => {
+  it("ノーマルとレアは素材、ほかはセリフや称号", () => {
+    expect(GACHA_SLOTS.map(({ slot }) => prizeKind(slot))).toEqual([
+      ...Array<string>(6).fill("material"),
+      "line",
+      "line",
+      "title",
+      "memory",
+      "character",
+      "parallel",
+    ]);
+  });
+
+  it("重なるたびに★が増え、最大4つ。素材は★にしない", () => {
+    expect([1, 2, 5, 6, 30].map((copies) => starsOf("sr1", copies))).toEqual([
+      0,
+      1,
+      MAX_STARS,
+      MAX_STARS,
+      MAX_STARS,
+    ]);
+    expect(starsOf("n1", 3)).toBeNull();
+  });
+});
+
+describe("parseItemId", () => {
+  it("世界線と枠に分ける", () => {
+    expect(parseItemId("cafe-pr1")).toEqual({ world: "cafe", slot: "pr1" });
+  });
+
+  it.each(["mars-n1", "cafe-x9", "cafe-n1-x", "cafe", ""])(
+    "知らないIDは null（%s）",
+    (id) => {
+      expect(parseItemId(id)).toBeNull();
+    },
+  );
+});
+
+describe("parsePullRequest", () => {
+  it.each([1, 10])("%d枚を受け付ける", (count) => {
+    expect(parsePullRequest({ world: "live", count })).toEqual({
+      ok: true,
+      value: { world: "live", count },
+    });
+  });
+
+  it.each([
+    [null, "送信内容の形式が正しくありません。"],
+    [{ world: "mars", count: 1 }, "世界線が正しくありません。"],
+    [{ world: "live", count: 2 }, "引ける枚数は1枚か10枚です。"],
+    [{ world: "live", count: "1" }, "引ける枚数は1枚か10枚です。"],
+  ])("正しくない内容は断る（%j）", (body, error) => {
+    expect(parsePullRequest(body)).toEqual({ ok: false, error });
+  });
+});
+
+describe("markNew", () => {
+  const pull = (seq: number, itemId: string) => ({ seq, itemId, rarity: "n" as const });
+
+  it("前から持っていた景品と、この回で2枚目の景品は、新しくない", () => {
+    const pulls = [pull(1, "cafe-n1"), pull(2, "cafe-n2"), pull(3, "cafe-n1")];
+    const owned = [{ itemId: "cafe-n2", copies: 1 }];
+    expect(markNew(pulls, owned).map(({ isNew }) => isNew)).toEqual([
+      true,
+      false,
+      false,
+    ]);
   });
 });

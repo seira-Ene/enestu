@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { GACHA_SLOTS } from "@/domain/gacha";
 import { RANK_LEVELS } from "@/domain/progress";
 import { DEFAULT_WORLD_ID, themes, themeToCssVars, worldsToCss } from "@/themes";
 import { fillHeroName, MAX_HERO_NAME_LENGTH } from "@/domain/hero-name";
@@ -93,6 +94,25 @@ describe.each(WORLD_IDS)("世界線 %s", (id) => {
         expect(line).toContain(name);
         expect(line).not.toContain("{");
         expect([...line].length).toBeLessThanOrEqual(50);
+      }
+    }
+  });
+
+  it("ガチャの景品が12枠すべてにあり、名前が重ならず、長すぎない", () => {
+    const { prizes } = theme.gacha;
+    expect(Object.keys(prizes).sort()).toEqual(
+      GACHA_SLOTS.map(({ slot }) => slot).sort(),
+    );
+    const list = Object.values(prizes);
+    expect(new Set(list.map(({ name }) => name)).size).toBe(list.length);
+    for (const { name, text, image } of list) {
+      expect([...name].length).toBeLessThanOrEqual(16);
+      expect([...text].length).toBeLessThanOrEqual(40);
+      // セリフの「」は画面が付ける。
+      expect(text).not.toMatch(/^「|」$/);
+      if (image !== undefined) {
+        expect(image).toMatch(/^\/gacha\/[a-z0-9-]+\.webp$/);
+        readFileSync(new URL(`../../public${image}`, import.meta.url));
       }
     }
   });

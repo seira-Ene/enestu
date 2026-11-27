@@ -1,3 +1,5 @@
+import type { GachaSlot } from "@/domain/gacha";
+
 /** エネスタが提供する5つの世界線。 */
 export const WORLD_IDS = [
   "dungeon",
@@ -178,6 +180,20 @@ export type ThemeProgress = {
   readonly stories: FiveLines;
 };
 
+/** ガチャの景品。 */
+export type GachaPrize = {
+  readonly name: string;
+  /** 素材なら説明。スペシャルレアから上なら、キャラクターのセリフ（「」は付けない）。 */
+  readonly text: string;
+  /** 景品だけの絵（public/ のパス）。なければ、世界線の絵とレアリティの枠で見せる。 */
+  readonly image?: string;
+};
+
+/** 景品は、src/domain/gacha.ts の12枠すべてに置く。 */
+export type ThemeGacha = {
+  readonly prizes: Readonly<Record<GachaSlot, GachaPrize>>;
+};
+
 export type WorldTheme = {
   readonly id: WorldId;
   readonly displayName: string;
@@ -191,4 +207,5 @@ export type WorldTheme = {
   readonly quiz: ThemeQuiz;
   readonly quest: ThemeQuest;
   readonly progress: ThemeProgress;
+  readonly gacha: ThemeGacha;
 };

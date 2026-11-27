@@ -137,3 +137,57 @@ body {
     opacity: 0;
   }
 }
+
+/* ガチャの景品の枠。珍しいほど豪華にする。中の文字は世界線の配色のまま */
+.prize-frame {
+  padding: 3px;
+  border-radius: min(var(--decor-radius), 14px);
+  background: var(--theme-accent);
+}
+.prize-frame > * {
+  border-radius: calc(min(var(--decor-radius), 14px) - 3px);
+}
+.prize-frame[data-rarity="r"] {
+  background: linear-gradient(135deg, #8e99a6, #eef2f6, #8e99a6);
+}
+.prize-frame[data-rarity="sr"] {
+  background: linear-gradient(135deg, #b8860b, #ffe9a3, #b8860b);
+}
+.prize-frame[data-rarity="ssr"] {
+  background: linear-gradient(135deg, #b8860b, #ffd6e8, #ffe9a3, #b8860b);
+  box-shadow: 0 0 12px rgb(255 200 80 / 0.6);
+}
+.prize-frame[data-rarity="ur"] {
+  background: conic-gradient(
+    #ff6b6b,
+    #ffd93d,
+    #6bcb77,
+    #4d96ff,
+    #c77dff,
+    #ff6b6b
+  );
+  box-shadow: 0 0 16px rgb(200 120 255 / 0.6);
+}
+.prize-frame[data-rarity="pr"] {
+  background: linear-gradient(
+    120deg,
+    #ff9a9e,
+    #fad0c4,
+    #a1c4fd,
+    #c2e9fb,
+    #d4fc79,
+    #ff9a9e
+  );
+  background-size: 300% 300%;
+  box-shadow: 0 0 18px rgb(255 255 255 / 0.8);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .prize-frame[data-rarity="pr"] {
+    animation: foil 4s linear infinite;
+  }
+}
+@keyframes foil {
+  to {
+    background-position: 300% 0;
+  }
+}
