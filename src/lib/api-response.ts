@@ -77,6 +77,11 @@ export function notAchieved(): Response {
   return problem(409, "not_achieved", "まだ条件を満たしていません。");
 }
 
+/** AIを使えなかった理由。code で画面が見分ける。 */
+export function aiProblem(status: number, code: string, message: string): Response {
+  return problem(status, code, message);
+}
+
 /** ガチャの券が足りない。 */
 export function notEnoughTickets(): Response {
   return problem(

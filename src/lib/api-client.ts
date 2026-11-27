@@ -24,14 +24,15 @@ export async function getField<T>(
   return pickField(await request(endpoint, { method: "GET" }), key, isValid);
 }
 
-/** 送信し、応答の1項目を、形を確かめてから返す。 */
+/** 送信し、応答の1項目を、形を確かめてから返す。AIのように時間のかかるものは timeoutMs を延ばす。 */
 export async function postForField<T>(
   endpoint: string,
   body: object,
   key: string,
   isValid: (value: unknown) => value is T,
+  timeoutMs = TIMEOUT_MS,
 ): Promise<ApiResult<T>> {
-  return pickField(await sendBody("POST", endpoint, body), key, isValid);
+  return pickField(await sendBody("POST", endpoint, body, timeoutMs), key, isValid);
 }
 
 function pickField<T>(
@@ -103,12 +104,17 @@ function sendBody(
   method: "POST" | "PATCH" | "DELETE",
   endpoint: string,
   body: object,
+  timeoutMs = TIMEOUT_MS,
 ): Promise<ApiResult<unknown>> {
-  return request(endpoint, {
-    method,
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
+  return request(
+    endpoint,
+    {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    },
+    timeoutMs,
+  );
 }
 
 async function request(

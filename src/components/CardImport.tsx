@@ -8,6 +8,7 @@ import {
   type ImportCandidate,
 } from "@/domain/card-import";
 import { generateCards, MAX_GENERATE_LENGTH } from "@/domain/card-generator";
+import { generateAiCards } from "@/lib/ai-api";
 import type { QuizCard } from "@/domain/quiz";
 import { saveCards } from "@/lib/quiz-api";
 import { readTextFile } from "@/lib/read-text-file";
@@ -19,13 +20,15 @@ import {
   SECONDARY_BUTTON,
   TEXT_INPUT,
 } from "./form-styles";
+import { AiSourcePicker, type AiPhoto } from "./AiSourcePicker";
 import { ImportReview, type ReviewItem } from "./ImportReview";
 import { ModeTabs } from "./ModeTabs";
 
-/** 書式どおりに読むか、普通の文章から作るか。 */
+/** 書式どおりに読むか、普通の文章から作るか、AIで作るか。 */
 const METHODS = [
   { id: "format", label: "書式どおり" },
   { id: "generate", label: "文章から（AIなし）" },
+  { id: "ai", label: "AIで作る" },
 ] as const;
 type Method = (typeof METHODS)[number]["id"];
 
@@ -52,6 +55,11 @@ export function CardImport({
   const [notice, setNotice] = useState<string | null>(null);
   /** コピーできない環境で、手で選べるように表示する指示文。 */
   const [manualPrompt, setManualPrompt] = useState<string | null>(null);
+  /** AIに送る写真（縮めたもの）。メモリにだけ置き、保存しない。 */
+  const [photos, setPhotos] = useState<readonly AiPhoto[]>([]);
+  const [isGenerating, setIsGenerating] = useState(false);
+  /** AIで作れなかったとき、AIなしで作り直すボタンを出す。 */
+  const [aiFailed, setAiFailed] = useState(false);
 
   async function handleFile(event: ChangeEvent<HTMLInputElement>) {
     const input = event.target;
@@ -90,38 +98,73 @@ export function CardImport({
     }
   }
 
-  function handleParse() {
+  function handleParse(by: Method = method) {
     setNotice(null);
+    setAiFailed(false);
+    if (by === "ai") {
+      void handleAi();
+      return;
+    }
     if (text.trim() === "") {
       setError("文章を貼るか、ファイルを選んでください。");
       return;
     }
-    const limit = method === "generate" ? MAX_GENERATE_LENGTH : MAX_IMPORT_LENGTH;
+    const limit = by === "generate" ? MAX_GENERATE_LENGTH : MAX_IMPORT_LENGTH;
     if (text.length > limit) {
       setError(
         `一度に読み取れるのは${limit.toLocaleString("ja-JP")}文字までです。分けて取り込んでください。`,
       );
       return;
     }
-    // 文章から作った候補には、元の文を添える。
-    const result: {
-      readonly candidates: readonly (ImportCandidate & { readonly source?: string })[];
-      readonly duplicateCount: number;
-      readonly overflowCount: number;
-    } =
-      method === "generate"
+    const result =
+      by === "generate"
         ? generateCards(text, existing)
         : parseImportedCards(text, existing);
     if (result.candidates.length === 0) {
       setError(
         result.duplicateCount > 0
           ? "読み取れた問題は、すべて登録済みでした。"
-          : method === "generate"
+          : by === "generate"
             ? "問題にできる文が見つかりませんでした。下の「作れる形」を確認してください。"
             : "問題を読み取れませんでした。下の「読み取れる形」を確認してください。",
       );
       return;
     }
+    present(
+      result,
+      by === "generate"
+        ? `${summaryText(result)}簡易生成（AIなし）です。元の文と見比べて確かめてください。`
+        : summaryText(result),
+    );
+  }
+
+  async function handleAi() {
+    setIsGenerating(true);
+    setError(null);
+    const result = await generateAiCards(
+      text,
+      photos.map((photo) => photo.image),
+    );
+    setIsGenerating(false);
+    if (!result.ok) {
+      setError(result.error);
+      // 文章があれば、AIなしで作り直せるようにする。
+      setAiFailed(text.trim() !== "");
+      return;
+    }
+    present(
+      { candidates: result.value },
+      `${result.value.length}枚の候補をAI（Gemini）が作りました。AIはまちがえることがあります。資料と見比べて確かめてください。`,
+    );
+  }
+
+  /** 候補を確認画面に出す。文章から作った候補には、元の文を添える。 */
+  function present(
+    result: {
+      readonly candidates: readonly (ImportCandidate & { readonly source?: string })[];
+    },
+    message: string,
+  ) {
     setError(null);
     setItems(
       result.candidates.map((candidate) => ({
@@ -129,14 +172,12 @@ export function CardImport({
         subject: candidate.subject ?? subject.trim(),
         question: candidate.question,
         answer: candidate.answer,
-        ...(candidate.source === undefined ? {} : { source: candidate.source }),
+        ...(candidate.source === undefined || candidate.source === ""
+          ? {}
+          : { source: candidate.source }),
       })),
     );
-    setNotice(
-      method === "generate"
-        ? `${summaryText(result)}簡易生成（AIなし）です。元の文と見比べて確かめてください。`
-        : summaryText(result),
-    );
+    setNotice(message);
   }
 
   async function handleRegister(cards: readonly QuizCard[]) {
@@ -244,13 +285,15 @@ export function CardImport({
           onChange={(event) => setText(event.target.value)}
           rows={6}
           placeholder={
-            method === "generate"
-              ? "例：光のエネルギーを使って養分をつくるはたらきを光合成という。"
-              : "Q: 首都は？\nA: 東京"
+            method === "format"
+              ? "Q: 首都は？\nA: 東京"
+              : "例：光のエネルギーを使って養分をつくるはたらきを光合成という。"
           }
           className={TEXT_INPUT}
         />
       </label>
+
+      {method === "ai" && <AiSourcePicker photos={photos} onChange={setPhotos} />}
 
       <label className="flex flex-col gap-1">
         <span className="text-sm text-accent">
@@ -267,7 +310,7 @@ export function CardImport({
         </span>
       </label>
 
-      {method === "generate" ? (
+      {method === "ai" ? null : method === "generate" ? (
         <details className="text-sm">
           <summary className="cursor-pointer">作れる形</summary>
           <ul className="mt-2 flex list-disc flex-col gap-1 pl-5">
@@ -295,9 +338,26 @@ export function CardImport({
           {error}
         </p>
       )}
+      {aiFailed && (
+        <button
+          type="button"
+          onClick={() => {
+            setMethod("generate");
+            handleParse("generate");
+          }}
+          className={SECONDARY_BUTTON}
+        >
+          AIなしで作る
+        </button>
+      )}
       {status}
-      <button type="button" onClick={handleParse} className={PRIMARY_BUTTON}>
-        候補をつくる
+      <button
+        type="button"
+        onClick={() => handleParse()}
+        disabled={isGenerating}
+        className={PRIMARY_BUTTON}
+      >
+        {isGenerating ? "AIが作っています…" : "候補をつくる"}
       </button>
     </section>
   );

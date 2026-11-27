@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { AI_DAILY_LIMIT, parseAiKeyInput } from "@/domain/ai-key";
+import { checkAi } from "@/lib/ai-api";
 import { deleteAiKey, fetchAiKey, saveAiKey } from "@/lib/ai-key-api";
 import { useRemote } from "@/lib/use-remote";
 import {
@@ -40,6 +41,16 @@ export function AiKeyPanel() {
     }
     setNotice("キーを保存しました。");
     await remote.reload();
+  }
+
+  async function handleCheck() {
+    setIsSaving(true);
+    setError(null);
+    setNotice(null);
+    const result = await checkAi();
+    setIsSaving(false);
+    if (result.ok) setNotice(`Gemini につながりました（${result.value.model}）。`);
+    else setError(result.error);
   }
 
   async function handleDelete() {
@@ -112,6 +123,16 @@ export function AiKeyPanel() {
       {saved !== null && (
         <button
           type="button"
+          onClick={() => void handleCheck()}
+          disabled={isSaving}
+          className={SECONDARY_BUTTON}
+        >
+          つながるか試す
+        </button>
+      )}
+      {saved !== null && (
+        <button
+          type="button"
           onClick={() => void handleDelete()}
           disabled={isSaving}
           className={SECONDARY_BUTTON}
@@ -133,7 +154,7 @@ export function AiKeyPanel() {
           で作れます。
         </li>
         <li>キーは暗号化して保存し、画面には末尾4文字だけを出します。</li>
-        <li>AIを使えるのは、1日{AI_DAILY_LIMIT}回までです。</li>
+        <li>AIを使えるのは、1日{AI_DAILY_LIMIT}回までです（「試す」も1回と数えます）。</li>
       </ul>
     </section>
   );
