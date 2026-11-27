@@ -67,6 +67,15 @@ export function limitReached(message: string): Response {
   return problem(429, "limit", message);
 }
 
+/** ガチャの券が足りない。 */
+export function notEnoughTickets(): Response {
+  return problem(
+    409,
+    "tickets",
+    "券が足りません。学習するか、問題に正解すると増えます。",
+  );
+}
+
 /** DBのトリガーが、件数の上限で止めたか。 */
 export function isRowLimit(error: { message?: string } | null): boolean {
   return error?.message === ROW_LIMIT_MESSAGE;

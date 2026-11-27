@@ -8,6 +8,9 @@ export type NavItem = {
   readonly plain: string;
 };
 
+/** ガチャ。下のナビには場所がないので、ホームとPC版の左メニューから開く。 */
+export const GACHA_NAV: NavItem = { href: "/gacha", label: "ガチャ", plain: "景品" };
+
 /** 下のナビと、PC版の左メニューで共通の項目。 */
 export function navItems(terms: ThemeTerms): readonly NavItem[] {
   return [

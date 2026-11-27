@@ -1,13 +1,14 @@
 # 世界線の追加手順
 
 1. `src/themes/types.ts` の `WORLD_IDS` にidを足す。
-2. DBの `user_settings.world_id` の制約に、同じidを足すマイグレーションを作る。
+2. DBの `user_settings.world_id` と `gacha_items.world_id` の制約に、同じidを足すマイグレーションを作る。`gacha_items` には、`src/domain/gacha.ts` の `GACHA_SLOTS` の12枠を入れる。
 3. `src/themes/<id>.ts` を作り、`as const satisfies WorldTheme` でテーマを定義する。
    - 配色は6桁・小文字の16進カラーにし、文字と背景の明暗差を4.5:1以上にする。
    - キャラクターとセリフはオリジナルにする。実在の作品や人物を使わない。
    - `dailyTotal` のセリフには `{minutes}`、クエストの `weak` と `neglected` には `{subject}`、`combo` には `{count}` を含める。
    - `namedWelcome`、`namedTalk`、`namedBurstTalk` のセリフには `{name}` を含める。
    - `burstTalk` は、何度も続けて押されたときのセリフ。4つ以上にし、`talk` と重ねない。
+   - `gacha.prizes` に12枠すべての景品を書く。ノーマルとレアの `text` は素材の説明、スペシャルレアから上はキャラクターのセリフにする（「」は付けない）。
 4. 次の登録表に足す（足りなければ型エラーになる）。
    - `src/themes/index.ts` の `themes`
    - `src/lib/world-fonts.ts` の `LOADERS`（フォントは `src/lib/fonts/<id>.ts`）

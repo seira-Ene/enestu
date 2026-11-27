@@ -9,7 +9,7 @@ import {
 } from "@/domain/progress";
 import type { Remote } from "@/lib/use-remote";
 import type { WorldTheme } from "@/themes/types";
-import { HEADING, PANEL } from "./form-styles";
+import { HEADING, PANEL, SECONDARY_BUTTON } from "./form-styles";
 import { useSettings } from "./SettingsProvider";
 
 type Props = {
@@ -40,6 +40,9 @@ export function LevelPanel({ theme, remote }: Props) {
       )}
       {data === null && error === null && <p>読み込んでいます…</p>}
       {data !== null && <LevelBody theme={theme} totals={data} />}
+      <Link href="/gacha" className={SECONDARY_BUTTON}>
+        ガチャを引く
+      </Link>
     </section>
   );
 }

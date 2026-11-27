@@ -132,6 +132,22 @@ class Backend {
         this.auth.nextUser =
           this.users.get(url.searchParams.get("id") ?? "") ?? null;
         return {};
+      case "/control/add-study": {
+        // ガチャの券を用意するため、学習の記録を直接足す。
+        const owner = url.searchParams.get("owner") ?? "";
+        const column =
+          url.searchParams.get("kind") === "user" ? "user_id" : "device_id";
+        const minutes = Number(url.searchParams.get("minutes"));
+        await this.exclusive(() =>
+          this.db.asOwner(
+            `insert into study_logs (id, ${column}, subject, started_at, ended_at)
+             values (gen_random_uuid(), $1, '数学',
+                     now() - make_interval(mins => $2::int), now())`,
+            [owner, minutes],
+          ),
+        );
+        return {};
+      }
       case "/control/fill-explanations": {
         // 件数の上限を試すため、用語を1つ作り、上限を通さずに説明を入れる。
         const device = url.searchParams.get("device") ?? "";
