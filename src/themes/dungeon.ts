@@ -38,6 +38,15 @@ export const dungeon = {
       "{name}の足音なら、暗闇でもすぐわかるよ。",
       "次の階層も、{name}と一緒なら怖くないな。",
     ],
+    burstTalk: [
+      "わわっ、くすぐったい！ 松明が揺れちゃうよ！",
+      "そんなに突つかないで！ スライムかと思った……。",
+      "ちょっと、しつこいよ！ マントが脱げちゃう！",
+      "連打は罠を起こすから、ほどほどにね……！",
+    ],
+    namedBurstTalk: [
+      "{name}、遊んでる場合じゃないってば！ ……ふふっ。",
+    ],
     images: {
       face: "/characters/dungeon-face.webp",
       scene: "/characters/dungeon-scene.webp",

@@ -71,10 +71,21 @@ describe.each(WORLD_IDS)("世界線 %s", (id) => {
     for (const line of talk) expect([...line].length).toBeLessThanOrEqual(40);
   });
 
+  it("連打したときのセリフが4つ以上あり、長すぎず、ふだんのセリフと重ならない", () => {
+    const { talk, burstTalk } = theme.character;
+    expect(burstTalk.length).toBeGreaterThanOrEqual(4);
+    expect(new Set(burstTalk).size).toBe(burstTalk.length);
+    for (const line of burstTalk) {
+      expect([...line].length).toBeLessThanOrEqual(40);
+      expect(talk).not.toContain(line);
+    }
+  });
+
   it("名前を呼ぶセリフは、いちばん長い名前でも長すぎず、{name} が残らない", () => {
     const name = "あ".repeat(MAX_HERO_NAME_LENGTH);
     for (const named of [
       theme.character.namedTalk,
+      theme.character.namedBurstTalk,
       theme.cheers.namedWelcome,
     ]) {
       for (const line of named) expect(line).toContain("{name}");
