@@ -38,6 +38,7 @@ import { useSettings } from "./SettingsProvider";
 import { StudyHistory } from "./StudyHistory";
 import { StudyTimer, type TimerPhase } from "./StudyTimer";
 import { useWorld } from "./WorldProvider";
+import { useSound } from "./SoundProvider";
 
 export function StudyScreen() {
   const { theme } = useWorld();
@@ -47,6 +48,7 @@ export function StudyScreen() {
   const stats = useRemote(fetchStats);
   const progress = useRemote(fetchProgress);
   const daily = useRemote(fetchDailyStatus);
+  const { play } = useSound();
   /** 直前の記録を保存する前のレベル。 */
   const [previousLevel, setPreviousLevel] = useState<number | null>(null);
   /** URLの ?subject= で指定された科目。 */
@@ -110,6 +112,7 @@ export function StudyScreen() {
       startedAt: new Date().toISOString(),
       endedAt: null,
     });
+    play("start");
   }
 
   function handleStop() {
@@ -147,6 +150,7 @@ export function StudyScreen() {
       setIsSaving(false);
       return;
     }
+    play("save");
     setPreviousLevel(progress.data && levelState(progress.data).level);
     await Promise.all([
       loadLogs(),

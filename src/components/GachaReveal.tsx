@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   GACHA_RARITIES,
   highestRarity,
@@ -12,6 +12,7 @@ import {
 import type { WorldTheme } from "@/themes/types";
 import { PRIMARY_BUTTON } from "./form-styles";
 import { PrizeCard } from "./PrizeCard";
+import { useSound } from "./SoundProvider";
 
 export type RevealedPull = Pull & { readonly isNew: boolean };
 
@@ -81,26 +82,66 @@ function Reveal({
   );
   const spotlights = spotlightPulls(pulls);
   const highest = highestRarity(pulls);
+  const { play } = useSound();
+  const count = pulls.length;
+
+  /** その場面に入ったときの音。isFirst は、最初に開いた場面か。 */
+  const playFor = useCallback(
+    (next: Stage, isFirst: boolean) => {
+      const rank = rarityRank(highest);
+      if (next.kind === "charge") play("orb");
+      if (next.kind === "flip") {
+        for (let index = 0; index < count; index += 1) {
+          play("flip", (index * FLIP_STEP_MS) / 1000);
+        }
+        // スペシャルレア以上が混ざっていれば、めくり終わりに鈴を鳴らす。
+        if (rank >= rarityRank("sr")) {
+          play("rare", (FLIP_STEP_MS * (count - 1) + FLIP_MS) / 1000);
+        }
+      }
+      if (next.kind === "spotlight") play("fanfare");
+      // 演出なしでまとめから見せるときも、珍しいものが出たことは音で伝える。
+      if (next.kind === "done" && isFirst) {
+        if (rank >= rarityRank("ur")) play("fanfare");
+        else if (rank >= rarityRank("sr")) play("rare");
+      }
+    },
+    [play, highest, count],
+  );
+
+  const goTo = useCallback(
+    (next: Stage) => {
+      setStage(next);
+      playFor(next, false);
+    },
+    [playFor],
+  );
+
+  // 開いたときの場面の音は、1回だけ鳴らす。
+  const hasStarted = useRef(false);
+  useEffect(() => {
+    if (hasStarted.current) return;
+    hasStarted.current = true;
+    playFor(stage, true);
+  }, [playFor, stage]);
 
   useEffect(() => {
     if (stage.kind === "charge") {
-      const timer = setTimeout(() => setStage({ kind: "flip" }), CHARGE_MS);
+      const timer = setTimeout(() => goTo({ kind: "flip" }), CHARGE_MS);
       return () => clearTimeout(timer);
     }
     if (stage.kind === "flip") {
       const timer = setTimeout(
         () =>
-          setStage(
-            spotlights.length > 0 ? { kind: "spotlight", index: 0 } : { kind: "done" },
-          ),
-        FLIP_STEP_MS * (pulls.length - 1) + FLIP_MS + 400,
+          goTo(spotlights.length > 0 ? { kind: "spotlight", index: 0 } : { kind: "done" }),
+        FLIP_STEP_MS * (count - 1) + FLIP_MS + 400,
       );
       return () => clearTimeout(timer);
     }
     return undefined;
-  }, [stage, spotlights.length, pulls.length]);
+  }, [stage, spotlights.length, count, goTo]);
 
-  const skip = () => setStage({ kind: "done" });
+  const skip = () => goTo({ kind: "done" });
 
   return (
     <div className="flex flex-col gap-4">
@@ -117,7 +158,7 @@ function Reveal({
           theme={theme}
           pull={spotlights[stage.index]}
           onNext={() =>
-            setStage(
+            goTo(
               stage.index + 1 < spotlights.length
                 ? { kind: "spotlight", index: stage.index + 1 }
                 : { kind: "done" },

@@ -1,4 +1,5 @@
 import { AccountLink } from "./AccountLink";
+import { SoundButton } from "./SoundButton";
 import { WorldButton } from "./WorldButton";
 
 type Props = {
@@ -24,8 +25,11 @@ export function ScreenHeader({ title, subtitle }: Props) {
           <WorldButton />
         </div>
       </div>
-      <div className="contents lg:hidden">
-        <AccountLink />
+      <div className="flex items-center gap-3 lg:hidden">
+        <div className="min-w-0 flex-1">
+          <AccountLink />
+        </div>
+        <SoundButton />
       </div>
     </header>
   );

@@ -40,6 +40,7 @@ import { QuizResult } from "./QuizResult";
 import { QuizStage } from "./QuizStage";
 import { ScreenHeader } from "./ScreenHeader";
 import { ScreenLayout } from "./ScreenLayout";
+import { useSound } from "./SoundProvider";
 import { useWorld } from "./WorldProvider";
 
 const MODES = [
@@ -77,6 +78,7 @@ export function QuizScreen() {
     subject: string | null;
   } | null>(null);
   const [run, setRun] = useState<QuizRun | null>(null);
+  const { play } = useSound();
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -120,6 +122,7 @@ export function QuizScreen() {
       return;
     }
     const isCorrect = judgeAnswer(answer.value, current.answer);
+    play(isCorrect ? "correct" : "incorrect");
     setError(null);
     setRun({
       ...run,

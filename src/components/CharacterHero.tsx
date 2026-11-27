@@ -4,6 +4,7 @@ import type { CharacterMood, WorldTheme } from "@/themes/types";
 import { CharacterArt } from "./CharacterArt";
 import { CharacterPanel } from "./CharacterPanel";
 import { SpeechBubble } from "./SpeechBubble";
+import { useSound } from "./SoundProvider";
 
 type Props = {
   theme: WorldTheme;
@@ -45,6 +46,7 @@ export function CharacterHero({
   const artRef = useRef<HTMLDivElement>(null);
   /** 押した時刻。描き直しには使わないので、状態にしない。 */
   const tapsRef = useRef(NO_TAPS);
+  const { play } = useSound();
   /** 話しかけて出したセリフ。元のセリフが変わったら無効になる。 */
   const [talk, setTalk] = useState<{ base: string; line: string } | null>(null);
   const base = `${theme.id}\n${lines.join("\n")}`;
@@ -64,6 +66,7 @@ export function CharacterHero({
       Math.random,
     );
     if (next === null) return;
+    play(taps.isBurst ? "burst" : "tap");
     setTalk({ base, line: next });
     if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       if (taps.isBurst) artRef.current?.animate(WIGGLE, WIGGLE_MS);

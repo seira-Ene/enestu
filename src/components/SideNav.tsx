@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AccountLink } from "./AccountLink";
+import { SoundButton } from "./SoundButton";
 import { GACHA_NAV, navItems } from "./nav-items";
 import { WorldButton } from "./WorldButton";
 import { useWorld } from "./WorldProvider";
@@ -43,7 +44,12 @@ export function SideNav() {
       </nav>
       <div className="mt-auto flex flex-col gap-4">
         <WorldButton />
-        <AccountLink />
+        <div className="flex items-center gap-3">
+          <div className="min-w-0 flex-1">
+            <AccountLink />
+          </div>
+          <SoundButton />
+        </div>
       </div>
     </aside>
   );

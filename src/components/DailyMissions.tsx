@@ -13,6 +13,7 @@ import type { Remote } from "@/lib/use-remote";
 import type { WorldId } from "@/themes/types";
 import { ALERT, HEADING, ITEM, PANEL } from "./form-styles";
 import { rewardPreview, rewardText } from "./reward-text";
+import { useSound } from "./SoundProvider";
 
 type Props = {
   remote: Remote<DailyStatus>;
@@ -26,14 +27,19 @@ export function DailyMissions({ remote, world }: Props) {
   const [claiming, setClaiming] = useState<DailyKind | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [claimError, setClaimError] = useState<string | null>(null);
+  const { play } = useSound();
 
   async function handleClaim(kind: DailyKind) {
     setClaiming(kind);
     setNotice(null);
     setClaimError(null);
     const result = await claimDaily(kind, world);
-    if (result.ok) setNotice(`受け取りました：${rewardText(result.value)}`);
-    else setClaimError(result.error);
+    if (result.ok) {
+      play("claim");
+      setNotice(`受け取りました：${rewardText(result.value)}`);
+    } else {
+      setClaimError(result.error);
+    }
     await reload();
     setClaiming(null);
   }
