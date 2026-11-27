@@ -180,7 +180,13 @@ function pushIfFilled(
   if (trimmed.question !== "" && trimmed.answer !== "") candidates.push(trimmed);
 }
 
-function cleanLine(line: string): string {
+/** 箇条書きの記号と、Markdownの見出しの記号を除く。強調の記号は残す。 */
+export function stripListMark(line: string): string {
+  return line.trim().replace(LIST_MARK, "").replace(/^#+s+/, "").trim();
+}
+
+/** 箇条書きの記号と、Markdownの強調・見出しの記号を除く。 */
+export function cleanLine(line: string): string {
   return stripEmphasis(line.trim().replace(LIST_MARK, ""));
 }
 
@@ -190,7 +196,7 @@ function stripEmphasis(text: string): string {
 }
 
 /** 「〜のことである。」などの文末を除く。 */
-function trimDefinition(text: string): string {
+export function trimDefinition(text: string): string {
   return text
     .trim()
     .replace(/[。．.]+$/, "")
@@ -199,7 +205,7 @@ function trimDefinition(text: string): string {
     .trim();
 }
 
-function candidateKey(card: {
+export function candidateKey(card: {
   readonly question: string;
   readonly answer: string;
 }): string {
