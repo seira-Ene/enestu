@@ -3,12 +3,14 @@ import {
   canClaim,
   dailyDay,
   daysBetween,
+  fillDays,
   greetingFor,
   isDailyKind,
   LOGIN_REWARD,
   loginReward,
   MISSED_DAYS,
   missionProgress,
+  parseDailyClaimRequest,
   STREAK_BONUS_REWARD,
   type DailyStatus,
 } from "./daily";
@@ -119,5 +121,28 @@ describe("ミッション", () => {
   it("知らない種類は受け付けない", () => {
     expect(isDailyKind("login")).toBe(true);
     expect(isDailyKind("cheat")).toBe(false);
+  });
+});
+
+describe("fillDays", () => {
+  it("{days} に日数を入れる", () => {
+    expect(fillDays("{days}日連続！ {days}日目", 7)).toBe("7日連続！ 7日目");
+  });
+});
+
+describe("parseDailyClaimRequest", () => {
+  it("種類と世界線を受け付ける", () => {
+    expect(parseDailyClaimRequest({ kind: "login", world: "cafe" })).toEqual({
+      ok: true,
+      value: { kind: "login", world: "cafe" },
+    });
+  });
+
+  it.each([
+    [null, "送信内容の形式が正しくありません。"],
+    [{ kind: "cheat", world: "cafe" }, "受け取る種類が正しくありません。"],
+    [{ kind: "login", world: "mars" }, "世界線が正しくありません。"],
+  ])("正しくない内容は断る（%j）", (body, error) => {
+    expect(parseDailyClaimRequest(body)).toEqual({ ok: false, error });
   });
 });

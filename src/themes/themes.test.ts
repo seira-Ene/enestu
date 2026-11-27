@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { fillDays } from "@/domain/daily";
 import { GACHA_SLOTS } from "@/domain/gacha";
 import { RANK_LEVELS } from "@/domain/progress";
 import { DEFAULT_WORLD_ID, themes, themeToCssVars, worldsToCss } from "@/themes";
@@ -95,6 +96,23 @@ describe.each(WORLD_IDS)("世界線 %s", (id) => {
         expect(line).not.toContain("{");
         expect([...line].length).toBeLessThanOrEqual(50);
       }
+    }
+  });
+
+  it("その日初めて開いたときのセリフが揃っていて、長すぎない", () => {
+    const { missed, returned, milestone } = theme.character.greeting;
+    expect(missed.length).toBeGreaterThanOrEqual(3);
+    expect(returned.length).toBeGreaterThanOrEqual(2);
+    expect(milestone.length).toBeGreaterThanOrEqual(3);
+    for (const lines of [missed, returned, milestone]) {
+      expect(new Set(lines).size).toBe(lines.length);
+    }
+    for (const line of [...missed, ...returned]) {
+      expect([...line].length).toBeLessThanOrEqual(40);
+    }
+    for (const line of milestone) {
+      expect(line).toContain("{days}");
+      expect([...fillDays(line, 100)].length).toBeLessThanOrEqual(40);
     }
   });
 

@@ -48,10 +48,28 @@ export const detective = {
     namedBurstTalk: [
       "{name}先生、助手で遊ばないでください！",
     ],
+    greeting: {
+      missed: [
+        "先生！ 何日も連絡がないので、行方不明事件かと……！",
+        "事件簿、先生が来ない日の分だけ白紙なんです。",
+        "寂しかったです……助手は、先生がいないと推理できません。",
+      ],
+      returned: [
+        "おかえりなさい、先生！ 捜査再開ですね！",
+        "先生の無事を確認しました。……ほっとしました。",
+      ],
+      milestone: [
+        "{days}日連続の出勤、記録しました！ さすが先生です！",
+        "{days}日続けて来るなんて、これは名探偵の証拠です！",
+        "{days}日目ですね！ 先生の努力、事件簿の表紙に書いておきます！",
+      ],
+    },
     images: {
       face: "/characters/detective-face.webp",
       scene: "/characters/detective-scene.webp",
       banner: "/characters/detective-banner.webp",
+      happy: "/characters/detective-happy.webp",
+      sad: "/characters/detective-sad.webp",
     },
   },
   cheers: {

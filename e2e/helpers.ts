@@ -22,6 +22,14 @@ export async function addStudy(
   await control(`add-study?kind=${kind}&owner=${id}&minutes=${minutes}`);
 }
 
+/** 連続日数を試すため、その端末が daysAgo 日前に訪れたことにする。 */
+export async function addPastVisits(
+  device: string,
+  daysAgo: readonly number[],
+): Promise<void> {
+  await control(`past-visits?device=${device}&days=${daysAgo.join(",")}`);
+}
+
 /** 天井を試すため、その端末がウルトラレア未満を過去に count 回引いたことにする。 */
 export async function addPastPulls(device: string, count: number): Promise<void> {
   await control(`past-pulls?device=${device}&count=${count}`);

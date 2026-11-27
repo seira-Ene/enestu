@@ -47,10 +47,28 @@ export const dungeon = {
     namedBurstTalk: [
       "{name}、遊んでる場合じゃないってば！ ……ふふっ。",
     ],
+    greeting: {
+      missed: [
+        "……やっと来た。灯り、消えそうになるまで待ってたんだよ。",
+        "ずっと入口を見てた。……迷子になったのかと思った。",
+        "寂しかったよ。ひとりの迷宮って、こんなに暗いんだね。",
+      ],
+      returned: [
+        "おかえり！ 今日からまた、一緒に潜ろうね。",
+        "来てくれただけで、松明が明るくなった気がする。",
+      ],
+      milestone: [
+        "{days}日連続！ きみの足あと、迷宮にくっきり残ってるよ。",
+        "{days}日も続いたね。この灯り、きみのおかげで消えないんだ。",
+        "{days}日目の冒険だ！ 宝箱より、きみの毎日がうれしい。",
+      ],
+    },
     images: {
       face: "/characters/dungeon-face.webp",
       scene: "/characters/dungeon-scene.webp",
       banner: "/characters/dungeon-banner.webp",
+      happy: "/characters/dungeon-happy.webp",
+      sad: "/characters/dungeon-sad.webp",
     },
   },
   cheers: {

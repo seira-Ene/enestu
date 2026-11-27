@@ -9,6 +9,7 @@
    - `namedWelcome`、`namedTalk`、`namedBurstTalk` のセリフには `{name}` を含める。
    - `burstTalk` は、何度も続けて押されたときのセリフ。4つ以上にし、`talk` と重ねない。
    - `gacha.prizes` に12枠すべての景品を書く。ノーマルとレアの `text` は素材の説明、スペシャルレアから上はキャラクターのセリフにする（「」は付けない）。
+   - `character.greeting` に、さびしがるセリフ（`missed`、3つ以上）、おかえりのセリフ（`returned`、2つ以上）、連続日数のセリフ（`milestone`、3つ以上で `{days}` を含める）を書く。
 4. 次の登録表に足す（足りなければ型エラーになる）。
    - `src/themes/index.ts` の `themes`
    - `src/lib/world-fonts.ts` の `LOADERS`（フォントは `src/lib/fonts/<id>.ts`）
@@ -21,7 +22,7 @@
 
 ## キャラクターを自前の画像に替える
 
-1. 顔（正方形320px）、一枚絵（16:10・幅896px）、横長（8:3・幅720px）のWebPを `public/characters/<id>-<種類>.webp` に置く。1枚120KB未満にする。
-2. テーマ定義の `character.images` を、`null` から3つのパスに変える。
+1. 顔（正方形320px）、一枚絵（16:10・幅896px）、横長（8:3・幅720px）、喜ぶ顔と泣き顔（縦長・幅640px。上の方を切り取って使う）のWebPを `public/characters/<id>-<種類>.webp` に置く。種類は face・scene・banner・happy・sad。1枚120KB未満にする。
+2. テーマ定義の `character.images` を、`null` から5つのパスに変える。
 
 権利を持つ画像だけを使う。

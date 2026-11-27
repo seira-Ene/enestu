@@ -79,6 +79,9 @@ const SUPABASE_LIKE_SETUP = `
   revoke all on function realtime.send(jsonb, text, text, boolean) from public;
 `;
 
+/** PostgreSQL の date 型の番号。 */
+const DATE_OID = 1082;
+
 /** マイグレーションで中身を入れる表。テストの間でも空にしない。 */
 const MASTER_TABLES = ["gacha_rarities", "gacha_items"];
 
@@ -95,7 +98,8 @@ export class TestDb {
 
   /** マイグレーションを適用したDBを作る。before を渡すと、その手前で止める。 */
   static async create(before?: string): Promise<TestDb> {
-    const db = new TestDb(new PGlite());
+    // 日付（date）は、Supabase（PostgREST）と同じく YYYY-MM-DD の文字列で返す。
+    const db = new TestDb(new PGlite({ parsers: { [DATE_OID]: (value) => value } }));
     await db.pg.exec(SUPABASE_LIKE_SETUP);
     for (const name of listMigrations()) {
       if (name === before) break;

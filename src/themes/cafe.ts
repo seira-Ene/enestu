@@ -47,10 +47,28 @@ export const cafe = {
     namedBurstTalk: [
       "{name}さん、つつくのはおしまい！ ……ふふ。",
     ],
+    greeting: {
+      missed: [
+        "いらっしゃ……あ、来てくれた。……ちょっと寂しかったんだよ。",
+        "きみの指定席、毎日拭いて待ってたの。",
+        "何日も来ないから、コーヒーが冷めちゃった……。",
+      ],
+      returned: [
+        "おかえりなさい。今日はあったかいの、サービスね。",
+        "来てくれてうれしい。ゆっくりしていってね。",
+      ],
+      milestone: [
+        "{days}日連続のご来店、ありがとう！ 常連さんだね。",
+        "{days}日目のきみに、特製ケーキを用意したよ。",
+        "{days}日も続けて来てくれるなんて、看板にしたいくらい。",
+      ],
+    },
     images: {
       face: "/characters/cafe-face.webp",
       scene: "/characters/cafe-scene.webp",
       banner: "/characters/cafe-banner.webp",
+      happy: "/characters/cafe-happy.webp",
+      sad: "/characters/cafe-sad.webp",
     },
   },
   cheers: {

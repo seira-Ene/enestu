@@ -67,6 +67,16 @@ export function limitReached(message: string): Response {
   return problem(429, "limit", message);
 }
 
+/** ログインボーナスやミッションを、今日はもう受け取った。 */
+export function alreadyClaimed(): Response {
+  return problem(409, "claimed", "今日はもう受け取りました。");
+}
+
+/** ミッションの条件を、まだ満たしていない。 */
+export function notAchieved(): Response {
+  return problem(409, "not_achieved", "まだ条件を満たしていません。");
+}
+
 /** ガチャの券が足りない。 */
 export function notEnoughTickets(): Response {
   return problem(
