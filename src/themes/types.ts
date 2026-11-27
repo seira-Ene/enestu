@@ -125,9 +125,20 @@ export type QuizStageTheme = {
   readonly gaugeDirection: "drain" | "fill";
 };
 
+/** 言語化（自分の言葉での説明）の呼び方とセリフ。 */
+export type ThemeExplain = {
+  readonly label: string;
+  readonly setup: CheerLines;
+  /** 結果：よく説明できている／あと少し／もう一度。 */
+  readonly great: CheerLines;
+  readonly good: CheerLines;
+  readonly retry: CheerLines;
+};
+
 export type ThemeQuiz = {
   readonly terms: QuizTerms;
   readonly cheers: QuizCheers;
+  readonly explain: ThemeExplain;
   readonly stage: QuizStageTheme;
 };
 

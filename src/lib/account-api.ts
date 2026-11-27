@@ -65,6 +65,8 @@ function isMovedCounts(value: unknown): value is MovedCounts {
   return (
     typeof counts.studyLogs === "number" &&
     typeof counts.cards === "number" &&
-    typeof counts.answers === "number"
+    typeof counts.answers === "number" &&
+    typeof counts.terms === "number" &&
+    typeof counts.explanations === "number"
   );
 }

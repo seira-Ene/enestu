@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { listSubjects } from "@/domain/quiz";
 import { parseCardDraft } from "@/domain/quiz-input";
+import { fetchTerms } from "@/lib/explain-api";
 import { fetchCards, saveCard } from "@/lib/quiz-api";
 import { fetchTodayLogs } from "@/lib/study-log-api";
 import { useRemote } from "@/lib/use-remote";
@@ -10,8 +11,11 @@ import type { CardDraft } from "./CardEditor";
 import { CardForm } from "./CardForm";
 import { CardImport } from "./CardImport";
 import { CardList } from "./CardList";
+import { ModeTabs } from "./ModeTabs";
 import { ScreenHeader } from "./ScreenHeader";
 import { ScreenLayout } from "./ScreenLayout";
+import { TermForm } from "./TermForm";
+import { TermList } from "./TermList";
 import { useWorld } from "./WorldProvider";
 
 const EMPTY_DRAFT: CardDraft = { subject: "", question: "", answer: "" };
@@ -19,6 +23,7 @@ const EMPTY_DRAFT: CardDraft = { subject: "", question: "", answer: "" };
 const MODES = [
   { id: "bulk", label: "まとめて" },
   { id: "single", label: "1枚ずつ" },
+  { id: "terms", label: "用語" },
 ] as const;
 
 type Mode = (typeof MODES)[number]["id"];
@@ -27,6 +32,7 @@ export function CardsScreen() {
   const { theme } = useWorld();
   const cards = useRemote(fetchCards);
   const todayLogs = useRemote(fetchTodayLogs);
+  const terms = useRemote(fetchTerms);
   const [mode, setMode] = useState<Mode>("bulk");
   const [draft, setDraft] = useState(EMPTY_DRAFT);
   const [isSaving, setIsSaving] = useState(false);
@@ -71,29 +77,21 @@ export function CardsScreen() {
   const subjects = listSubjects([
     ...(cards.data ?? []),
     ...(todayLogs.data ?? []),
+    ...(terms.data ?? []),
   ]);
 
   return (
     <ScreenLayout>
-      <ScreenHeader title={theme.terms.navCards} subtitle="カードの登録" />
+      <ScreenHeader title={theme.terms.navCards} subtitle="カードと用語の登録" />
       {/* PC版では、左に登録、右に一覧を並べる。 */}
       <div className="flex flex-col gap-5 lg:grid lg:grid-cols-[minmax(20rem,1fr)_minmax(0,1.4fr)] lg:items-start">
         <div className="flex flex-col gap-5">
-          <div role="group" aria-label="登録のしかた" className="panel grid grid-cols-2 gap-2 p-2">
-            {MODES.map(({ id, label }) => (
-              <button
-                key={id}
-                type="button"
-                aria-pressed={mode === id}
-                onClick={() => setMode(id)}
-                className={`font-display rounded-[var(--decor-button-radius)] px-2 py-2 ${
-                  mode === id ? "bg-primary text-background" : "text-text"
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+          <ModeTabs
+            label="登録のしかた"
+            modes={MODES}
+            current={mode}
+            onChange={setMode}
+          />
           {/* 切り替えても書きかけが消えないよう、隠すだけにする。 */}
           <div hidden={mode !== "bulk"}>
             <CardImport
@@ -115,8 +113,15 @@ export function CardsScreen() {
               onSubmit={() => void handleSubmit()}
             />
           </div>
+          <div hidden={mode !== "terms"}>
+            <TermForm subjects={subjects} onSaved={terms.reload} />
+          </div>
         </div>
-        <CardList terms={theme.quiz.terms} cards={cards} />
+        {mode === "terms" ? (
+          <TermList terms={terms} subjects={subjects} />
+        ) : (
+          <CardList terms={theme.quiz.terms} cards={cards} />
+        )}
       </div>
     </ScreenLayout>
   );

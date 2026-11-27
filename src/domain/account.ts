@@ -50,6 +50,8 @@ export type RecordCounts = {
   readonly studyLogs: number;
   readonly cards: number;
   readonly answers: number;
+  readonly terms: number;
+  readonly explanations: number;
   /** 引き継ぐ主人公の名前。なければ null。 */
   readonly heroName: string | null;
 };
@@ -59,6 +61,8 @@ export function hasRecords(counts: RecordCounts): boolean {
     counts.studyLogs > 0 ||
     counts.cards > 0 ||
     counts.answers > 0 ||
+    counts.terms > 0 ||
+    counts.explanations > 0 ||
     counts.heroName !== null
   );
 }
@@ -69,6 +73,8 @@ export function describeCounts(counts: RecordCounts): string {
     counts.studyLogs > 0 && `学習${counts.studyLogs}件`,
     counts.cards > 0 && `カード${counts.cards}枚`,
     counts.answers > 0 && `解答${counts.answers}件`,
+    counts.terms > 0 && `用語${counts.terms}個`,
+    counts.explanations > 0 && `説明${counts.explanations}件`,
     counts.heroName !== null && `名前「${counts.heroName}」`,
   ].filter((part) => part !== false);
   return parts.length > 0 ? parts.join("・") : "なし";

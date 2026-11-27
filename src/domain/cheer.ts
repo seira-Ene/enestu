@@ -3,7 +3,9 @@ import type {
   QuestLines,
   QuizCheers,
   ThemeCheers,
+  ThemeExplain,
 } from "@/themes/types";
+import type { ExplanationRank } from "./explanation";
 import type { Quest } from "./weakness";
 
 /** 待機中／計測中／記録完了。 */
@@ -54,6 +56,21 @@ export function selectQuizCheer(
   seed: number,
 ): string {
   return pickLine(cheers[moment], seed);
+}
+
+/** 言語化で、キャラクターが話すセリフ。結果が出る前は rank を null にする。 */
+export function selectExplainCheer(
+  explain: ThemeExplain,
+  rank: ExplanationRank | null,
+  seed: number,
+): string {
+  return pickLine(explain[rank ?? "setup"], seed);
+}
+
+/** 言語化の結果に応じた、キャラクターの表情。 */
+export function explainMood(rank: ExplanationRank | null): CharacterMood {
+  if (rank === null) return "normal";
+  return rank === "retry" ? "worried" : "happy";
 }
 
 /** 学習の状態に応じた、キャラクターの表情。 */
