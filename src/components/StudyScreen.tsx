@@ -23,10 +23,12 @@ import {
 } from "@/lib/active-session";
 import { fetchProgress } from "@/lib/progress-api";
 import { fetchStats } from "@/lib/stats-api";
+import { fetchDailyStatus } from "@/lib/daily-api";
 import { fetchTodayLogs, saveStudyLog } from "@/lib/study-log-api";
 import { useRemote } from "@/lib/use-remote";
 import { CharacterHero } from "./CharacterHero";
 import { DailyGreeting } from "./DailyGreeting";
+import { DailyMissions } from "./DailyMissions";
 import { DailyQuest } from "./DailyQuest";
 import { LevelPanel } from "./LevelPanel";
 import { LevelUpBanner } from "./LevelUpBanner";
@@ -44,6 +46,7 @@ export function StudyScreen() {
   const now = useNow();
   const stats = useRemote(fetchStats);
   const progress = useRemote(fetchProgress);
+  const daily = useRemote(fetchDailyStatus);
   /** 直前の記録を保存する前のレベル。 */
   const [previousLevel, setPreviousLevel] = useState<number | null>(null);
   /** URLの ?subject= で指定された科目。 */
@@ -145,7 +148,12 @@ export function StudyScreen() {
       return;
     }
     setPreviousLevel(progress.data && levelState(progress.data).level);
-    await Promise.all([loadLogs(), stats.reload(), progress.reload()]);
+    await Promise.all([
+      loadLogs(),
+      stats.reload(),
+      progress.reload(),
+      daily.reload(),
+    ]);
     if (getActiveSession()?.id === current.id) setActiveSession(null);
     setTyped({ requested, subject: current.subject });
     setLastSaved(current);
@@ -223,6 +231,7 @@ export function StudyScreen() {
             onRetry={() => void save()}
             onDiscard={handleDiscard}
           />
+          <DailyMissions remote={daily} world={theme.id} />
           <DailyQuest theme={theme.quest} remote={stats} />
           <StudyHistory
             terms={theme.terms}

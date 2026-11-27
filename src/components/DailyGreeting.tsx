@@ -6,13 +6,12 @@ import {
   type DailyClaim,
   type DailyStatus,
 } from "@/domain/daily";
-import { parseItemId } from "@/domain/gacha";
 import { claimDaily, fetchDailyStatus } from "@/lib/daily-api";
 import { useRemote } from "@/lib/use-remote";
-import { themes } from "@/themes";
 import type { WorldTheme } from "@/themes/types";
 import { CharacterArt } from "./CharacterArt";
 import { ALERT, HEADING, PANEL, PRIMARY_BUTTON, SECONDARY_BUTTON } from "./form-styles";
+import { rewardPreview, rewardText } from "./reward-text";
 
 /**
  * その日初めてホームを開いたときのあいさつと、ログインボーナス。
@@ -144,18 +143,9 @@ function lineFor(
 function preview(status: DailyStatus): string {
   const streakToday = status.streak + 1;
   const reward = loginReward(streakToday);
-  const parts = [`券${reward.tickets}枚${reward.material === null ? "" : "とレアの素材"}`];
+  const parts = [rewardPreview(reward)];
   const greeting = greetingFor(status);
   if (greeting?.kind === "missed") parts.push(`${greeting.days}日ぶりのログイン`);
   else if (streakToday >= 2) parts.push(`今日で${streakToday}日連続`);
   return parts.join("・");
-}
-
-function rewardText(claim: DailyClaim): string {
-  const parsed = claim.itemId === null ? null : parseItemId(claim.itemId);
-  const material =
-    parsed === null
-      ? ""
-      : `、素材「${themes[parsed.world].gacha.prizes[parsed.slot].name}」`;
-  return `券${claim.tickets}枚${material}`;
 }

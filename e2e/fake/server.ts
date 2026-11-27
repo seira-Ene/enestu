@@ -148,6 +148,26 @@ class Backend {
         );
         return {};
       }
+      case "/control/add-answers": {
+        // ミッションを試すため、その端末に今日の解答を count 件足す。
+        const device = url.searchParams.get("device") ?? "";
+        const count = Number(url.searchParams.get("count"));
+        await this.exclusive(async () => {
+          const card = crypto.randomUUID();
+          await this.db.asOwner(
+            `insert into quiz_cards (id, device_id, subject, question, answer)
+             values ($1, $2, '数学', '問', '答')`,
+            [card, device],
+          );
+          await this.db.asOwner(
+            `insert into answer_logs (id, device_id, card_id, user_answer, is_correct, answered_at)
+             select gen_random_uuid(), $1, $2, '答', true, now()
+             from generate_series(1, $3::int)`,
+            [device, card, count],
+          );
+        });
+        return {};
+      }
       case "/control/past-visits": {
         // 連続日数を試すため、その端末が何日前にログインボーナスを受け取ったかを入れる。
         const device = url.searchParams.get("device") ?? "";
