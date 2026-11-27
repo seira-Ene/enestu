@@ -39,6 +39,15 @@ export const otome = {
       "{name}の名前を、僕はいちばんよく覚えている。",
       "今夜の最初の一曲は、{name}と踊りたいな。",
     ],
+    burstTalk: [
+      "ふふ、くすぐったいよ。……いたずらな人だね。",
+      "そんなに突つかなくても、僕はどこにも行かないよ。",
+      "こら、しつこいよ。……仕返しされても知らないからね。",
+      "落ち着いて。きみの手、捕まえてしまおうか。",
+    ],
+    namedBurstTalk: [
+      "{name}、そんなに呼ばれたら、照れてしまうよ。",
+    ],
     images: {
       face: "/characters/otome-face.webp",
       scene: "/characters/otome-scene.webp",

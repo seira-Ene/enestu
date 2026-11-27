@@ -38,6 +38,15 @@ export const cafe = {
       "今日のおすすめは、{name}さんの好きそうな味だよ。",
       "{name}さんが来ると、お店が少し明るくなるんだ。",
     ],
+    burstTalk: [
+      "ひゃっ、くすぐったいよ〜。トレー落としちゃう！",
+      "ちょっと、つつきすぎ！ ……ミルク、こぼれちゃうでしょ。",
+      "そんなに呼ばなくても、ちゃんとここにいるってば。",
+      "もう、いたずらさんには、おかわり無しだよ？",
+    ],
+    namedBurstTalk: [
+      "{name}さん、つつくのはおしまい！ ……ふふ。",
+    ],
     images: {
       face: "/characters/cafe-face.webp",
       scene: "/characters/cafe-scene.webp",

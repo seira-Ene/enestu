@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { selectTalkLine } from "@/domain/talk";
+import { NO_TAPS, nextTapState, selectTalkLine } from "@/domain/talk";
 import type { CharacterMood, WorldTheme } from "@/themes/types";
 import { CharacterArt } from "./CharacterArt";
 import { CharacterPanel } from "./CharacterPanel";
@@ -11,6 +11,8 @@ type Props = {
   lines: readonly string[];
   /** 話しかけたときのセリフ。 */
   talkLines: readonly string[];
+  /** 短い間に何度も押されたときのセリフ。 */
+  burstLines: readonly string[];
 };
 
 /** 話しかけられたときの、小さな身ぶり。 */
@@ -21,10 +23,28 @@ const NOD: Keyframe[] = [
 ];
 const NOD_MS = 260;
 
+/** 何度も押されたときの、くすぐったそうな身ぶり。 */
+const WIGGLE: Keyframe[] = [
+  { transform: "rotate(0)" },
+  { transform: "rotate(-2deg)" },
+  { transform: "rotate(2deg)" },
+  { transform: "rotate(-1deg)" },
+  { transform: "rotate(0)" },
+];
+const WIGGLE_MS = 360;
+
 /** ホームの大きな一枚絵とセリフ。絵か吹き出しを押すと話す。 */
-export function CharacterHero({ theme, mood, lines, talkLines }: Props) {
+export function CharacterHero({
+  theme,
+  mood,
+  lines,
+  talkLines,
+  burstLines,
+}: Props) {
   const { name, images } = theme.character;
   const artRef = useRef<HTMLDivElement>(null);
+  /** 押した時刻。描き直しには使わないので、状態にしない。 */
+  const tapsRef = useRef(NO_TAPS);
   /** 話しかけて出したセリフ。元のセリフが変わったら無効になる。 */
   const [talk, setTalk] = useState<{ base: string; line: string } | null>(null);
   const base = `${theme.id}\n${lines.join("\n")}`;
@@ -36,11 +56,18 @@ export function CharacterHero({ theme, mood, lines, talkLines }: Props) {
   }
 
   function handleTalk() {
-    const next = selectTalkLine(talkLines, line, Math.random);
+    const taps = nextTapState(tapsRef.current, performance.now());
+    tapsRef.current = taps;
+    const next = selectTalkLine(
+      taps.isBurst ? burstLines : talkLines,
+      line,
+      Math.random,
+    );
     if (next === null) return;
     setTalk({ base, line: next });
     if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      artRef.current?.animate(NOD, NOD_MS);
+      if (taps.isBurst) artRef.current?.animate(WIGGLE, WIGGLE_MS);
+      else artRef.current?.animate(NOD, NOD_MS);
     }
   }
 

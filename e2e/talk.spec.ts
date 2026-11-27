@@ -1,4 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
+import { BURST_TAPS, BURST_WINDOW_MS } from "../src/domain/talk";
+import { cafe } from "../src/themes/cafe";
 import { openFirstTime, screen } from "./helpers";
 
 /** ホームの、キャラクターのセリフ。 */
@@ -41,4 +43,33 @@ test("計測を始めると、話しかけたセリフから応援のセリフ�
   await expect(
     screen(page).getByRole("button", { name: /（停止して記録）/ }),
   ).toBeVisible();
+});
+
+test("何度も続けて押すと、くすぐったがり、間を空けるとふだんに戻る", async ({
+  page,
+}) => {
+  await openFirstTime(page);
+  const button = page.getByRole("button", { name: /に話しかける$/ });
+  const said = () => speech(page).innerText();
+
+  for (let tap = 1; tap < BURST_TAPS; tap += 1) {
+    await button.click();
+    expect(cafe.character.talk).toContain(await said());
+  }
+  await button.click();
+  await expect(speech(page)).toHaveText(
+    new RegExp(`^(${cafe.character.burstTalk.join("|")})$`),
+  );
+  // 押し続けるあいだは、別のくすぐったいセリフを続ける。
+  const first = await said();
+  await button.click();
+  await expect(speech(page)).not.toHaveText(first);
+  expect(cafe.character.burstTalk).toContain(await said());
+
+  await page.waitForTimeout(BURST_WINDOW_MS + 300);
+  await button.click();
+  await expect(speech(page)).not.toHaveText(
+    new RegExp(`^(${cafe.character.burstTalk.join("|")})$`),
+  );
+  expect(cafe.character.talk).toContain(await said());
 });

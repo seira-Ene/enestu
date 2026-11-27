@@ -39,6 +39,15 @@ export const live = {
       "次の新曲、{name}のために書いたんだ！",
       "{name}の声援、ステージのどこにいても聞こえるよ！",
     ],
+    burstTalk: [
+      "あははっ、くすぐったい！ リズム崩れちゃう！",
+      "その連打、ドラムより速いんだけど！？",
+      "ちょっと、しつこいよ〜！ アンコールはまだ早い！",
+      "そんなに突つかないで！ マイク落としちゃう！",
+    ],
+    namedBurstTalk: [
+      "{name}、テンポ上げすぎ！ ……でも、嫌いじゃない！",
+    ],
     images: {
       face: "/characters/live-face.webp",
       scene: "/characters/live-scene.webp",

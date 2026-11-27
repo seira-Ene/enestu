@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { selectCheers, studyMood, type StudyStatus } from "@/domain/cheer";
 import { fillHeroName } from "@/domain/hero-name";
+import { burstLinesFor } from "@/domain/talk";
 import { levelState, unlockedRankCount } from "@/domain/progress";
 import { parseSubject } from "@/domain/validation";
 import {
@@ -186,6 +187,7 @@ export function StudyScreen() {
       : fillHeroName(theme.character.namedTalk, heroName)),
     ...theme.progress.stories.slice(0, storyCount),
   ];
+  const burstLines = burstLinesFor(theme.character, heroName);
 
   return (
     <ScreenLayout>
@@ -197,6 +199,7 @@ export function StudyScreen() {
           mood={studyMood(status)}
           lines={lines}
           talkLines={talkLines}
+          burstLines={burstLines}
         />
         <div className="flex flex-col gap-5 lg:col-start-2 lg:row-span-2 lg:row-start-1">
           <LevelUpBanner

@@ -58,6 +58,10 @@ export type ThemeCharacter = {
   readonly talk: CheerLines;
   /** 名前を決めた人に、話しかけたときのセリフ。 */
   readonly namedTalk: NamedLines;
+  /** 短い間に何度も押されたときのセリフ。 */
+  readonly burstTalk: CheerLines;
+  /** 名前を決めた人に、何度も押されたときのセリフ。 */
+  readonly namedBurstTalk: NamedLines;
   /** null なら src/components/characters のSVGを使う。 */
   readonly images: CharacterImages | null;
 };

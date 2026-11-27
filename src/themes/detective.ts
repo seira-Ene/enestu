@@ -39,6 +39,15 @@ export const detective = {
       "報告書の宛名は「{name}先生」っと。……よし。",
       "{name}先生、その表情……何かひらめきましたね？",
     ],
+    burstTalk: [
+      "せ、先生！ 証拠品をつつかないでください！",
+      "ちょっと、しつこいですよ！ 推理が飛んでいきます！",
+      "くすぐったいです……捜査妨害で記録しますからね！",
+      "その連打、何かの暗号ですか？ 解読できません！",
+    ],
+    namedBurstTalk: [
+      "{name}先生、助手で遊ばないでください！",
+    ],
     images: {
       face: "/characters/detective-face.webp",
       scene: "/characters/detective-scene.webp",
