@@ -48,10 +48,28 @@ export const otome = {
     namedBurstTalk: [
       "{name}、そんなに呼ばれたら、照れてしまうよ。",
     ],
+    greeting: {
+      missed: [
+        "……会えない日が、こんなに長いとは思わなかった。",
+        "毎日、庭の門を見ていたよ。きみが来る気がして。",
+        "寂しかった。……王子らしくないね、こんなことを言うのは。",
+      ],
+      returned: [
+        "おかえり。きみの顔を見たら、全部どうでもよくなったよ。",
+        "来てくれてありがとう。今日は、ずっと隣にいて。",
+      ],
+      milestone: [
+        "{days}日、毎日会えたね。僕の一番の楽しみだよ。",
+        "{days}日連続だなんて。きみの真面目さに、また惚れ直した。",
+        "{days}日目の記念に、白い薔薇を一輪。受け取って。",
+      ],
+    },
     images: {
       face: "/characters/otome-face.webp",
       scene: "/characters/otome-scene.webp",
       banner: "/characters/otome-banner.webp",
+      happy: "/characters/otome-happy.webp",
+      sad: "/characters/otome-sad.webp",
     },
   },
   cheers: {

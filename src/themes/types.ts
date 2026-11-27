@@ -51,6 +51,9 @@ export type CharacterImages = {
   readonly scene: string;
   /** 8:3 の横長の絵。 */
   readonly banner: string;
+  /** 縦長の、喜んでいる絵と、さびしがっている絵。上半身を切り取って使う。 */
+  readonly happy: string;
+  readonly sad: string;
 };
 
 export type ThemeCharacter = {
@@ -64,8 +67,22 @@ export type ThemeCharacter = {
   readonly burstTalk: CheerLines;
   /** 名前を決めた人に、何度も押されたときのセリフ。 */
   readonly namedBurstTalk: NamedLines;
+  /** その日初めて開いたときのセリフ。 */
+  readonly greeting: ThemeGreeting;
   /** null なら src/components/characters のSVGを使う。 */
   readonly images: CharacterImages | null;
+};
+
+/** 連続日数を埋め込む {days} を必ず含む。 */
+export type DaysLine = `${string}{days}${string}`;
+
+export type ThemeGreeting = {
+  /** 前回の訪問から何日も空いたとき。さびしがる。 */
+  readonly missed: CheerLines;
+  /** さびしがった後、ログインボーナスを受け取ったとき。 */
+  readonly returned: CheerLines;
+  /** 節目の連続日数になったとき。 */
+  readonly milestone: readonly [DaysLine, ...DaysLine[]];
 };
 
 /** 1つ以上のセリフ。空配列は型エラーになる。 */

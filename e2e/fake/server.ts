@@ -148,6 +148,23 @@ class Backend {
         );
         return {};
       }
+      case "/control/past-visits": {
+        // 連続日数を試すため、その端末が何日前にログインボーナスを受け取ったかを入れる。
+        const device = url.searchParams.get("device") ?? "";
+        const days = (url.searchParams.get("days") ?? "")
+          .split(",")
+          .map(Number)
+          .filter((day) => Number.isInteger(day) && day > 0);
+        await this.exclusive(() =>
+          this.db.asOwner(
+            `insert into daily_claims (device_id, day, kind, tickets)
+             select $1, daily_day(now()) - ago, 'login', 1
+             from unnest($2::int[]) as ago`,
+            [device, days],
+          ),
+        );
+        return {};
+      }
       case "/control/past-pulls": {
         // 天井を試すため、ウルトラレア未満を過去に count 回引いたことにする。
         const device = url.searchParams.get("device") ?? "";

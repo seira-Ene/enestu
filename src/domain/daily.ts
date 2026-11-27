@@ -1,4 +1,6 @@
+import { isWorldId, type WorldId } from "@/themes/types";
 import type { RarityId } from "./gacha";
+import { fail, type ParseResult } from "./validation";
 
 /**
  * ログインボーナスとデイリーミッション。
@@ -148,4 +150,31 @@ export function canClaim(status: DailyStatus, kind: DailyKind): boolean {
 
 export function isDailyKind(value: unknown): value is DailyKind {
   return DAILY_KINDS.some((kind) => kind === value);
+}
+
+/** セリフの {days} に、連続日数を入れる。 */
+export function fillDays(line: string, days: number): string {
+  return line.split("{days}").join(String(days));
+}
+
+/** 受け取った報酬。 */
+export type DailyClaim = {
+  readonly kind: DailyKind;
+  readonly tickets: number;
+  /** もらった素材。なければ null。 */
+  readonly itemId: string | null;
+  readonly streak: number;
+};
+
+/** 受け取る種類と、素材を選ぶ世界線。 */
+export function parseDailyClaimRequest(
+  body: unknown,
+): ParseResult<{ readonly kind: DailyKind; readonly world: WorldId }> {
+  if (typeof body !== "object" || body === null) {
+    return fail("送信内容の形式が正しくありません。");
+  }
+  const { kind, world }: Partial<Record<"kind" | "world", unknown>> = body;
+  if (!isDailyKind(kind)) return fail("受け取る種類が正しくありません。");
+  if (!isWorldId(world)) return fail("世界線が正しくありません。");
+  return { ok: true, value: { kind, world } };
 }

@@ -26,6 +26,7 @@ import { fetchStats } from "@/lib/stats-api";
 import { fetchTodayLogs, saveStudyLog } from "@/lib/study-log-api";
 import { useRemote } from "@/lib/use-remote";
 import { CharacterHero } from "./CharacterHero";
+import { DailyGreeting } from "./DailyGreeting";
 import { DailyQuest } from "./DailyQuest";
 import { LevelPanel } from "./LevelPanel";
 import { LevelUpBanner } from "./LevelUpBanner";
@@ -192,6 +193,7 @@ export function StudyScreen() {
   return (
     <ScreenLayout>
       <ScreenHeader title="エネスタ" subtitle={theme.tagline} />
+      <DailyGreeting theme={theme} />
       {/* PC版では、左に絵とレベル、右にタイマーなどを並べる。 */}
       <div className="flex flex-col gap-5 lg:grid lg:grid-cols-[minmax(0,1.4fr)_minmax(20rem,1fr)] lg:grid-rows-[auto_1fr] lg:items-start">
         <CharacterHero

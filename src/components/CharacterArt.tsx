@@ -27,11 +27,26 @@ const SHAPES = {
     frame: "aspect-[8/3]",
     crop: "",
   },
+  // 縦長の表情の絵は、顔から上半身までを切り取る。
+  happy: {
+    source: "happy",
+    width: 640,
+    height: 700,
+    frame: "aspect-[4/3]",
+    crop: "object-[50%_20%]",
+  },
+  sad: {
+    source: "sad",
+    width: 640,
+    height: 700,
+    frame: "aspect-[4/3]",
+    crop: "object-[50%_20%]",
+  },
 } as const;
 
 type Props = {
   theme: WorldTheme;
-  /** scene は一枚絵、hero はホーム用に低くした一枚絵、banner は横長。 */
+  /** scene は一枚絵、hero はホーム用に低くした一枚絵、banner は横長、happy と sad は表情。 */
   kind: keyof typeof SHAPES;
 };
 

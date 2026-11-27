@@ -48,10 +48,28 @@ export const live = {
     namedBurstTalk: [
       "{name}、テンポ上げすぎ！ ……でも、嫌いじゃない！",
     ],
+    greeting: {
+      missed: [
+        "どこ行ってたの！？ 客席、ずっときみの席が空いてたよ……。",
+        "寂しかったよ〜！ 声、届いてないのかと思った。",
+        "リハ、ひとりでやってたんだ。……やっぱりきみがいないと。",
+      ],
+      returned: [
+        "おかえり！ 今日のライブ、いちばん前で聴いてね！",
+        "来てくれた！ よーし、ここから巻き返すよ！",
+      ],
+      milestone: [
+        "{days}日連続！ きみ、もう立派な常連さんだね！",
+        "{days}日目のアンコール、きみのために歌うよ！",
+        "{days}日続いた！ この調子で、アリーナまで行こう！",
+      ],
+    },
     images: {
       face: "/characters/live-face.webp",
       scene: "/characters/live-scene.webp",
       banner: "/characters/live-banner.webp",
+      happy: "/characters/live-happy.webp",
+      sad: "/characters/live-sad.webp",
     },
   },
   cheers: {
