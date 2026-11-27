@@ -2,6 +2,25 @@
  * DBスキーマの型。supabase/migrations に合わせて手で書いている。
  * Supabaseプロジェクトの準備後は `supabase gen types typescript` の出力で置き換える。
  */
+/** 今日の進み具合と、訪問の記録。日付は YYYY-MM-DD。 */
+type DailyStatusRow = {
+  day: string;
+  claimed: string[];
+  study_seconds: number;
+  answers: number;
+  explanations: number;
+  streak: number;
+  last_visit: string | null;
+};
+
+/** 受け取った報酬。 */
+type DailyClaimRow = {
+  kind: string;
+  tickets: number;
+  item_id: string | null;
+  streak: number;
+};
+
 export type Database = {
   public: {
     Tables: {
@@ -233,6 +252,22 @@ export type Database = {
           },
         ];
       };
+      /** ログインボーナスとミッションを受け取った記録。追記は受け取る関数だけ。 */
+      daily_claims: {
+        Row: {
+          id: number;
+          device_id: string | null;
+          user_id: string | null;
+          day: string;
+          kind: string;
+          tickets: number;
+          item_id: string | null;
+          created_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       /** 引いた記録。追記はくじの関数だけが行い、本人は読むだけ。 */
       gacha_pulls: {
         Row: {
@@ -251,6 +286,22 @@ export type Database = {
     };
     Views: { [_ in never]: never };
     Functions: {
+      daily_claim: {
+        Args: { p_device_id: string; p_kind: string; p_world_id: string };
+        Returns: DailyClaimRow[];
+      };
+      daily_status: {
+        Args: { p_device_id: string };
+        Returns: DailyStatusRow[];
+      };
+      my_daily_claim: {
+        Args: { p_kind: string; p_world_id: string };
+        Returns: DailyClaimRow[];
+      };
+      my_daily_status: {
+        Args: Record<PropertyKey, never>;
+        Returns: DailyStatusRow[];
+      };
       gacha_collection: {
         Args: { p_device_id: string };
         Returns: { item_id: string; copies: number }[];
