@@ -1,4 +1,5 @@
 import { candidateKey } from "./card-import";
+import { extractJson } from "./json-output";
 import {
   MAX_GENERATE_LENGTH,
   MAX_TERM_LENGTH,
@@ -160,14 +161,3 @@ export function parseAiCards(
   return { ok: true, value: candidates };
 }
 
-/** 前後に余計な文が付いていても、JSONの部分を読む。 */
-function extractJson(output: string): unknown {
-  const start = output.indexOf("{");
-  const end = output.lastIndexOf("}");
-  if (start < 0 || end < start) return null;
-  try {
-    return JSON.parse(output.slice(start, end + 1));
-  } catch {
-    return null;
-  }
-}

@@ -6,6 +6,8 @@ import { parseJson, toRecord, toText } from "./json";
  * - 資料に「上限テスト」があれば、利用上限（429）と答える。
  * - 資料に「壊れた返事」があれば、JSONではない返事をする。
  * - それ以外は、決まった2問を返す。
+ * - クエストの相談（決まりに「学習コーチ」）には、集計の最初の科目を15分学ぶ提案を返す。
+ *   科目名に「架空」があれば、集計にない科目を返す。
  */
 
 export type GeminiReply = { readonly status: number; readonly body: unknown };
@@ -60,6 +62,9 @@ export class FakeGemini {
       imageCount: partList.filter((part) => part.inlineData !== undefined).length,
     };
 
+    if (instruction.includes("学習コーチ")) {
+      return { status: 200, body: textReply(questReply(material)) };
+    }
     if (material.includes("上限テスト")) {
       return error(429, "Resource has been exhausted (e.g. check quota).");
     }
@@ -86,6 +91,24 @@ export class FakeGemini {
       body: { candidates: [{ content: { parts: [{ text }] }, finishReason: "STOP" }] },
     };
   }
+}
+
+function textReply(text: string) {
+  return { candidates: [{ content: { parts: [{ text }] }, finishReason: "STOP" }] };
+}
+
+/** 集計（<集計> の次の行のJSON）から、提案を作る。 */
+function questReply(material: string): string {
+  const rows = parseJson(material.split("\n")[1] ?? "[]");
+  const first = toRecord(Array.isArray(rows) ? rows[0] : null);
+  const subject = toText(first.subject);
+  return JSON.stringify({
+    subject: subject.includes("架空") ? "存在しない科目" : subject,
+    kind: "neglected",
+    title: `${subject}を15分だけ`,
+    steps: ["ノートを見直す", "大事な言葉を3つ書き出す"],
+    reason: `直近30日で${String(first.studyMinutes30Days)}分なので、少し足そう`,
+  });
 }
 
 function error(status: number, message: string): GeminiReply {

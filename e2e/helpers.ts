@@ -22,6 +22,22 @@ export async function addStudy(
   await control(`add-study?kind=${kind}&owner=${id}&minutes=${minutes}`);
 }
 
+/** Gemini のキーと同じ形（AIza で始まる39文字）の見本。本物のキーではない。 */
+export const SAMPLE_AI_KEY = `AIza${"Gm".repeat(15)}Good1`;
+
+/** ログインして、アカウントの画面でAIのキーを登録する。利用者のIDを返す。 */
+export async function signInWithAiKey(page: Page, key = SAMPLE_AI_KEY): Promise<string> {
+  const user = await createUser("花子");
+  await openFirstTime(page);
+  await login(page, user);
+  await page.goto("/account");
+  const panel = page.getByRole("region", { name: "AIの設定（Gemini）" });
+  await panel.getByLabel("Gemini のAPIキー").fill(key);
+  await panel.getByRole("button", { name: "キーを保存" }).click();
+  await expect(panel).toContainText(`登録済み：…${key.slice(-4)}`);
+  return user;
+}
+
 /** 1日の上限を試すため、その利用者がAIを count 回呼んだことにする。 */
 export async function addAiRequests(user: string, count: number): Promise<void> {
   await control(`ai-requests?user=${user}&count=${count}`);

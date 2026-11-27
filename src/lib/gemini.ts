@@ -3,6 +3,7 @@ import {
   CARD_RESPONSE_SCHEMA,
   wrapMaterial,
   type AiCardRequest,
+  type AiImage,
 } from "@/domain/ai-cards";
 
 /**
@@ -62,22 +63,31 @@ export async function checkGeminiKey(
   return { ok: true, value: { model } };
 }
 
-/** 資料から問題を作らせ、返事の文字列（JSON）を返す。 */
-export async function generateGeminiCards(
+/** 決まり・資料・返事の形を渡して、返事の文字列（JSON）を受け取る。 */
+export type GeminiJsonRequest = {
+  /** システムへの指示。 */
+  readonly instruction: string;
+  /** 資料。指示と区別できるよう、呼ぶ側で囲んでおく。 */
+  readonly material: string;
+  readonly images?: readonly AiImage[];
+  readonly schema: object;
+};
+
+export async function generateGeminiJson(
   key: string,
-  request: AiCardRequest,
+  request: GeminiJsonRequest,
   options: GeminiOptions = {},
 ): Promise<GeminiResult<string>> {
   const { model, baseUrl, fetch: send } = settings(options);
   const url = `${baseUrl}/v1beta/models/${encodeURIComponent(model)}:generateContent`;
   const body = (withSchema: boolean) => ({
-    systemInstruction: { parts: [{ text: CARD_INSTRUCTION }] },
+    systemInstruction: { parts: [{ text: request.instruction }] },
     contents: [
       {
         role: "user",
         parts: [
-          { text: wrapMaterial(request.text) },
-          ...request.images.map((image) => ({
+          { text: request.material },
+          ...(request.images ?? []).map((image) => ({
             inlineData: { mimeType: image.mimeType, data: image.data },
           })),
         ],
@@ -85,7 +95,7 @@ export async function generateGeminiCards(
     ],
     generationConfig: {
       responseMimeType: "application/json",
-      ...(withSchema ? { responseJsonSchema: CARD_RESPONSE_SCHEMA } : {}),
+      ...(withSchema ? { responseJsonSchema: request.schema } : {}),
       temperature: 0.3,
       maxOutputTokens: 4096,
     },
@@ -106,6 +116,24 @@ export async function generateGeminiCards(
     return { ok: false, failure: isBlocked(response.json) ? "blocked" : "bad_output" };
   }
   return { ok: true, value: text };
+}
+
+/** 資料から問題を作らせ、返事の文字列（JSON）を返す。 */
+export function generateGeminiCards(
+  key: string,
+  request: AiCardRequest,
+  options: GeminiOptions = {},
+): Promise<GeminiResult<string>> {
+  return generateGeminiJson(
+    key,
+    {
+      instruction: CARD_INSTRUCTION,
+      material: wrapMaterial(request.text),
+      images: request.images,
+      schema: CARD_RESPONSE_SCHEMA,
+    },
+    options,
+  );
 }
 
 type CallResult =

@@ -1,3 +1,4 @@
+import type { AiQuestNote } from "./ai-quest";
 import { accuracy, totalStudySeconds, type SubjectStats } from "./subject-stats";
 
 /** 苦手かどうかを判定するのに必要な解答数。 */
@@ -28,6 +29,8 @@ export type SavedQuest = {
   readonly date: string;
   readonly kind: "weak" | "neglected";
   readonly subject: string;
+  /** AIの提案を採用したときの説明。 */
+  readonly ai?: AiQuestNote;
 };
 
 export function isWeak(stats: SubjectStats): boolean {

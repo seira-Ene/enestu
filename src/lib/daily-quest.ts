@@ -1,3 +1,4 @@
+import { parseAiQuestNote } from "@/domain/ai-quest";
 import { parseSubject } from "@/domain/validation";
 import type { SavedQuest } from "@/domain/weakness";
 import { getPageAccountId } from "./account-marker";
@@ -27,13 +28,16 @@ export function loadSavedQuest(): SavedQuest | null {
     date,
     kind,
     subject,
+    ai,
     accountId = null,
   }: Partial<Record<keyof StoredQuest, unknown>> = value;
   if (accountId !== getPageAccountId()) return null;
   const parsed = parseSubject(subject);
   if (typeof date !== "string" || !parsed.ok) return null;
   if (kind !== "weak" && kind !== "neglected") return null;
-  return { date, kind, subject: parsed.value };
+  // 書き換えられた値も読むので、AIの説明は形と長さを確かめ直す。
+  const note = ai === undefined ? null : parseAiQuestNote(ai);
+  return { date, kind, subject: parsed.value, ...(note === null ? {} : { ai: note }) };
 }
 
 export function saveQuest(quest: SavedQuest): void {
