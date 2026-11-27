@@ -57,7 +57,12 @@ test("スマホから送ると、読み込み直さずにPCへ届く", async ({ 
     .setInputFiles({ name: "note.png", mimeType: "image/png", buffer: PHOTO });
   await expect(phone.getByAltText("送る写真")).toBeVisible();
   await send(phone, "ノートの写真");
-  await expect(pc.getByAltText(/メモの写真/)).toBeVisible();
+  const photo = pc.getByAltText(/メモの写真/);
+  await expect(photo).toBeVisible();
+  // 枠だけでなく、写真の中身まで読み込めている。
+  await expect
+    .poll(() => photo.evaluate((image: HTMLImageElement) => image.naturalWidth))
+    .toBeGreaterThan(0);
 
   phone.once("dialog", (dialog) => void dialog.accept());
   await phone

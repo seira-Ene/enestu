@@ -13,6 +13,14 @@ export async function createUser(name: string): Promise<string> {
   return toText(toRecord(body).id);
 }
 
+/** その端末に用語「光合成」を作り、上限を通さずに説明を count 件入れる。 */
+export async function fillExplanations(
+  deviceId: string,
+  count: number,
+): Promise<void> {
+  await control(`fill-explanations?device=${deviceId}&count=${count}`);
+}
+
 export async function setRealtimeDown(isDown: boolean): Promise<void> {
   await control(isDown ? "realtime-down" : "realtime-up");
 }
