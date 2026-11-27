@@ -185,6 +185,14 @@ class Backend {
         );
         return {};
       }
+      case "/control/ai-key": {
+        // 保存されたキーが暗号文になっているかを確かめるため、そのまま返す。
+        const user = url.searchParams.get("user") ?? "";
+        const rows = await this.exclusive(() =>
+          this.db.asOwner("select ciphertext, last4 from ai_keys where user_id = $1", [user]),
+        );
+        return { rows };
+      }
       case "/control/past-pulls": {
         // 天井を試すため、ウルトラレア未満を過去に count 回引いたことにする。
         const device = url.searchParams.get("device") ?? "";

@@ -2,6 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import { AccountPanel } from "./AccountPanel";
+import { AiKeyPanel } from "./AiKeyPanel";
 import { useAccount } from "./AccountProvider";
 import { ALERT, HEADING, PANEL } from "./form-styles";
 import { HeroNamePanel } from "./HeroNamePanel";
@@ -35,6 +36,17 @@ export function AccountScreen() {
         <div className="flex flex-col gap-5">
           <AccountPanel justSignedIn={login === "ok"} />
           <HeroNamePanel />
+          {isSignedIn && <AiKeyPanel />}
+          {data?.kind === "guest" && (
+            <section aria-labelledby="ai-key-title" className={PANEL}>
+              <h2 id="ai-key-title" className={HEADING}>
+                AIの設定（Gemini）
+              </h2>
+              <p className="text-sm">
+                ログインすると使えます。自分の Gemini のキーを登録すると、AIで問題を作れるようになります。
+              </p>
+            </section>
+          )}
         </div>
         <PrivacyNote />
       </div>
