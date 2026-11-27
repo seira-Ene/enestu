@@ -1,4 +1,5 @@
 import type { AiImage } from "@/domain/ai-cards";
+import type { AiQuest } from "@/domain/ai-quest";
 import type { GeneratedCandidate } from "@/domain/card-generator";
 import { postForField, type ApiResult } from "./api-client";
 
@@ -42,5 +43,23 @@ function isCandidate(value: unknown): value is GeneratedCandidate {
     typeof answer === "string" &&
     typeof source === "string" &&
     rule === "ai"
+  );
+}
+
+export function askAiQuest(): Promise<ApiResult<AiQuest>> {
+  return postForField("/api/ai/quest", {}, "quest", isAiQuest, AI_TIMEOUT_MS);
+}
+
+function isAiQuest(value: unknown): value is AiQuest {
+  if (typeof value !== "object" || value === null) return false;
+  const { kind, subject, title, steps, reason }: Partial<Record<keyof AiQuest, unknown>> =
+    value;
+  return (
+    (kind === "weak" || kind === "neglected") &&
+    typeof subject === "string" &&
+    typeof title === "string" &&
+    typeof reason === "string" &&
+    Array.isArray(steps) &&
+    steps.every((step) => typeof step === "string")
   );
 }

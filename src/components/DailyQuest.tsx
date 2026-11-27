@@ -15,6 +15,7 @@ import {
 import type { StatsWithQuest } from "@/lib/stats-api";
 import type { Remote } from "@/lib/use-remote";
 import type { ThemeQuest } from "@/themes/types";
+import { AiQuestAdvisor } from "./AiQuestAdvisor";
 import { HEADING, PANEL, PRIMARY_BUTTON } from "./form-styles";
 import { MISTAKE_LABELS } from "./MistakeReasonPicker";
 
@@ -42,12 +43,13 @@ export function DailyQuest({ theme, remote }: Props) {
       )}
       {data === null && error === null && <p>読み込んでいます…</p>}
       {data !== null && <QuestBody theme={theme} data={data} />}
+      {data !== null && <AiQuestAdvisor onAdopted={reload} />}
     </section>
   );
 }
 
 function QuestBody({ theme, data }: { theme: ThemeQuest; data: StatsWithQuest }) {
-  const { quest, stats } = data;
+  const { quest, stats, aiNote } = data;
   const progress = questProgress(quest, stats);
   const isAchieved = progress?.isAchieved ?? false;
   const reason = reasonText(quest, stats);
@@ -55,12 +57,32 @@ function QuestBody({ theme, data }: { theme: ThemeQuest; data: StatsWithQuest })
 
   return (
     <>
-      <p className="font-display break-words text-lg">
-        {isAchieved && <span aria-hidden="true">✓ </span>}
-        {selectQuestLine(theme.lines, quest, isAchieved)}
-      </p>
-      {reason !== null && (
-        <p className="break-words text-sm opacity-80">{reason}</p>
+      {aiNote === null ? (
+        <>
+          <p className="font-display break-words text-lg">
+            {isAchieved && <span aria-hidden="true">✓ </span>}
+            {selectQuestLine(theme.lines, quest, isAchieved)}
+          </p>
+          {reason !== null && (
+            <p className="break-words text-sm opacity-80">{reason}</p>
+          )}
+        </>
+      ) : (
+        <div className="flex flex-col gap-1">
+          <p className="text-xs text-accent">AIの提案（Gemini）</p>
+          <p className="font-display break-words text-lg">
+            {isAchieved && <span aria-hidden="true">✓ </span>}
+            {aiNote.title}
+          </p>
+          <ol aria-label="やること" className="flex list-decimal flex-col gap-1 pl-5 text-sm">
+            {aiNote.steps.map((step) => (
+              <li key={step} className="break-words">
+                {step}
+              </li>
+            ))}
+          </ol>
+          <p className="break-words text-sm opacity-80">{aiNote.reason}</p>
+        </div>
       )}
       {progress !== null && (
         <QuestMeter quest={quest} progress={progress} title={theme.title} />

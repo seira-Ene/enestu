@@ -3,15 +3,14 @@ import { AI_DAILY_LIMIT } from "../src/domain/ai-key";
 import { DEFAULT_GEMINI_MODEL } from "../src/lib/gemini";
 import {
   addAiRequests,
-  createUser,
-  login,
   openFirstTime,
   readGeminiLast,
+  SAMPLE_AI_KEY,
   screen,
+  signInWithAiKey,
 } from "./helpers";
 
-/** Gemini のキーと同じ形（AIza で始まる39文字）の見本。本物のキーではない。 */
-const KEY = `AIza${"Gm".repeat(15)}Good1`;
+const KEY = SAMPLE_AI_KEY;
 /** まねた Gemini が「使えない」と答えるキー。 */
 const BAD_KEY = `AIza${"Qw".repeat(15)}Bad9Z`;
 
@@ -25,17 +24,7 @@ function aiPanel(page: Page) {
   return page.getByRole("region", { name: "AIの設定（Gemini）" });
 }
 
-/** ログインして、キーを登録する。利用者のIDを返す。 */
-async function signInWithKey(page: Page, key = KEY): Promise<string> {
-  const user = await createUser("花子");
-  await openFirstTime(page);
-  await login(page, user);
-  await page.goto("/account");
-  await aiPanel(page).getByLabel("Gemini のAPIキー").fill(key);
-  await aiPanel(page).getByRole("button", { name: "キーを保存" }).click();
-  await expect(aiPanel(page)).toContainText(`登録済み：…${key.slice(-4)}`);
-  return user;
-}
+const signInWithKey = signInWithAiKey;
 
 async function openAiImport(page: Page) {
   await page.goto("/cards");
