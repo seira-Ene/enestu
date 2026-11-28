@@ -247,15 +247,15 @@ export const detective = {
       },
     },
   },
-  // ニ短調系・4拍子。Dm7 G7 Dm7 G7 Bbmaj7 A7 Dm7 A7。このアプリのためのオリジナル曲。
+  // ニ短調系・4拍子・92。前半 Dm7 G7 Dm7 G7 Bbmaj7 A7 Dm7 A7、後半 Gm7 C7 Fmaj7 Bbmaj7 Em7b5 A7 Dm7 A7。このアプリのためのオリジナル曲。
   bgm: {
-    tempo: 110,
+    tempo: 92,
     beatsPerBar: 4,
     stepsPerBeat: 2,
-    bars: 8,
+    bars: 16,
     tracks: [
       {
-        wave: "triangle",
+        instrument: "bass",
         gain: 0.3,
         score:
           "D2/2 F2/2 A2/2 C3/2 |" +
@@ -265,11 +265,42 @@ export const detective = {
           "Bb2/2 A2/2 G2/2 F2/2 |" +
           "A2/2 C#3/2 E3/2 G3/2 |" +
           "D3/2 C3/2 A2/2 F2/2 |" +
+          "E2/2 G2/2 A2/2 C#3/2 |" +
+          "G2/2 Bb2/2 D3/2 F3/2 |" +
+          "C3/2 E3/2 G3/2 Bb2/2 |" +
+          "F2/2 A2/2 C3/2 E3/2 |" +
+          "Bb2/2 A2/2 G2/2 F2/2 |" +
+          "E2/2 G2/2 Bb2/2 D3/2 |" +
+          "A2/2 C#3/2 E3/2 G3/2 |" +
+          "D3/2 C3/2 A2/2 F2/2 |" +
           "E2/2 G2/2 A2/2 C#3/2",
       },
       {
-        wave: "square",
-        gain: 0.1,
+        instrument: "piano",
+        gain: 0.11,
+        pan: -0.3,
+        score:
+          "r/1 F3+A3+C4/2 r/3 F3+A3+C4/2 |" +
+          "r/1 F3+B3+D4/2 r/3 F3+B3+D4/2 |" +
+          "r/1 F3+A3+C4/2 r/3 F3+A3+C4/2 |" +
+          "r/1 F3+B3+D4/2 r/3 F3+B3+D4/2 |" +
+          "r/1 F3+A3+D4/2 r/3 F3+A3+D4/2 |" +
+          "r/1 G3+C#4+E4/2 r/3 G3+C#4+E4/2 |" +
+          "r/1 F3+A3+C4/2 r/3 F3+A3+C4/2 |" +
+          "r/1 G3+C#4+E4/2 r/3 G3+C#4+E4/2 |" +
+          "r/1 F3+Bb3+D4/2 r/3 F3+Bb3+D4/2 |" +
+          "r/1 E3+Bb3+D4/2 r/3 E3+Bb3+D4/2 |" +
+          "r/1 E3+A3+C4/2 r/3 E3+A3+C4/2 |" +
+          "r/1 F3+A3+D4/2 r/3 F3+A3+D4/2 |" +
+          "r/1 D3+G3+Bb3/2 r/3 D3+G3+Bb3/2 |" +
+          "r/1 G3+C#4+E4/2 r/3 G3+C#4+E4/2 |" +
+          "r/1 F3+A3+C4/2 r/3 F3+A3+C4/2 |" +
+          "r/1 G3+C#4+E4/2 r/3 G3+C#4+E4/2",
+      },
+      {
+        instrument: "brass",
+        gain: 0.09,
+        pan: 0.2,
         score:
           "r/1 A4/1 r/1 C5/1 D5/2 r/2 |" +
           "B4/1 r/1 G4/2 F4/2 r/2 |" +
@@ -278,12 +309,29 @@ export const detective = {
           "D5/2 F5/2 A4/4 |" +
           "C#5/2 E5/2 G4/4 |" +
           "F4/1 A4/1 D5/2 C5/2 A4/2 |" +
-          "E4/2 G4/2 C#5/2 r/2",
+          "E4/2 G4/2 C#5/2 r/2 |" +
+          "D5/2 F5/2 A5/2 G5/2 |" +
+          "E5/2 C5/2 Bb4/4 |" +
+          "A4/1 C5/1 E5/2 D5/2 C5/2 |" +
+          "D5/4 r/4 |" +
+          "r/1 Bb4/1 D5/2 E5/2 G5/2 |" +
+          "F5/2 E5/2 C#5/4 |" +
+          "D5/2 A4/2 F4/2 D4/2 |" +
+          "E4/2 G4/2 A4/2 r/2",
       },
       {
-        wave: "noise",
+        instrument: "hat",
         gain: 0.05,
+        pan: 0.3,
         score:
+          "r/1 x/1 r/1 x/1 r/1 x/1 r/1 x/1 |" +
+          "r/1 x/1 r/1 x/1 r/1 x/1 r/1 x/1 |" +
+          "r/1 x/1 r/1 x/1 r/1 x/1 r/1 x/1 |" +
+          "r/1 x/1 r/1 x/1 r/1 x/1 r/1 x/1 |" +
+          "r/1 x/1 r/1 x/1 r/1 x/1 r/1 x/1 |" +
+          "r/1 x/1 r/1 x/1 r/1 x/1 r/1 x/1 |" +
+          "r/1 x/1 r/1 x/1 r/1 x/1 r/1 x/1 |" +
+          "r/1 x/1 r/1 x/1 r/1 x/1 r/1 x/1 |" +
           "r/1 x/1 r/1 x/1 r/1 x/1 r/1 x/1 |" +
           "r/1 x/1 r/1 x/1 r/1 x/1 r/1 x/1 |" +
           "r/1 x/1 r/1 x/1 r/1 x/1 r/1 x/1 |" +

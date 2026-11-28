@@ -5,7 +5,7 @@ import {
   type ChannelSetting,
 } from "@/domain/sound";
 import { SECONDARY_BUTTON } from "./form-styles";
-import { useSound } from "./SoundProvider";
+import { PREVIEW_SECONDS, useSound } from "./SoundProvider";
 
 /** 音の設定を開くボタン。 */
 export function SoundButton() {
@@ -34,7 +34,7 @@ function SoundSettingsDialog({
   onClose: () => void;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
-  const { settings, change } = useSound();
+  const { settings, change, isPreviewing, togglePreview } = useSound();
 
   useEffect(() => {
     const dialog = ref.current;
@@ -68,6 +68,16 @@ function SoundSettingsDialog({
             setting={settings.bgm}
             onChange={(setting) => change("bgm", setting)}
           />
+          {!settings.bgm.isOn && (
+            <button
+              type="button"
+              aria-pressed={isPreviewing}
+              onClick={togglePreview}
+              className={SECONDARY_BUTTON}
+            >
+              {isPreviewing ? "試しに聞くのをやめる" : `BGMを試しに聞く（${PREVIEW_SECONDS}秒）`}
+            </button>
+          )}
           <p className="text-xs opacity-80">
             設定は、この端末に保存されます。BGMは、世界線ごとに曲が変わります。
           </p>

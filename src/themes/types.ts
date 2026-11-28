@@ -226,6 +226,6 @@ export type WorldTheme = {
   readonly quest: ThemeQuest;
   readonly progress: ThemeProgress;
   readonly gacha: ThemeGacha;
-  /** 8小節のループ曲。src/domain/bgm.ts の書き方で書く。 */
+  /** 16小節（前半8小節・後半8小節）のループ曲。src/domain/bgm.ts の書き方で書く。 */
   readonly bgm: BgmSong;
 };

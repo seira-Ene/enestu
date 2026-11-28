@@ -27,12 +27,22 @@ type SoundContextValue = {
   readonly change: (channel: "se" | "bgm", setting: ChannelSetting) => void;
   /** 効果音を鳴らす。delay は今からの秒数。 */
   readonly play: (name: SoundName, delay?: number) => void;
+  /** BGMを試しに聞いている間か。 */
+  readonly isPreviewing: boolean;
+  /** BGMを試しに聞く。聞いている間に呼ぶと、やめる。 */
+  readonly togglePreview: () => void;
 };
+
+/** BGMを試しに聞く秒数。最後の1秒で小さくしていく。 */
+export const PREVIEW_SECONDS = 10;
+const PREVIEW_FADE_SECONDS = 1;
 
 const SoundContext = createContext<SoundContextValue>({
   settings: DEFAULT_SOUND_SETTINGS,
   change: () => {},
   play: () => {},
+  isPreviewing: false,
+  togglePreview: () => {},
 });
 
 export function useSound(): SoundContextValue {
@@ -45,16 +55,38 @@ export function SoundProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<SoundSettings>(() =>
     typeof window === "undefined" ? DEFAULT_SOUND_SETTINGS : loadSoundSettings(),
   );
+  // 試しに聞いている間は、BGMがOFFでも、選んでいる音量で鳴らす。
+  const [isPreviewing, setIsPreviewing] = useState(false);
   useEffect(() => {
     setChannelGain("se", channelGain("se", settings.se));
-    setChannelGain("bgm", channelGain("bgm", settings.bgm));
-  }, [settings]);
+    setChannelGain(
+      "bgm",
+      channelGain("bgm", isPreviewing ? { ...settings.bgm, isOn: true } : settings.bgm),
+    );
+  }, [settings, isPreviewing]);
 
-  // BGMは、ONで、画面が見えている間だけ鳴らす。世界線を変えたら、次の小節から替える。
+  // 決まった秒数たったら、小さくしてから、試しに聞くのをやめる。
+  useEffect(() => {
+    if (!isPreviewing) return;
+    let end: ReturnType<typeof setTimeout> | undefined;
+    const fade = setTimeout(() => {
+      stopBgm(PREVIEW_FADE_SECONDS);
+      end = setTimeout(() => setIsPreviewing(false), PREVIEW_FADE_SECONDS * 1000);
+    }, (PREVIEW_SECONDS - PREVIEW_FADE_SECONDS) * 1000);
+    return () => {
+      clearTimeout(fade);
+      clearTimeout(end);
+    };
+  }, [isPreviewing]);
+  const togglePreview = useCallback(() => setIsPreviewing((current) => !current), []);
+
+  // BGMは、ONか試しに聞いている間で、画面が見えている間だけ鳴らす。
+  // 世界線を変えたら、前の曲と重ねながら替える。
+  // 試しに聞く最後に小さくしている間にONにしても、鳴らし直せるよう、両方を見て決める。
   const { theme } = useWorld();
   const isBgmOn = settings.bgm.isOn;
   useEffect(() => {
-    if (!isBgmOn) {
+    if (!isBgmOn && !isPreviewing) {
       stopBgm();
       return;
     }
@@ -65,7 +97,7 @@ export function SoundProvider({ children }: { children: ReactNode }) {
     update();
     document.addEventListener("visibilitychange", update);
     return () => document.removeEventListener("visibilitychange", update);
-  }, [isBgmOn, theme.bgm]);
+  }, [isBgmOn, isPreviewing, theme.bgm]);
 
   // 消しているときは全体の音量が0になり、鳴らす側が何もしない。
   // タップは世界線ごとの音にし、ボタンの音のほかは、鳴っている間BGMを少し下げる。
@@ -80,6 +112,8 @@ export function SoundProvider({ children }: { children: ReactNode }) {
   );
 
   const change = useCallback((channel: "se" | "bgm", setting: ChannelSetting) => {
+    // BGMをONにしたら、試しに聞くのは終わり（そのまま鳴らし続ける）。
+    if (channel === "bgm" && setting.isOn) setIsPreviewing(false);
     setSettings((current) => {
       const next = { ...current, [channel]: setting };
       saveSoundSettings(next);
@@ -110,5 +144,5 @@ export function SoundProvider({ children }: { children: ReactNode }) {
     };
   }, [play]);
 
-  return <SoundContext value={{ settings, change, play }}>{children}</SoundContext>;
+  return <SoundContext value={{ settings, change, play, isPreviewing, togglePreview }}>{children}</SoundContext>;
 }

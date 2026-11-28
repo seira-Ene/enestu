@@ -1,4 +1,5 @@
-import { noteFrequency, type Tone } from "./sound";
+import { bass, bell, brass, hat, kick, piano, pluck, snare, strings, type Voice } from "./instruments";
+import type { Tone } from "./tone";
 
 /**
  * BGMの曲。世界線ごとのオリジナル曲を、楽譜にあたる文字列で書く。
@@ -7,14 +8,39 @@ import { noteFrequency, type Tone } from "./sound";
  * - 「A4/2」：A4 の音を2つ分の長さ。# と b も使える（C#5、Bb3）。
  * - 「A3+C4+E4/8」：和音。
  * - 「r/2」：休み。
- * - 「x/1」：打楽器を1回たたく（wave が noise か kick のパート）。
+ * - 「x/1」：打楽器を1回たたく（instrument が kick・snare・hat のパート）。
  */
 
+/** パートの楽器。音色は src/domain/instruments.ts。 */
+export const BGM_INSTRUMENTS = [
+  "piano",
+  "strings",
+  "bell",
+  "bass",
+  "pluck",
+  "brass",
+  "kick",
+  "snare",
+  "hat",
+] as const;
+export type BgmInstrument = (typeof BGM_INSTRUMENTS)[number];
+
 export type BgmTrack = {
-  readonly wave: "sine" | "square" | "triangle" | "sawtooth" | "noise" | "kick";
+  readonly instrument: BgmInstrument;
   /** 0〜1。BGM全体の音量とは別に、パートどうしの大きさを決める。 */
   readonly gain: number;
+  /** 左右の位置（-1 が左、1 が右）。なければまん中。 */
+  readonly pan?: number;
   readonly score: string;
+};
+
+const VOICES: Readonly<Record<Exclude<BgmInstrument, "kick" | "snare" | "hat">, Voice>> = {
+  piano,
+  strings,
+  bell,
+  bass,
+  pluck,
+  brass,
 };
 
 export type BgmSong = {
@@ -135,21 +161,14 @@ export function eventsBetween(song: BgmSong, from: number, to: number): BgmEvent
 export function eventTones(song: BgmSong, event: BgmEvent): Tone[] {
   const track = song.tracks[event.track];
   if (track === undefined) return [];
+  const { instrument, gain, pan = 0 } = track;
+  if (instrument === "kick") return kick(0, gain);
+  if (instrument === "snare") return snare(0, gain);
+  if (instrument === "hat") return hat(0, gain, pan);
   const length = event.note.steps * stepSeconds(song);
-  if (track.wave === "kick") {
-    return [{ wave: "sine", from: 150, to: 45, start: 0, duration: 0.18, gain: track.gain }];
-  }
-  if (track.wave === "noise") {
-    return [{ wave: "noise", from: 0, start: 0, duration: 0.06, gain: track.gain }];
-  }
-  const { wave } = track;
-  return event.note.midis.map((midi) => ({
-    wave,
-    from: noteFrequency(midi),
-    start: 0,
-    // 少し短く切って、音どうしの間に息つぎを作る。
-    duration: length * 0.9,
-    // 和音は、まとめて1つの音と同じくらいの大きさにする。
-    gain: track.gain / Math.sqrt(event.note.midis.length),
-  }));
+  // ストリングスは途切れずにつなぎ、ほかは少し短く切って、音どうしの間に息つぎを作る。
+  const duration = length * (instrument === "strings" ? 1 : 0.9);
+  // 和音は、まとめて1つの音と同じくらいの大きさにする。
+  const each = gain / Math.sqrt(event.note.midis.length);
+  return event.note.midis.flatMap((midi) => VOICES[instrument](midi, 0, duration, each, pan));
 }

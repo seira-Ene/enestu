@@ -247,16 +247,16 @@ export const otome = {
       },
     },
   },
-  // ヘ長調・3拍子のワルツ。F C Dm Bb F Gm C F。このアプリのためのオリジナル曲。
+  // ヘ長調・3拍子のワルツ・72。前半 F C Dm Bb F Gm C F、後半 Dm Bb F C Dm Gm C F。このアプリのためのオリジナル曲。
   bgm: {
-    tempo: 96,
+    tempo: 72,
     beatsPerBar: 3,
     stepsPerBeat: 2,
-    bars: 8,
+    bars: 16,
     tracks: [
       {
-        wave: "sine",
-        gain: 0.22,
+        instrument: "bass",
+        gain: 0.26,
         score:
           "F2/2 r/4 |" +
           "C3/2 r/4 |" +
@@ -265,11 +265,20 @@ export const otome = {
           "F2/2 r/4 |" +
           "G2/2 r/4 |" +
           "C3/2 r/4 |" +
+          "F2/2 r/4 |" +
+          "D3/2 r/4 |" +
+          "Bb2/2 r/4 |" +
+          "F2/2 r/4 |" +
+          "C3/2 r/4 |" +
+          "D3/2 r/4 |" +
+          "G2/2 r/4 |" +
+          "C3/2 r/4 |" +
           "F2/2 r/4",
       },
       {
-        wave: "triangle",
-        gain: 0.16,
+        instrument: "pluck",
+        gain: 0.11,
+        pan: -0.25,
         score:
           "r/2 A3+C4/2 A3+C4/2 |" +
           "r/2 G3+C4/2 G3+C4/2 |" +
@@ -278,11 +287,42 @@ export const otome = {
           "r/2 A3+C4/2 A3+C4/2 |" +
           "r/2 G3+Bb3/2 G3+Bb3/2 |" +
           "r/2 G3+C4/2 G3+C4/2 |" +
+          "r/2 A3+C4/2 A3+C4/2 |" +
+          "r/2 F3+A3/2 F3+A3/2 |" +
+          "r/2 F3+Bb3/2 F3+Bb3/2 |" +
+          "r/2 A3+C4/2 A3+C4/2 |" +
+          "r/2 G3+C4/2 G3+C4/2 |" +
+          "r/2 F3+A3/2 F3+A3/2 |" +
+          "r/2 G3+Bb3/2 G3+Bb3/2 |" +
+          "r/2 G3+C4/2 G3+C4/2 |" +
           "r/2 A3+C4/2 A3+C4/2",
       },
       {
-        wave: "sine",
-        gain: 0.3,
+        instrument: "strings",
+        gain: 0.09,
+        pan: 0.25,
+        score:
+          "F3+A3+C4/6 |" +
+          "E3+G3+C4/6 |" +
+          "D3+F3+A3/6 |" +
+          "D3+F3+Bb3/6 |" +
+          "F3+A3+C4/6 |" +
+          "D3+G3+Bb3/6 |" +
+          "E3+G3+C4/6 |" +
+          "F3+A3+C4/6 |" +
+          "D3+F3+A3/6 |" +
+          "D3+F3+Bb3/6 |" +
+          "F3+A3+C4/6 |" +
+          "E3+G3+C4/6 |" +
+          "D3+F3+A3/6 |" +
+          "D3+G3+Bb3/6 |" +
+          "E3+G3+C4/6 |" +
+          "F3+A3+C4/6",
+      },
+      {
+        instrument: "piano",
+        gain: 0.24,
+        pan: 0.1,
         score:
           "A4/2 C5/2 F5/2 |" +
           "E5/4 D5/2 |" +
@@ -291,7 +331,37 @@ export const otome = {
           "A4/2 C5/2 A5/2 |" +
           "G5/2 F5/2 D5/2 |" +
           "E5/2 G5/2 E5/2 |" +
+          "F5/6 |" +
+          "D5/2 F5/2 A5/2 |" +
+          "Bb5/4 A5/2 |" +
+          "A5/2 G5/2 F5/2 |" +
+          "E5/4 G5/2 |" +
+          "F5/2 A5/2 D6/2 |" +
+          "Bb5/2 A5/2 G5/2 |" +
+          "G5/2 E5/2 C5/2 |" +
           "F5/6",
+      },
+      {
+        instrument: "bell",
+        gain: 0.08,
+        pan: 0.35,
+        score:
+          "r/6 |" +
+          "r/6 |" +
+          "r/6 |" +
+          "r/6 |" +
+          "r/6 |" +
+          "r/6 |" +
+          "r/6 |" +
+          "r/6 |" +
+          "r/4 A5/2 |" +
+          "r/6 |" +
+          "r/4 F5/2 |" +
+          "r/6 |" +
+          "r/4 D6/2 |" +
+          "r/6 |" +
+          "r/4 C6/2 |" +
+          "F6/6",
       },
     ],
   },

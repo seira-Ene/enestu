@@ -11,6 +11,8 @@ import { cafe } from "../src/themes/cafe";
 import { live } from "../src/themes/live";
 import type { WorldTheme } from "../src/themes/types";
 import {
+  bgmLayers,
+  bgmVolume,
   duckHistory,
   hasPlayed,
   installFakeAudio,
@@ -173,9 +175,14 @@ test("BGMは最初は鳴らず、ONにすると世界線の曲が鳴る", async 
 
   await turnBgm(page, true);
   await expect.poll(() => onlyIn(page, CAFE, LIVE)).toBeGreaterThan(0);
+  // だんだん大きくして、鳴らし始める。BGMの音は、どれも曲ごとの音量を通る。
+  expect(await bgmLayers(page)).toEqual([[0, 1]]);
+  expect((await bgmTones(page)).every((tone) => tone.layered)).toBe(true);
+  // 効果音は通らない。
+  expect((await played(page)).some((tone) => tone.channel === "se" && tone.layered)).toBe(false);
 });
 
-test("世界線を変えると、BGMが別の曲になる", async ({ page }) => {
+test("世界線を変えると、前の曲と重ねながら、別の曲に替える", async ({ page }) => {
   await installFakeAudio(page);
   await openFirstTime(page);
   await turnBgm(page, true);
@@ -183,8 +190,69 @@ test("世界線を変えると、BGMが別の曲になる", async ({ page }) => 
 
   await screen(page).getByRole("button", { name: /世界線を変える/ }).click();
   await page.getByRole("dialog").getByRole("button", { name: /^ライブ/ }).click();
-  // 次の小節の頭で切り替わる（カフェの1小節は約3.2秒）。
-  await expect.poll(() => onlyIn(page, LIVE, CAFE), { timeout: 10_000 }).toBeGreaterThan(0);
+  await expect.poll(() => onlyIn(page, LIVE, CAFE)).toBeGreaterThan(0);
+  // 前の曲は小さくしながらしばらく鳴り、新しい曲は大きくしていく。
+  const cafeAtSwitch = await onlyIn(page, CAFE, LIVE);
+  await expect.poll(() => onlyIn(page, CAFE, LIVE)).toBeGreaterThan(cafeAtSwitch);
+  const [old, next] = await bgmLayers(page);
+  expect(old?.at(-1)).toBe(0);
+  expect(next).toEqual([0, 1]);
+
+  // 重ねる時間が過ぎたら、前の曲は鳴らさない。
+  await page.waitForTimeout(2500);
+  const cafeAfter = await onlyIn(page, CAFE, LIVE);
+  await page.waitForTimeout(1500);
+  expect(await onlyIn(page, CAFE, LIVE)).toBe(cafeAfter);
+  expect(await onlyIn(page, LIVE, CAFE)).toBeGreaterThan(0);
+});
+
+test("BGMがOFFでも、試しに聞くと10秒だけ鳴り、また止まる", async ({ page }) => {
+  test.setTimeout(30_000);
+  await installFakeAudio(page);
+  await openFirstTime(page);
+  const dialog = await openSoundSettings(page);
+  const preview = dialog.getByRole("button", { name: /BGMを試しに聞く|試しに聞くのをやめる/ });
+  await preview.click();
+  await expect(preview).toHaveAttribute("aria-pressed", "true");
+  await expect.poll(() => onlyIn(page, CAFE, LIVE)).toBeGreaterThan(0);
+  expect(await bgmVolume(page)).toBeGreaterThan(0);
+  // BGMの設定は、OFFのまま。
+  await expect(dialog.getByRole("button", { name: "BGM", exact: true })).toHaveAttribute(
+    "aria-pressed",
+    "false",
+  );
+
+  // 最後の1秒で小さくしてから（その間はまだ試しに聞いている）、止める。
+  await expect
+    .poll(async () => (await bgmLayers(page))[0]?.at(-1), { timeout: 15_000, intervals: [100] })
+    .toBe(0);
+  await expect(preview).toHaveAttribute("aria-pressed", "true");
+  await expect(preview).toHaveAttribute("aria-pressed", "false");
+  expect(await bgmVolume(page)).toBe(0);
+});
+
+test("試しに聞いている途中でやめられ、ONにするとそのまま鳴り続ける", async ({ page }) => {
+  test.setTimeout(30_000);
+  await installFakeAudio(page);
+  await openFirstTime(page);
+  const dialog = await openSoundSettings(page);
+  const preview = dialog.getByRole("button", { name: /BGMを試しに聞く|試しに聞くのをやめる/ });
+  await preview.click();
+  await expect.poll(async () => (await bgmTones(page)).length).toBeGreaterThan(0);
+  await preview.click();
+  await expect(preview).toHaveAttribute("aria-pressed", "false");
+  expect(await bgmVolume(page)).toBe(0);
+
+  // もう一度聞いて、途中でONにすると、試しに聞くボタンは消え、止まらずに鳴り続ける。
+  await preview.click();
+  await expect(preview).toHaveAttribute("aria-pressed", "true");
+  await dialog.getByRole("button", { name: "BGM", exact: true }).click();
+  await expect(preview).toHaveCount(0);
+  const layers = (await bgmLayers(page)).length;
+  await page.waitForTimeout(11_000);
+  expect(await bgmVolume(page)).toBeGreaterThan(0);
+  expect(await bgmLayers(page)).toHaveLength(layers);
+  expect((await bgmLayers(page)).at(-1)).toEqual([0, 1]);
 });
 
 test("BGMをOFFにすると止まる", async ({ page }) => {
