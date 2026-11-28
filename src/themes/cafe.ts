@@ -246,29 +246,38 @@ export const cafe = {
       },
     },
   },
-  // ハ長調・4拍子。Cmaj7 Am7 Dm7 G7 Cmaj7 Fmaj7 Dm7 G7。このアプリのためのオリジナル曲。
+  // ハ長調・4拍子・76（セブンスの和音）。前半 Cmaj7 Am7 Dm7 G7 Cmaj7 Fmaj7 Dm7 G7、後半 Fmaj7 Em7 Am7 Dm7 Fmaj7 G7 Cmaj7 G7。このアプリのためのオリジナル曲。
   bgm: {
     tempo: 76,
     beatsPerBar: 4,
     stepsPerBeat: 2,
-    bars: 8,
+    bars: 16,
     tracks: [
       {
-        wave: "sine",
-        gain: 0.16,
+        instrument: "piano",
+        gain: 0.13,
+        pan: -0.2,
         score:
-          "C4+E4+G4+B4/8 |" +
-          "A3+C4+E4+G4/8 |" +
-          "D4+F4+A4+C5/8 |" +
-          "G3+B3+D4+F4/8 |" +
-          "C4+E4+G4+B4/8 |" +
-          "F3+A3+C4+E4/8 |" +
-          "D4+F4+A4+C5/8 |" +
-          "G3+B3+D4+F4/8",
+          "C4+E4+G4+B4/3 C4+E4+G4+B4/5 |" +
+          "A3+C4+E4+G4/3 A3+C4+E4+G4/5 |" +
+          "D4+F4+A4+C5/3 D4+F4+A4+C5/5 |" +
+          "G3+B3+D4+F4/3 G3+B3+D4+F4/5 |" +
+          "C4+E4+G4+B4/3 C4+E4+G4+B4/5 |" +
+          "F3+A3+C4+E4/3 F3+A3+C4+E4/5 |" +
+          "D4+F4+A4+C5/3 D4+F4+A4+C5/5 |" +
+          "G3+B3+D4+F4/3 G3+B3+D4+F4/5 |" +
+          "F3+A3+C4+E4/3 F3+A3+C4+E4/5 |" +
+          "E3+G3+B3+D4/3 E3+G3+B3+D4/5 |" +
+          "A3+C4+E4+G4/3 A3+C4+E4+G4/5 |" +
+          "D4+F4+A4+C5/3 D4+F4+A4+C5/5 |" +
+          "F3+A3+C4+E4/3 F3+A3+C4+E4/5 |" +
+          "G3+B3+D4+F4/3 G3+B3+D4+F4/5 |" +
+          "C4+E4+G4+B4/3 C4+E4+G4+B4/5 |" +
+          "G3+B3+D4+F4/3 G3+B3+D4+F4/5",
       },
       {
-        wave: "triangle",
-        gain: 0.25,
+        instrument: "bass",
+        gain: 0.26,
         score:
           "C3/4 G2/4 |" +
           "A2/4 E2/4 |" +
@@ -277,11 +286,20 @@ export const cafe = {
           "C3/4 G2/4 |" +
           "F2/4 C3/4 |" +
           "D3/4 A2/4 |" +
+          "G2/4 B2/4 |" +
+          "F2/4 C3/4 |" +
+          "E2/4 B2/4 |" +
+          "A2/4 E2/4 |" +
+          "D3/4 A2/4 |" +
+          "F2/4 C3/4 |" +
+          "G2/4 D3/4 |" +
+          "C3/4 G2/4 |" +
           "G2/4 B2/4",
       },
       {
-        wave: "triangle",
-        gain: 0.2,
+        instrument: "bell",
+        gain: 0.15,
+        pan: 0.2,
         score:
           "E5/3 D5/1 C5/2 G4/2 |" +
           "A4/6 r/2 |" +
@@ -290,12 +308,29 @@ export const cafe = {
           "E5/2 G5/2 B5/2 G5/2 |" +
           "A5/6 r/2 |" +
           "F5/2 E5/2 D5/2 C5/2 |" +
-          "D5/6 r/2",
+          "D5/6 r/2 |" +
+          "A5/3 G5/1 E5/2 C5/2 |" +
+          "B4/4 D5/2 G5/2 |" +
+          "C5/3 E5/1 A5/4 |" +
+          "F5/4 r/4 |" +
+          "A5/2 C6/2 B5/2 A5/2 |" +
+          "G5/4 D5/2 F5/2 |" +
+          "E5/6 r/2 |" +
+          "D5/2 B4/2 G4/2 r/2",
       },
       {
-        wave: "noise",
+        instrument: "hat",
         gain: 0.03,
+        pan: 0.25,
         score:
+          "r/2 x/2 r/2 x/2 |" +
+          "r/2 x/2 r/2 x/2 |" +
+          "r/2 x/2 r/2 x/2 |" +
+          "r/2 x/2 r/2 x/2 |" +
+          "r/2 x/2 r/2 x/2 |" +
+          "r/2 x/2 r/2 x/2 |" +
+          "r/2 x/2 r/2 x/2 |" +
+          "r/2 x/2 r/2 x/2 |" +
           "r/2 x/2 r/2 x/2 |" +
           "r/2 x/2 r/2 x/2 |" +
           "r/2 x/2 r/2 x/2 |" +

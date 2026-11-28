@@ -11,6 +11,7 @@ import {
   stepsPerBar,
   type BgmSong,
 } from "./bgm";
+import { bell, hat, kick, piano, snare, strings } from "./instruments";
 
 describe("parseNoteName", () => {
   it.each([
@@ -49,8 +50,8 @@ const song: BgmSong = {
   stepsPerBeat: 2,
   bars: 2,
   tracks: [
-    { wave: "sine", gain: 0.5, score: "C4/2 r/2 | E4+G4/4" },
-    { wave: "noise", gain: 0.2, score: "x/4 | r/2 x/2" },
+    { instrument: "piano", gain: 0.5, pan: -0.2, score: "C4/2 r/2 | E4+G4/4" },
+    { instrument: "hat", gain: 0.2, pan: 0.4, score: "x/4 | r/2 x/2" },
   ],
 };
 
@@ -83,33 +84,73 @@ describe("eventsBetween", () => {
 });
 
 describe("eventTones", () => {
-  it("和音は1つの音と同じくらいの大きさにし、少し短く切る", () => {
+  it("和音は、その楽器の音を重ね、1つの音と同じくらいの大きさにして、少し短く切る", () => {
     const [, , chord] = eventsBetween(song, 0, 8);
     if (chord === undefined) throw new Error("和音がない");
-    const tones = eventTones(song, chord);
-    expect(tones).toHaveLength(2);
-    expect(tones[0]?.gain).toBeCloseTo(0.5 / Math.SQRT2);
-    expect(tones[0]?.duration).toBeCloseTo(4 * 0.25 * 0.9);
-  });
-
-  it("打楽器は短い音にする", () => {
-    const [, hit] = eventsBetween(song, 0, 8);
-    if (hit === undefined) throw new Error("打楽器がない");
-    expect(eventTones(song, hit)).toEqual([
-      { wave: "noise", from: 0, start: 0, duration: 0.06, gain: 0.2 },
+    const each = 0.5 / Math.SQRT2;
+    const length = 4 * 0.25 * 0.9;
+    expect(eventTones(song, chord)).toEqual([
+      ...piano(64, 0, length, each, -0.2),
+      ...piano(67, 0, length, each, -0.2),
     ]);
   });
+
+  it("打楽器は、その楽器の音にする", () => {
+    const [, hit] = eventsBetween(song, 0, 8);
+    if (hit === undefined) throw new Error("打楽器がない");
+    expect(eventTones(song, hit)).toEqual(hat(0, 0.2, 0.4));
+  });
+
+  it("ストリングスは切らずに伸ばし、キックとスネアも鳴らせる", () => {
+    const band: BgmSong = {
+      tempo: 120,
+      beatsPerBar: 2,
+      stepsPerBeat: 2,
+      bars: 1,
+      tracks: [
+        { instrument: "strings", gain: 0.3, score: "C3/4" },
+        { instrument: "kick", gain: 0.4, score: "x/4" },
+        { instrument: "snare", gain: 0.1, score: "x/4" },
+        { instrument: "bell", gain: 0.2, pan: 0.5, score: "A5/4" },
+      ],
+    };
+    const [pad, low, mid, high] = eventsBetween(band, 0, 4);
+    if (pad === undefined || low === undefined || mid === undefined || high === undefined) {
+      throw new Error("音が足りない");
+    }
+    expect(eventTones(band, pad)).toEqual(strings(48, 0, 1, 0.3, 0));
+    expect(eventTones(band, low)).toEqual(kick(0, 0.4));
+    expect(eventTones(band, mid)).toEqual(snare(0, 0.1));
+    expect(eventTones(band, high)).toEqual(bell(81, 0, 0.9, 0.2, 0.5));
+  });
 });
+
+const DRUMS = new Set(["kick", "snare", "hat"]);
+
+/** 楽譜を小節ごとに分ける。 */
+const barsOf = (score: string) => score.split("|").map((bar) => bar.trim());
 
 describe.each(WORLD_IDS)("%s のBGM", (id) => {
   const { bgm } = themes[id];
 
-  it("8小節で、どのパートもちょうど一周する", () => {
-    expect(bgm.bars).toBe(8);
+  it("16小節で、どのパートも、どの小節もちょうどの長さ", () => {
+    expect(bgm.bars).toBe(16);
     for (const track of bgm.tracks) {
-      const total = parseScore(track.score).reduce((sum, note) => sum + note.steps, 0);
-      expect(total).toBe(songSteps(bgm));
+      const bars = barsOf(track.score);
+      expect(bars).toHaveLength(16);
+      for (const bar of bars) {
+        const total = parseScore(bar).reduce((sum, note) => sum + note.steps, 0);
+        expect(total).toBe(stepsPerBar(bgm));
+      }
     }
+  });
+
+  it("前半8小節と後半8小節で、メロディと伴奏が変わる", () => {
+    const changed = bgm.tracks.filter((track) => {
+      const bars = barsOf(track.score);
+      return bars.slice(0, 8).join("|") !== bars.slice(8).join("|");
+    });
+    expect(changed.length).toBeGreaterThanOrEqual(3);
   });
 
   it("テンポ・音の高さ・大きさが、聞きやすい範囲にある", () => {
@@ -120,16 +161,19 @@ describe.each(WORLD_IDS)("%s のBGM", (id) => {
       expect(track.gain).toBeLessThanOrEqual(0.5);
       for (const note of parseScore(track.score)) {
         expect(note.midis.length).toBeLessThanOrEqual(4);
+        // 打楽器のパートは打つ印と休みだけ、ほかの楽器のパートは音と休みだけで書く。
+        expect(note.isHit).toBe(DRUMS.has(track.instrument) && note.isHit);
+        if (DRUMS.has(track.instrument)) expect(note.midis).toEqual([]);
         for (const midi of note.midis) {
           expect(midi).toBeGreaterThanOrEqual(36);
           expect(midi).toBeLessThanOrEqual(96);
         }
       }
     }
-    // 一周が、20秒から30秒ほど。
+    // 一周が、40秒から50秒ほど。
     const seconds = songSteps(bgm) * stepSeconds(bgm);
-    expect(seconds).toBeGreaterThanOrEqual(15);
-    expect(seconds).toBeLessThanOrEqual(30);
+    expect(seconds).toBeGreaterThanOrEqual(36);
+    expect(seconds).toBeLessThanOrEqual(52);
   });
 });
 

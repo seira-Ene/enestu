@@ -8,6 +8,7 @@ import type { Tone } from "@/domain/tone";
  *   音 →（フィルター）→ 音量の変化 →（左右）→ 効果音／BGMの音量 → 全体のならし → スピーカー
  *                         └→ 残響へ送る量 → 残響 → 効果音／BGMの音量
  *   BGMは、効果音の間だけ少し下げる（ダッキング）。
+ *   BGMの曲は、曲ごとの音量（レイヤー）を通して、BGMの音量につなぐ。曲を替えるときに重ねて入れ替えるため。
  */
 
 type Channel = "se" | "bgm";
@@ -156,6 +157,35 @@ export function holdBgmDuck(isHeld: boolean): void {
   }
 }
 
+/**
+ * BGMの1曲ぶんの音量（レイヤー）を作る。最初は0で、fadeLayer で上げ下げする。
+ * まだ音を出せなければ null。
+ */
+export function createBgmLayer(): GainNode | null {
+  if (engine === null) return null;
+  try {
+    const layer = createGain(engine.context, 0);
+    layer.connect(engine.master.bgm);
+    return layer;
+  } catch {
+    return null;
+  }
+}
+
+/** レイヤーの音量を、今から seconds 秒かけて to にする。 */
+export function fadeLayer(layer: GainNode, to: number, seconds: number): void {
+  if (engine === null) return;
+  try {
+    const { gain } = layer;
+    const now = engine.context.currentTime;
+    gain.cancelScheduledValues(now);
+    gain.setValueAtTime(gain.value, now);
+    gain.linearRampToValueAtTime(to, now + seconds);
+  } catch {
+    // 変えられなくても、画面の動きは止めない。
+  }
+}
+
 /** 音の時計の今の時刻（秒）。まだ音を出せなければ null。 */
 export function audioNow(): number | null {
   return engine === null ? null : engine.context.currentTime;
@@ -171,23 +201,34 @@ export function playTones(
   playTonesAt(tones, channel, engine.context.currentTime + delay);
 }
 
-/** 音を、音の時計の決まった時刻に鳴らす。BGMは、この形で先回りして予約する。 */
+/**
+ * 音を、音の時計の決まった時刻に鳴らす。BGMは、この形で先回りして予約する。
+ * layer を渡すと、その音量（createBgmLayer で作ったもの）を通して鳴らす。
+ */
 export function playTonesAt(
   tones: readonly Tone[],
   channel: Channel,
   at: number,
+  layer?: GainNode,
 ): void {
   if (engine === null || pendingGains[channel] === 0) return;
+  const destination = layer ?? engine.master[channel];
   for (const tone of tones) {
     try {
-      playTone(engine, tone, channel, at + tone.start);
+      playTone(engine, tone, channel, destination, at + tone.start);
     } catch {
       // 1つの音が鳴らなくても、ほかの音と画面の動きは止めない。
     }
   }
 }
 
-function playTone(current: Engine, tone: Tone, channel: Channel, start: number): void {
+function playTone(
+  current: Engine,
+  tone: Tone,
+  channel: Channel,
+  destination: AudioNode,
+  start: number,
+): void {
   const { context } = current;
   const end = start + tone.duration;
   const attack = Math.min(tone.attack ?? 0.01, tone.duration / 2);
@@ -205,9 +246,9 @@ function playTone(current: Engine, tone: Tone, channel: Channel, start: number):
   if (panner !== null) {
     panner.pan.value = Math.max(-1, Math.min(1, tone.pan ?? 0));
     envelope.connect(panner);
-    panner.connect(current.master[channel]);
+    panner.connect(destination);
   } else {
-    envelope.connect(current.master[channel]);
+    envelope.connect(destination);
   }
   if (tone.reverb !== undefined && tone.reverb > 0) {
     const send = context.createGain();

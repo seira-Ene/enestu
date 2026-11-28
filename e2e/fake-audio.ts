@@ -4,6 +4,7 @@ import type { Tone } from "../src/domain/tone";
 /**
  * 鳴らした音。偽物の音の出口が記録する。
  * modulated：別の波で高さを揺らされた（ベルの音）。reverb：残響にもつながっていた。
+ * layered：BGMの曲ごとの音量（レイヤー）を通っていた。
  */
 export type Played = {
   wave: string;
@@ -11,6 +12,7 @@ export type Played = {
   channel: "se" | "bgm" | "none";
   modulated: boolean;
   reverb: boolean;
+  layered: boolean;
 };
 
 /**
@@ -28,6 +30,7 @@ export async function installFakeAudio(page: Page): Promise<void> {
         channel: string;
         modulated: boolean;
         reverb: boolean;
+        layered: boolean;
       }[],
       gains: [] as { value: number; history: number[] }[],
       nodes: [] as unknown[],
@@ -77,6 +80,19 @@ export async function installFakeAudio(page: Page): Promise<void> {
         }
         return false;
       }
+      /** つながりの先に、BGMの曲ごとの音量（BGMの音量に直接つながる音量）があるか。 */
+      reachesLayer(): boolean {
+        const seen = new Set<unknown>();
+        const queue = [...this.targets];
+        while (queue.length > 0) {
+          const node = queue.shift();
+          if (node === undefined || seen.has(node)) continue;
+          seen.add(node);
+          if (node instanceof GainStub && node.targets.includes(log.nodes[1])) return true;
+          if (node instanceof NodeStub) queue.push(...node.targets);
+        }
+        return false;
+      }
       /** つながりをたどり、効果音とBGMのどちらの音量に着くかを返す。 */
       channel(): string {
         const seen = new Set<unknown>();
@@ -106,6 +122,7 @@ export async function installFakeAudio(page: Page): Promise<void> {
           channel: this.channel(),
           modulated: false,
           reverb: this.reachesReverb(),
+          layered: this.reachesLayer(),
         };
         this.frequency.owner = record;
         log.tones.push(record);
@@ -121,6 +138,7 @@ export async function installFakeAudio(page: Page): Promise<void> {
           channel: this.channel(),
           modulated: false,
           reverb: this.reachesReverb(),
+          layered: this.reachesLayer(),
         });
       }
       stop() {}
@@ -220,4 +238,24 @@ export async function hasPlayed(page: Page, tones: readonly Tone[]): Promise<boo
       (tone) => tone.wave === expected.wave && Math.abs(tone.freq - expected.from) < 0.01,
     ),
   );
+}
+
+/** BGMの全体の音量。 */
+export async function bgmVolume(page: Page): Promise<number | undefined> {
+  return (await readLog(page)).gains[1]?.value;
+}
+
+/**
+ * BGMの曲ごとの音量（レイヤー）が、これまでにとった値。作った順に並べる。
+ * BGMの音量に直接つながっている音量の部品を、曲ごとの音量とみなす。
+ */
+export async function bgmLayers(page: Page): Promise<number[][]> {
+  return page.evaluate(() => {
+    const { nodes } = (window as unknown as {
+      __sound: { nodes: { targets: unknown[]; gain?: { history: number[] } }[] };
+    }).__sound;
+    return nodes
+      .filter((node) => node.gain !== undefined && node.targets.includes(nodes[1]))
+      .map((node) => [...(node.gain?.history ?? [])]);
+  });
 }

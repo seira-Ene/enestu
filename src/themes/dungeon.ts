@@ -246,16 +246,17 @@ export const dungeon = {
       },
     },
   },
-  // イ短調・4拍子。Am F G Em Am F E Am。このアプリのためのオリジナル曲。
+  // イ短調・4拍子・84。前半 Am F G Em Am F E Am、後半 F G Am Em Dm Am E Am。このアプリのためのオリジナル曲。
   bgm: {
     tempo: 84,
     beatsPerBar: 4,
     stepsPerBeat: 2,
-    bars: 8,
+    bars: 16,
     tracks: [
       {
-        wave: "triangle",
-        gain: 0.3,
+        instrument: "pluck",
+        gain: 0.18,
+        pan: -0.3,
         score:
           "A3/1 C4/1 E4/1 C4/1 A3/1 C4/1 E4/1 C4/1 |" +
           "F3/1 A3/1 C4/1 A3/1 F3/1 A3/1 C4/1 A3/1 |" +
@@ -264,11 +265,41 @@ export const dungeon = {
           "A3/1 C4/1 E4/1 C4/1 A3/1 C4/1 E4/1 C4/1 |" +
           "F3/1 A3/1 C4/1 A3/1 F3/1 A3/1 C4/1 A3/1 |" +
           "E3/1 G#3/1 B3/1 G#3/1 E3/1 G#3/1 B3/1 G#3/1 |" +
+          "A3/1 C4/1 E4/1 C4/1 A3/1 C4/1 E4/1 C4/1 |" +
+          "F3/1 A3/1 C4/1 A3/1 F3/1 A3/1 C4/1 A3/1 |" +
+          "G3/1 B3/1 D4/1 B3/1 G3/1 B3/1 D4/1 B3/1 |" +
+          "A3/1 C4/1 E4/1 C4/1 A3/1 C4/1 E4/1 C4/1 |" +
+          "E3/1 G3/1 B3/1 G3/1 E3/1 G3/1 B3/1 G3/1 |" +
+          "D3/1 F3/1 A3/1 F3/1 D3/1 F3/1 A3/1 F3/1 |" +
+          "A3/1 C4/1 E4/1 C4/1 A3/1 C4/1 E4/1 C4/1 |" +
+          "E3/1 G#3/1 B3/1 G#3/1 E3/1 G#3/1 B3/1 G#3/1 |" +
           "A3/1 C4/1 E4/1 C4/1 A3/1 C4/1 E4/1 C4/1",
       },
       {
-        wave: "square",
-        gain: 0.12,
+        instrument: "strings",
+        gain: 0.1,
+        pan: 0.3,
+        score:
+          "A3+C4+E4/8 |" +
+          "F3+A3+C4/8 |" +
+          "G3+B3+D4/8 |" +
+          "E3+G3+B3/8 |" +
+          "A3+C4+E4/8 |" +
+          "F3+A3+C4/8 |" +
+          "E3+G#3+B3/8 |" +
+          "A3+C4+E4/8 |" +
+          "F3+A3+C4/8 |" +
+          "G3+B3+D4/8 |" +
+          "A3+C4+E4/8 |" +
+          "E3+G3+B3/8 |" +
+          "D3+F3+A3/8 |" +
+          "A3+C4+E4/8 |" +
+          "E3+G#3+B3/8 |" +
+          "A3+C4+E4/8",
+      },
+      {
+        instrument: "bass",
+        gain: 0.3,
         score:
           "A2/8 |" +
           "F2/8 |" +
@@ -277,11 +308,20 @@ export const dungeon = {
           "A2/8 |" +
           "F2/8 |" +
           "E2/8 |" +
+          "A2/8 |" +
+          "F2/8 |" +
+          "G2/8 |" +
+          "A2/8 |" +
+          "E2/8 |" +
+          "D2/8 |" +
+          "A2/8 |" +
+          "E2/8 |" +
           "A2/8",
       },
       {
-        wave: "sine",
-        gain: 0.3,
+        instrument: "piano",
+        gain: 0.24,
+        pan: 0.15,
         score:
           "E5/4 D5/2 C5/2 |" +
           "A4/6 r/2 |" +
@@ -290,7 +330,15 @@ export const dungeon = {
           "E5/2 F5/2 E5/2 C5/2 |" +
           "A4/8 |" +
           "B4/2 G#4/2 B4/2 D5/2 |" +
-          "A4/6 r/2",
+          "A4/6 r/2 |" +
+          "r/2 A4/2 C5/2 F5/2 |" +
+          "G5/4 F5/2 D5/2 |" +
+          "E5/6 C5/2 |" +
+          "B4/6 r/2 |" +
+          "D5/2 F5/2 A5/2 F5/2 |" +
+          "E5/4 C5/2 A4/2 |" +
+          "G#4/2 B4/2 E5/2 D5/2 |" +
+          "A4/8",
       },
     ],
   },
