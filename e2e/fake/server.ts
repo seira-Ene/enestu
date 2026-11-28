@@ -224,6 +224,25 @@ class Backend {
         );
         return { rows };
       }
+      case "/control/recent-pulls": {
+        // 1日の上限を試すため、上限を通さずに、今 count 回引いたことにする。
+        const owner = url.searchParams.get("owner") ?? "";
+        const column = url.searchParams.get("kind") === "user" ? "user_id" : "device_id";
+        const count = Number(url.searchParams.get("count"));
+        await this.exclusive(async () => {
+          await this.db.asOwner("alter table gacha_pulls disable trigger gacha_pulls_limit");
+          try {
+            await this.db.asOwner(
+              `insert into gacha_pulls (${column}, batch_id, seq, item_id)
+               select $1, gen_random_uuid(), 1, 'cafe-n1' from generate_series(1, $2::int)`,
+              [owner, count],
+            );
+          } finally {
+            await this.db.asOwner("alter table gacha_pulls enable trigger gacha_pulls_limit");
+          }
+        });
+        return {};
+      }
       case "/control/past-pulls": {
         // 天井を試すため、ウルトラレア未満を過去に count 回引いたことにする。
         const device = url.searchParams.get("device") ?? "";

@@ -1,7 +1,9 @@
 import { expect, test, type Page } from "@playwright/test";
 import { dungeon } from "../src/themes/dungeon";
+import { GACHA_DAILY_LIMITS, gachaLimitMessage } from "../src/domain/gacha";
 import {
   addPastPulls,
+  addRecentPulls,
   addStudy,
   createUser,
   login,
@@ -207,4 +209,28 @@ test("飛ばすと、待たずにまとめになる", async ({ page }) => {
   await expect(reveal(page).getByRole("heading", { name: "ガチャの結果" })).toBeVisible({
     timeout: 2_000,
   });
+});
+
+test(`ログイン中は1日${GACHA_DAILY_LIMITS.device}回を超えても引け、未ログインの端末はそこで止まる`, async ({
+  page,
+  browser,
+}) => {
+  const user = await createUser("花子");
+  await addStudy({ user }, (GACHA_DAILY_LIMITS.device + 1) * 30);
+  await addRecentPulls({ user }, GACHA_DAILY_LIMITS.device);
+  await openFirstTime(page);
+  await login(page, user);
+  await page.goto("/gacha");
+  await pull(page, "単発");
+  await expect(tickets(page, 0)).toBeVisible();
+
+  const context = await browser.newContext();
+  const guest = await context.newPage();
+  const device = await useDevice(guest);
+  await addStudy({ device }, (GACHA_DAILY_LIMITS.device + 1) * 30);
+  await addRecentPulls({ device }, GACHA_DAILY_LIMITS.device);
+  await openFirstTime(guest, "/gacha");
+  await startPull(guest, "単発");
+  await expect(ticketPanel(guest).getByRole("alert")).toHaveText(gachaLimitMessage("device"));
+  await context.close();
 });

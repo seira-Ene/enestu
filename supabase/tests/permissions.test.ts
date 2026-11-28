@@ -107,6 +107,7 @@ const FUNCTION_ROLES: Readonly<Record<string, readonly Role[]>> = {
   enforce_notes_limit: [],
   enforce_row_limit: [],
   enforce_ai_request_limit: [],
+  enforce_gacha_limit: [],
   my_gacha_status: ["authenticated"],
   my_gacha_pull: ["authenticated"],
   my_gacha_collection: ["authenticated"],

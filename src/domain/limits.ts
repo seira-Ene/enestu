@@ -14,7 +14,6 @@ export const ROW_LIMITS = {
     label: "説明",
     unit: "件",
   },
-  gacha_pulls: { count: 100, perDay: true, label: "ガチャ", unit: "回" },
 } as const;
 
 export type LimitedTable = keyof typeof ROW_LIMITS;
