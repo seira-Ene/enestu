@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ticketsEarned } from "./gacha";
+import { GACHA_DAILY_LIMITS, ticketsEarned } from "./gacha";
 import { limitMessage, ROW_LIMITS } from "./limits";
 
 describe("limitMessage", () => {
@@ -17,12 +17,13 @@ describe("limitMessage", () => {
   });
 
   it("どの上限も、普段の使い方より十分に大きい", () => {
-    const { gacha_pulls: gacha, ...records } = ROW_LIMITS;
-    for (const { count } of Object.values(records)) {
+    for (const { count } of Object.values(ROW_LIMITS)) {
       expect(count).toBeGreaterThanOrEqual(200);
     }
-    // ガチャは、24時間ずっと学習してもらえる券より多く引ける。
+    // ガチャは、未ログインでも、24時間ずっと学習してもらえる券より多く引ける。
     const fullDay = ticketsEarned({ studySeconds: 24 * 60 * 60, correctCount: 0 });
-    expect(gacha.count).toBeGreaterThan(fullDay);
+    expect(GACHA_DAILY_LIMITS.device).toBeGreaterThan(fullDay);
+    // ログイン中は、ためた券を一度に使えるよう、さらに多く引ける。
+    expect(GACHA_DAILY_LIMITS.user).toBeGreaterThanOrEqual(GACHA_DAILY_LIMITS.device * 10);
   });
 });

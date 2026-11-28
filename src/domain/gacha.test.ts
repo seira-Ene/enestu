@@ -4,6 +4,7 @@ import {
   GACHA_RARITIES,
   GACHA_SLOTS,
   gachaItemId,
+  gachaLimitMessage,
   highestRarity,
   markNew,
   MAX_STARS,
@@ -204,6 +205,17 @@ describe("演出", () => {
   it("結果のまとめは、珍しい順に数を言う", () => {
     expect(pullSummary([pull(1, "n"), pull(2, "ur"), pull(3, "n")])).toBe(
       "3枚引きました。ウルトラレア1枚、ノーマル2枚。",
+    );
+  });
+});
+
+describe("gachaLimitMessage", () => {
+  it("持ち主に合わせて、上限を伝える。未ログインにはログインの案内も", () => {
+    expect(gachaLimitMessage("user")).toBe(
+      "ガチャは24時間で1,000回までです。時間をおいてから試してください。",
+    );
+    expect(gachaLimitMessage("device")).toBe(
+      "ガチャは24時間で100回までです。時間をおいてから試してください。ログインすると、1日1,000回まで引けます。",
     );
   });
 });

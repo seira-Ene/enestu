@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import {
+  GACHA_DAILY_LIMITS,
   GACHA_PITY,
   GACHA_RARITIES,
   GACHA_SLOTS,
@@ -11,7 +12,7 @@ import {
   TEN_PULL_FLOOR,
   ticketsEarned,
 } from "@/domain/gacha";
-import { ROW_LIMIT_MESSAGE, ROW_LIMITS } from "@/domain/limits";
+import { ROW_LIMIT_MESSAGE } from "@/domain/limits";
 import { WORLD_IDS } from "@/themes/types";
 import { TestDb, type Actor, type Row } from "./test-db";
 
@@ -95,6 +96,24 @@ async function answer(owner: string, isCorrect: boolean): Promise<void> {
      values (gen_random_uuid(), $1, $2, 'a', $3, now())`,
     [owner, card, isCorrect],
   );
+}
+
+/** 上限を試すため、上限を通さずに、今 count 回引いたことにする。 */
+async function recentPulls(
+  column: "device_id" | "user_id",
+  owner: string,
+  count: number,
+): Promise<void> {
+  await db.asOwner("alter table gacha_pulls disable trigger gacha_pulls_limit");
+  try {
+    await db.asOwner(
+      `insert into gacha_pulls (${column}, batch_id, seq, item_id)
+       select $1, gen_random_uuid(), 1, 'cafe-n1' from generate_series(1, $2::int)`,
+      [owner, count],
+    );
+  } finally {
+    await db.asOwner("alter table gacha_pulls enable trigger gacha_pulls_limit");
+  }
 }
 
 /** 天井を試すため、上限を通さずに、ウルトラレア未満を過去に count 回引いたことにする。 */
@@ -244,7 +263,7 @@ describe("券", () => {
 describe("引く", () => {
   it("10連は、選んだ世界線から順に10枚で、SR以上を必ず含む", async () => {
     await study("user_id", alice, 900 * 60 * 60);
-    for (let round = 0; round < ROW_LIMITS.gacha_pulls.count / 10; round += 1) {
+    for (let round = 0; round < 10; round += 1) {
       await db.asOwner("select setseed($1)", [round / 10]);
       const { rows, error } = await userPull(alice, "dungeon", 10);
       expect(error).toBeNull();
@@ -254,14 +273,38 @@ describe("引く", () => {
     }
   });
 
-  it(`1日${ROW_LIMITS.gacha_pulls.count}回まで。超える分は記録しない`, async () => {
+  it(`ログイン中は1日${GACHA_DAILY_LIMITS.user}回まで。超える分は記録しない`, async () => {
     await study("user_id", alice, 900 * 60 * 60);
-    const limit = ROW_LIMITS.gacha_pulls.count;
-    for (let pulled = 0; pulled < limit - 5; pulled += 1) {
-      await userPull(alice, "cafe", 1);
-    }
+    const limit = GACHA_DAILY_LIMITS.user;
+    await recentPulls("user_id", alice, limit - 5);
+    // 端末の上限（100回）は、ログイン中には効かない。
+    expect((await userPull(alice, "cafe", 1)).error).toBeNull();
     expect((await userPull(alice, "cafe", 10)).error).toBe(ROW_LIMIT_MESSAGE);
-    expect(await pullCount("user_id", alice)).toBe(limit - 5);
+    expect(await pullCount("user_id", alice)).toBe(limit - 4);
+  });
+
+  it(`未ログインの端末は1日${GACHA_DAILY_LIMITS.device}回まで。他の端末は数えない`, async () => {
+    await study("device_id", device, 900 * 60 * 60);
+    const limit = GACHA_DAILY_LIMITS.device;
+    await recentPulls("device_id", device, limit - 5);
+    expect((await devicePull(device, "cafe", 10)).error).toBe(ROW_LIMIT_MESSAGE);
+    expect(await pullCount("device_id", device)).toBe(limit - 5);
+    expect((await devicePull(device, "cafe", 1)).error).toBeNull();
+
+    const other = randomUUID();
+    await study("device_id", other, 900 * 60 * 60);
+    expect((await devicePull(other, "cafe", 10)).error).toBeNull();
+  });
+
+  it("24時間たった分は、数えない", async () => {
+    await study("device_id", device, 900 * 60 * 60);
+    await recentPulls("device_id", device, GACHA_DAILY_LIMITS.device);
+    expect((await devicePull(device, "cafe", 1)).error).toBe(ROW_LIMIT_MESSAGE);
+    await db.asOwner(
+      `update gacha_pulls set created_at = now() - interval '25 hours'
+       where id = (select min(id) from gacha_pulls)`,
+    );
+    expect((await devicePull(device, "cafe", 1)).error).toBeNull();
   });
 
   it(`ウルトラレア以上が出ないまま${GACHA_PITY}回目で、ウルトラレア以上が出る`, async () => {

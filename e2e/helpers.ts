@@ -83,6 +83,15 @@ export async function addPastVisits(
   await control(`past-visits?device=${device}&days=${daysAgo.join(",")}`);
 }
 
+/** 1日の上限を試すため、上限を通さずに、今 count 回引いたことにする。 */
+export async function addRecentPulls(
+  owner: { readonly device: string } | { readonly user: string },
+  count: number,
+): Promise<void> {
+  const [kind, id] = "user" in owner ? ["user", owner.user] : ["device", owner.device];
+  await control(`recent-pulls?kind=${kind}&owner=${id}&count=${count}`);
+}
+
 /** 天井を試すため、その端末がウルトラレア未満を過去に count 回引いたことにする。 */
 export async function addPastPulls(device: string, count: number): Promise<void> {
   await control(`past-pulls?device=${device}&count=${count}`);

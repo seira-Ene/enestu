@@ -26,6 +26,23 @@ export const XP_PER_TICKET = 60;
 /** ウルトラレア以上が出ないまま、この回数目を引くと、ウルトラレア以上が出る。 */
 export const GACHA_PITY = 100;
 
+/**
+ * 1日（24時間）に引ける回数。学習記録を偽って作った券で、DBの無償枠を使い切られないため。
+ * 端末IDは作り直せるので、未ログインは少なくする。
+ * DBのトリガー（20261204000000_raise_gacha_limit.sql の enforce_gacha_limit）と合わせる。
+ */
+export const GACHA_DAILY_LIMITS = { user: 1000, device: 100 } as const;
+
+/** 1日の上限に達したときの案内。 */
+export function gachaLimitMessage(owner: keyof typeof GACHA_DAILY_LIMITS): string {
+  const limit = GACHA_DAILY_LIMITS[owner].toLocaleString("ja-JP");
+  const login =
+    owner === "device"
+      ? `ログインすると、1日${GACHA_DAILY_LIMITS.user.toLocaleString("ja-JP")}回まで引けます。`
+      : "";
+  return `ガチャは24時間で${limit}回までです。時間をおいてから試してください。${login}`;
+}
+
 /** 10連のうち1枚は、少なくともこのレアリティにする。 */
 export const TEN_PULL_FLOOR: RarityId = "sr";
 /** 天井で出すレアリティ。 */

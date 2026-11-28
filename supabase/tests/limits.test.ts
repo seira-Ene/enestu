@@ -25,8 +25,8 @@ afterAll(async () => {
 
 type OwnerColumn = "device_id" | "user_id";
 
-/** ガチャの記録は引く関数でしか足せないので、gacha.test.ts で確かめる。 */
-type Table = Exclude<LimitedTable, "gacha_pulls">;
+/** 上限を確かめる表。ガチャの上限は専用のトリガーなので、gacha.test.ts で確かめる。 */
+type Table = LimitedTable;
 
 /** 1行を入れるための列と値。$1 は持ち主、$2 は親（カードか用語）。 */
 const TABLES: Record<

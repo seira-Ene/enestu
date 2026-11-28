@@ -1,5 +1,4 @@
-import { parsePullRequest } from "@/domain/gacha";
-import { limitMessage } from "@/domain/limits";
+import { gachaLimitMessage, parsePullRequest } from "@/domain/gacha";
 import {
   badRequest,
   isRowLimit,
@@ -67,7 +66,7 @@ export async function POST(request: Request): Promise<Response> {
             p_count: count,
           });
     if (error?.message === "not_enough_tickets") return notEnoughTickets();
-    if (isRowLimit(error)) return limitReached(limitMessage("gacha_pulls"));
+    if (isRowLimit(error)) return limitReached(gachaLimitMessage(owner.value.kind));
     if (error) return serverError(action, error);
     return success({
       pulls: data.map((pull) => ({
