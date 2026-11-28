@@ -35,7 +35,7 @@ export function DailyMissions({ remote, world }: Props) {
     setClaimError(null);
     const result = await claimDaily(kind, world);
     if (result.ok) {
-      play("claim");
+      play("mission");
       setNotice(`受け取りました：${rewardText(result.value)}`);
     } else {
       setClaimError(result.error);

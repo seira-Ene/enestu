@@ -11,13 +11,14 @@ import {
 import {
   channelGain,
   DEFAULT_SOUND_SETTINGS,
-  SOUND_EFFECTS,
+  effectTones,
+  soundLength,
   type ChannelSetting,
   type SoundName,
   type SoundSettings,
 } from "@/domain/sound";
 import { playBgm, stopBgm } from "@/lib/bgm-player";
-import { playTones, setChannelGain, unlockAudio } from "@/lib/sound-engine";
+import { duckBgm, playTones, setChannelGain, unlockAudio } from "@/lib/sound-engine";
 import { loadSoundSettings, saveSoundSettings } from "@/lib/sound-settings-store";
 import { useWorld } from "./WorldProvider";
 
@@ -67,9 +68,16 @@ export function SoundProvider({ children }: { children: ReactNode }) {
   }, [isBgmOn, theme.bgm]);
 
   // 消しているときは全体の音量が0になり、鳴らす側が何もしない。
-  const play = useCallback((name: SoundName, delay = 0) => {
-    playTones(SOUND_EFFECTS[name], "se", delay);
-  }, []);
+  // タップは世界線ごとの音にし、ボタンの音のほかは、鳴っている間BGMを少し下げる。
+  const world = theme.id;
+  const play = useCallback(
+    (name: SoundName, delay = 0) => {
+      const tones = effectTones(name, world);
+      playTones(tones, "se", delay);
+      if (name !== "click") duckBgm(delay + soundLength(tones));
+    },
+    [world],
+  );
 
   const change = useCallback((channel: "se" | "bgm", setting: ChannelSetting) => {
     setSettings((current) => {
@@ -90,10 +98,13 @@ export function SoundProvider({ children }: { children: ReactNode }) {
       play("click");
     };
     document.addEventListener("pointerdown", unlock, true);
+    // iPhone の Safari は、指を離したときの操作でないと音を出させないことがある。
+    document.addEventListener("touchend", unlock, true);
     document.addEventListener("keydown", unlock, true);
     document.addEventListener("click", click, true);
     return () => {
       document.removeEventListener("pointerdown", unlock, true);
+      document.removeEventListener("touchend", unlock, true);
       document.removeEventListener("keydown", unlock, true);
       document.removeEventListener("click", click, true);
     };

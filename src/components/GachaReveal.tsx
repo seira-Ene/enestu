@@ -11,6 +11,7 @@ import {
 } from "@/domain/gacha";
 import type { WorldTheme } from "@/themes/types";
 import { PRIMARY_BUTTON } from "./form-styles";
+import { holdBgmDuck } from "@/lib/sound-engine";
 import { PrizeCard } from "./PrizeCard";
 import { useSound } from "./SoundProvider";
 
@@ -48,6 +49,12 @@ export function GachaReveal({ theme, pulls, drawId, onClose }: Props) {
     if (dialog === null) return;
     if (isOpen && !dialog.open) dialog.showModal();
     if (!isOpen && dialog.open) dialog.close();
+  }, [isOpen]);
+
+  // 演出の間は、BGMを少し下げ続ける。
+  useEffect(() => {
+    holdBgmDuck(isOpen);
+    return () => holdBgmDuck(false);
   }, [isOpen]);
 
   return (
