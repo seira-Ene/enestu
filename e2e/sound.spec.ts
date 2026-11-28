@@ -1,118 +1,26 @@
 import { expect, test, type Page } from "@playwright/test";
 import { eventsBetween, eventTones, songSteps } from "../src/domain/bgm";
-import { SOUND_EFFECTS, VOLUME_GAINS } from "../src/domain/sound";
+import { DUCK_LEVEL } from "../src/lib/sound-engine";
+import {
+  SOUND_EFFECTS,
+  VOLUME_GAINS,
+  WORLD_TAPS,
+  type SoundName,
+} from "../src/domain/sound";
 import { cafe } from "../src/themes/cafe";
 import { live } from "../src/themes/live";
 import type { WorldTheme } from "../src/themes/types";
-import { addStudy, openFirstTime, openTab, screen } from "./helpers";
+import {
+  duckHistory,
+  hasPlayed,
+  installFakeAudio,
+  played,
+  seVolume,
+} from "./fake-audio";
+import { addStudy, openFirstTime, openTab, recordStudy, screen } from "./helpers";
 
-/** 鳴らした音。偽物の音の出口が記録する。 */
-type Played = { wave: string; freq: number; channel: "se" | "bgm" };
-
-/**
- * ブラウザの音の出口（AudioContext）を、鳴らした音を記録する偽物に替える。
- * 最初に作られる2つの音量は、効果音とBGMの全体の音量。鳴らした音が、どちらにつながっていたかも記録する。
- */
-async function installFakeAudio(page: Page): Promise<void> {
-  await page.addInitScript(() => {
-    const log = {
-      tones: [] as { wave: string; freq: number; channel: string }[],
-      gains: [] as { value: number }[],
-      nodes: [] as unknown[],
-    };
-    Object.assign(window, { __sound: log });
-    class Param {
-      constructor(public value = 0) {}
-      setValueAtTime(value: number) {
-        this.value = value;
-        return this;
-      }
-      linearRampToValueAtTime() {
-        return this;
-      }
-      exponentialRampToValueAtTime() {
-        return this;
-      }
-      cancelScheduledValues() {
-        return this;
-      }
-    }
-    class AudioNodeStub {
-      target: unknown = null;
-      connect(target: unknown) {
-        this.target = target;
-        return target;
-      }
-      /** つながった先をたどって、効果音とBGMのどちらかを返す。 */
-      channel(): string {
-        const envelope = this.target as AudioNodeStub | null;
-        return envelope?.target === log.nodes[1] ? "bgm" : "se";
-      }
-    }
-    class GainStub extends AudioNodeStub {
-      gain = new Param(1);
-    }
-    class OscillatorStub extends AudioNodeStub {
-      type = "sine";
-      frequency = new Param(0);
-      start() {
-        log.tones.push({ wave: this.type, freq: this.frequency.value, channel: this.channel() });
-      }
-      stop() {}
-    }
-    class SourceStub extends AudioNodeStub {
-      buffer: unknown = null;
-      start() {
-        log.tones.push({ wave: "noise", freq: 0, channel: this.channel() });
-      }
-      stop() {}
-    }
-    class FakeAudioContext {
-      state = "running";
-      get currentTime() {
-        return performance.now() / 1000;
-      }
-      sampleRate = 8000;
-      destination = new AudioNodeStub();
-      createGain() {
-        const node = new GainStub();
-        log.gains.push(node.gain);
-        log.nodes.push(node);
-        return node;
-      }
-      createOscillator() {
-        return new OscillatorStub();
-      }
-      createBufferSource() {
-        return new SourceStub();
-      }
-      createBuffer(_channels: number, length: number) {
-        return { getChannelData: () => new Float32Array(length) };
-      }
-      resume() {
-        return Promise.resolve();
-      }
-    }
-    Object.assign(window, { AudioContext: FakeAudioContext });
-  });
-}
-
-const played = (page: Page) =>
-  page.evaluate(
-    () => (window as unknown as { __sound: { tones: Played[] } }).__sound.tones,
-  );
-const seVolume = (page: Page) =>
-  page.evaluate(
-    () => (window as unknown as { __sound: { gains: { value: number }[] } }).__sound.gains[0]?.value,
-  );
-
-/** その効果音が鳴ったか。最初の音の高さで見分ける。 */
-async function hasPlayed(page: Page, name: keyof typeof SOUND_EFFECTS): Promise<boolean> {
-  const first = SOUND_EFFECTS[name][0];
-  return (await played(page)).some(
-    (tone) => tone.wave === first?.wave && Math.abs(tone.freq - (first?.from ?? 0)) < 0.01,
-  );
-}
+/** その効果音が鳴ったか。 */
+const hasEffect = (page: Page, name: SoundName) => hasPlayed(page, SOUND_EFFECTS[name]);
 
 async function openSoundSettings(page: Page) {
   await screen(page).getByRole("button", { name: "音", exact: true }).click();
@@ -123,8 +31,14 @@ test("キャラクターを押すと、効果音が鳴る", async ({ page }) => 
   await installFakeAudio(page);
   await openFirstTime(page);
   await page.getByRole("button", { name: /に話しかける$/ }).click();
-  await expect.poll(() => hasPlayed(page, "tap")).toBe(true);
-  await expect.poll(() => hasPlayed(page, "click")).toBe(true);
+  await expect.poll(() => hasPlayed(page, WORLD_TAPS.cafe)).toBe(true);
+  await expect.poll(() => hasEffect(page, "click")).toBe(true);
+  // カフェのタップ音はベル：別の波で高さを揺らし、残響にも送る。
+  const bells = (await played(page)).filter(
+    (tone) => tone.channel === "se" && tone.wave === "sine" && tone.freq > 2000,
+  );
+  expect(bells.some((tone) => tone.modulated)).toBe(true);
+  expect(bells.some((tone) => tone.reverb)).toBe(true);
 });
 
 test("テストの正解と不正解で、違う音が鳴る", async ({ page, request }) => {
@@ -148,13 +62,13 @@ test("テストの正解と不正解で、違う音が鳴る", async ({ page, re
 
   await quiz.getByRole("textbox").fill("答え");
   await quiz.getByRole("button", { name: "答える" }).click();
-  await expect.poll(() => hasPlayed(page, "correct")).toBe(true);
-  expect(await hasPlayed(page, "incorrect")).toBe(false);
+  await expect.poll(() => hasEffect(page, "correct")).toBe(true);
+  expect(await hasEffect(page, "incorrect")).toBe(false);
 
   await quiz.getByRole("button", { name: "次へ" }).click();
   await quiz.getByRole("textbox").fill("ちがう");
   await quiz.getByRole("button", { name: "答える" }).click();
-  await expect.poll(() => hasPlayed(page, "incorrect")).toBe(true);
+  await expect.poll(() => hasEffect(page, "incorrect")).toBe(true);
 });
 
 test("効果音を消すと鳴らず、設定は読み込み直しても残る", async ({ page }) => {
@@ -202,8 +116,8 @@ test("ガチャを引くと、光の玉とカードの音が鳴る", async ({ pa
   await addStudy({ device }, 30);
   await openFirstTime(page, "/gacha");
   await page.getByRole("region", { name: "ガチャを引く" }).getByRole("button", { name: /^単発/ }).click();
-  await expect.poll(() => hasPlayed(page, "orb")).toBe(true);
-  await expect.poll(() => hasPlayed(page, "flip"), { timeout: 10_000 }).toBe(true);
+  await expect.poll(() => hasEffect(page, "orb")).toBe(true);
+  await expect.poll(() => hasEffect(page, "flip"), { timeout: 10_000 }).toBe(true);
 });
 
 test("音を出せないブラウザでも、画面はそのまま使える", async ({ page }) => {
@@ -321,4 +235,61 @@ test("別のタブを見ている間はBGMを止め、戻ると再び鳴らす",
 
   await setHidden(false);
   await expect.poll(async () => (await bgmTones(page)).length).toBeGreaterThan(hidden);
+});
+
+test("キャラクターのタップ音は、世界線ごとに違う", async ({ page }) => {
+  await installFakeAudio(page);
+  await openFirstTime(page, "/", "ダンジョン");
+  await page.getByRole("button", { name: /に話しかける$/ }).click();
+  await expect.poll(() => hasPlayed(page, WORLD_TAPS.dungeon)).toBe(true);
+  expect(await hasPlayed(page, WORLD_TAPS.cafe)).toBe(false);
+});
+
+test("レベルが上がると、レベルアップの音が鳴る", async ({ page }) => {
+  await installFakeAudio(page);
+  const device = crypto.randomUUID();
+  await page.addInitScript((id) => localStorage.setItem("enestu_device_id", id), device);
+  await openFirstTime(page);
+  // 開いた後に、別の端末で学習したことにする（記録するとレベルが上がる）。
+  await addStudy({ device }, 120);
+  await recordStudy(page, "数学");
+  await expect(page.getByRole("status").filter({ hasText: "Lv." })).toBeVisible();
+  await expect.poll(() => hasEffect(page, "levelup")).toBe(true);
+});
+
+test("ミッションの報酬を受け取ると、達成の音が鳴る", async ({ page }) => {
+  await installFakeAudio(page);
+  const device = crypto.randomUUID();
+  await page.addInitScript((id) => localStorage.setItem("enestu_device_id", id), device);
+  await addStudy({ device }, 15);
+  await openFirstTime(page);
+  await page
+    .getByRole("region", { name: "今日のミッション" })
+    .getByRole("button", { name: "15分勉強するの報酬を受け取る" })
+    .click();
+  await expect.poll(() => hasEffect(page, "mission")).toBe(true);
+});
+
+test("効果音が鳴る間とガチャの演出中は、BGMを少し下げる", async ({ page }) => {
+  await installFakeAudio(page);
+  const device = crypto.randomUUID();
+  await page.addInitScript((id) => localStorage.setItem("enestu_device_id", id), device);
+  await addStudy({ device }, 30);
+  await openFirstTime(page);
+  await turnBgm(page, true);
+  await expect.poll(async () => (await bgmTones(page)).length).toBeGreaterThan(0);
+
+  // 効果音：下げてから、戻す。
+  await page.getByRole("button", { name: /に話しかける$/ }).click();
+  await expect.poll(() => duckHistory(page)).toContain(DUCK_LEVEL);
+  expect((await duckHistory(page)).at(-1)).toBe(1);
+
+  // ガチャの演出の間は下げ続け、閉じたら戻す。
+  await page.goto("/gacha");
+  await page.getByRole("region", { name: "ガチャを引く" }).getByRole("button", { name: /^単発/ }).click();
+  await expect.poll(async () => (await duckHistory(page)).at(-1)).toBe(DUCK_LEVEL);
+  const reveal = page.getByRole("dialog");
+  await reveal.getByRole("button", { name: "飛ばす" }).click();
+  await reveal.getByRole("button", { name: "閉じる" }).click();
+  await expect.poll(async () => (await duckHistory(page)).at(-1)).toBe(1);
 });

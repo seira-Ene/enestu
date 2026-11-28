@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
+import { WORLD_IDS } from "@/themes/types";
+import { bell, brass, kick, piano, snare, strings } from "./instruments";
 import {
   channelGain,
+  effectTones,
   DEFAULT_SOUND_SETTINGS,
   noteFrequency,
   parseSoundSettings,
@@ -8,6 +11,7 @@ import {
   SOUND_NAMES,
   soundLength,
   VOLUME_GAINS,
+  WORLD_TAPS,
 } from "./sound";
 
 describe("noteFrequency", () => {
@@ -19,10 +23,10 @@ describe("noteFrequency", () => {
 });
 
 describe("効果音", () => {
-  it.each(SOUND_NAMES)("%s は、聞こえる高さで、1秒以内に終わる", (name) => {
+  it.each(SOUND_NAMES)("%s は、聞こえる高さで、1.5秒以内に終わる", (name) => {
     const tones = SOUND_EFFECTS[name];
     expect(tones.length).toBeGreaterThan(0);
-    expect(soundLength(tones)).toBeLessThanOrEqual(1);
+    expect(soundLength(tones)).toBeLessThanOrEqual(1.5);
     for (const tone of tones) {
       expect(tone.gain).toBeGreaterThan(0);
       expect(tone.gain).toBeLessThanOrEqual(1);
@@ -83,5 +87,55 @@ describe("設定", () => {
       expect(channelGain(kind, { isOn: true, level: "mid" })).toBe(mid);
     }
     expect(VOLUME_GAINS.bgm.high).toBeLessThan(VOLUME_GAINS.se.high);
+  });
+});
+
+describe("世界線ごとのタップ音", () => {
+  it.each(WORLD_IDS)("%s は、短く、ほかの世界線と違う", (world) => {
+    const tones = WORLD_TAPS[world];
+    expect(tones.length).toBeGreaterThan(0);
+    expect(soundLength(tones)).toBeLessThanOrEqual(1);
+    expect(effectTones("tap", world)).toBe(tones);
+    for (const other of WORLD_IDS) {
+      if (other !== world) expect(JSON.stringify(WORLD_TAPS[other])).not.toBe(JSON.stringify(tones));
+    }
+  });
+
+  it("タップ以外は、どの世界線でも同じ音", () => {
+    expect(effectTones("correct", "cafe")).toBe(SOUND_EFFECTS.correct);
+    expect(effectTones("correct", "live")).toBe(SOUND_EFFECTS.correct);
+  });
+});
+
+describe("楽器の音色", () => {
+  it("ベルは波を掛け合わせ、ストリングスはゆっくり立ち上がり、厚みを出す", () => {
+    expect(bell(69, 0, 1, 0.5)[0]).toMatchObject({ from: 440, fm: { ratio: 3.5 } });
+    const [pad] = strings(69, 0, 1.2, 0.5);
+    expect(pad?.attack).toBeCloseTo(0.3);
+    expect(pad?.detune).toBeGreaterThan(0);
+    expect(brass(60, 0, 1, 0.5)[0]?.filter?.type).toBe("lowpass");
+  });
+
+  it("ピアノは1オクターブ上を小さく重ねる", () => {
+    const [main, octave] = piano(69, 0.1, 1, 0.5);
+    expect(main).toMatchObject({ from: 440, start: 0.1, gain: 0.5 });
+    expect(octave?.from).toBeCloseTo(880);
+    expect(octave?.gain).toBeCloseTo(0.125);
+  });
+
+  it("打楽器は短い", () => {
+    for (const tones of [kick(0, 0.5), snare(0, 0.5)]) {
+      expect(soundLength(tones)).toBeLessThanOrEqual(0.2);
+    }
+  });
+
+  it("どの音も、大きさは0〜1、残響と左右は決まりの範囲", () => {
+    const all = [...Object.values(SOUND_EFFECTS), ...Object.values(WORLD_TAPS)].flat();
+    for (const tone of all) {
+      expect(tone.gain).toBeGreaterThan(0);
+      expect(tone.gain).toBeLessThanOrEqual(1);
+      expect(tone.reverb ?? 0).toBeLessThanOrEqual(0.5);
+      expect(Math.abs(tone.pan ?? 0)).toBeLessThanOrEqual(1);
+    }
   });
 });

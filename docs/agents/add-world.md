@@ -11,6 +11,7 @@
    - `gacha.prizes` に12枠すべての景品を書く。ノーマルとレアの `text` は素材の説明、スペシャルレアから上はキャラクターのセリフにする（「」は付けない）。
    - `character.greeting` に、さびしがるセリフ（`missed`、3つ以上）、おかえりのセリフ（`returned`、2つ以上）、連続日数のセリフ（`milestone`、3つ以上で `{days}` を含める）を書く。
    - `bgm` に、8小節のオリジナル曲を書く（書き方は `src/domain/bgm.ts`）。既存の曲は使わない。どのパートもちょうど8小節にする。
+   - `src/domain/sound.ts` の `WORLD_TAPS` に、キャラクターをタップしたときの音を足す（1秒以内。ほかの世界線と違う音にする）。
 4. 次の登録表に足す（足りなければ型エラーになる）。
    - `src/themes/index.ts` の `themes`
    - `src/lib/world-fonts.ts` の `LOADERS`（フォントは `src/lib/fonts/<id>.ts`）

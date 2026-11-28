@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import {
   levelState,
   unlockedRankCount,
@@ -5,6 +6,7 @@ import {
 } from "@/domain/progress";
 import type { WorldTheme } from "@/themes/types";
 import { CharacterArt } from "./CharacterArt";
+import { useSound } from "./SoundProvider";
 
 type Props = {
   theme: WorldTheme;
@@ -23,9 +25,15 @@ export function LevelUpBanner({
   previousLevel,
   hasArt,
 }: Props) {
-  if (totals === null || previousLevel === null) return null;
-  const { level } = levelState(totals);
-  if (level <= previousLevel) return null;
+  const { play } = useSound();
+  const level = totals === null ? null : levelState(totals).level;
+  const isLevelUp = level !== null && previousLevel !== null && level > previousLevel;
+  // 上がったときに1回だけ鳴らす。
+  useEffect(() => {
+    if (isLevelUp) play("levelup");
+  }, [isLevelUp, level, play]);
+
+  if (!isLevelUp || level === null || previousLevel === null) return null;
   const hasNewRank = unlockedRankCount(level) > unlockedRankCount(previousLevel);
 
   return (
